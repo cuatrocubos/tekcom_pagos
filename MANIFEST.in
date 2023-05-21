@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include tekcom_pagos *.css
+recursive-include tekcom_pagos *.csv
+recursive-include tekcom_pagos *.html
+recursive-include tekcom_pagos *.ico
+recursive-include tekcom_pagos *.js
+recursive-include tekcom_pagos *.json
+recursive-include tekcom_pagos *.md
+recursive-include tekcom_pagos *.png
+recursive-include tekcom_pagos *.py
+recursive-include tekcom_pagos *.svg
+recursive-include tekcom_pagos *.txt
+recursive-exclude tekcom_pagos *.pyc
