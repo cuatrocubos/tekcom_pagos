@@ -1,0 +1,142 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"nZOHQe0gAJ\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Viaticos y Pagos</span>\",\"col\":12}},{\"id\":\"XE7OBqWZdj\",\"type\":\"card\",\"data\":{\"card_name\":\"Solicitudes de Pagos\",\"col\":4}},{\"id\":\"fUmYeJ-kuX\",\"type\":\"card\",\"data\":{\"card_name\":\"Viaticos\",\"col\":4}},{\"id\":\"nYNDASpRIb\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"aiWVsA3ENb\",\"type\":\"card\",\"data\":{\"card_name\":\"Maestros\",\"col\":4}}]",
+ "creation": "2023-05-21 20:44:47.841053",
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "loan",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Viaticos y Pagos",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Solicitudes de Pagos",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Solicitudes de Pagos",
+   "link_count": 0,
+   "link_to": "Solicitud de Pago",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Concepto del Gasto",
+   "link_count": 0,
+   "link_to": "Concepto de Gasto",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Maestros",
+   "link_count": 5,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Banco",
+   "link_count": 0,
+   "link_to": "Bank",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Cuenta Bancaria",
+   "link_count": 0,
+   "link_to": "Bank Account",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Proveedor",
+   "link_count": 0,
+   "link_to": "Supplier",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Empleado",
+   "link_count": 0,
+   "link_to": "Employee",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Centro de Costos",
+   "link_count": 0,
+   "link_to": "Cost Center",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Viaticos",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Solicitud de Viaticos",
+   "link_count": 0,
+   "link_to": "Solicitud de Viaticos",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Liquidaci\u00f3n de Viaticos",
+   "link_count": 0,
+   "link_to": "Solicitud de Viaticos",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2023-05-23 00:38:19.849115",
+ "modified_by": "Administrator",
+ "module": "Viaticos y Pagos",
+ "name": "Viaticos y Pagos",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 2.0,
+ "shortcuts": [],
+ "title": "Viaticos y Pagos"
+}
