@@ -16,16 +16,19 @@
   "column_break_ru1t2",
   "fecha_salida",
   "fecha_retorno",
-  "solicitante_section",
-  "solicitante",
-  "column_break_qblyq",
-  "nombre_solicitante",
-  "section_break_usxgk",
-  "personas",
   "accounting_dimensions_section",
   "project",
   "column_break_akxli",
   "cost_center",
+  "solicitante_section",
+  "solicitante",
+  "cuadrilla",
+  "column_break_qblyq",
+  "nombre_solicitante",
+  "section_break_usxgk",
+  "personas",
+  "detalle_de_gastos_section",
+  "presupuesto",
   "totales_section",
   "total_anticipo_solicitado",
   "column_break_3qmp3",
@@ -228,12 +231,29 @@
   {
    "fieldname": "section_break_usxgk",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "cuadrilla",
+   "fieldtype": "Link",
+   "label": "Cuadrilla",
+   "options": "Cuadrilla"
+  },
+  {
+   "fieldname": "detalle_de_gastos_section",
+   "fieldtype": "Section Break",
+   "label": "Detalle de Gastos"
+  },
+  {
+   "fieldname": "presupuesto",
+   "fieldtype": "Table",
+   "label": "Presupuesto",
+   "options": "Presupuesto de Gastos"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-23 00:36:39.997398",
+ "modified": "2023-06-16 09:13:06.938772",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Solicitud de Viaticos",

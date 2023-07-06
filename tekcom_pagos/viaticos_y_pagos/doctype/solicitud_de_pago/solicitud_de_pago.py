@@ -19,7 +19,17 @@ import json
 from functools import reduce
 
 class SolicituddePago(Document):
-	pass
+  # def set_indicator(self):
+  #   if getdate(self.due_date) >= getdate(nowdate()):
+  #     self.indicator_color = "orange"
+  #     self.indicator_title = _("Unpaid")
+  #   elif getdate(self.due_date) < getdate(nowdate()):
+  #     self.indicator_color = "red"
+  #     self.indicator_title = _("Overdue")
+  #   else:
+  #     self.indicator_color = "green"
+  #     self.indicator_title = _("Paid")
+  pass
 
 @frappe.whitelist()
 def get_party_details(company, party_type, party, date, cost_center=None):
@@ -51,6 +61,33 @@ def get_company_defaults(company):
   fields = ["cost_center"]
   return frappe.get_cached_value("Company", company, fields, as_dict=1)
 
-
-
-
+@frappe.whitelist()
+def get_reference_details(reference_doctype, reference_name, party_account_currency):
+  total_amount = outstanding_amount = exchange_rate = None
+  
+  ref_doc = frappe.get_doc(reference_doctype, reference_name)
+  company_currency = ref_doc.get("company_currency") or erpnext.get_company_currency(ref_doc.company)
+  
+  if not total_amount:
+    if party_account_currency == company_currency:
+      total_amount = ref_doc.get("grand_total") or ref_doc.get("base_grand_total")
+      exchange_rate = 1
+    else:
+      total_amount = ref_doc.get("grand_total")
+  if not exchange_rate:
+    exchange_rate = ref_doc.get("conversion_rate") or get_exchange_rate(party_account_currency, company_currency, ref_doc.posting_date)
+  
+  if reference_doctype in ("Purchase Invoice", "Gastos Varios"):
+    outstanding_amount = ref_doc.get("outstanding_amount")
+  else:
+    outstanding_amount = flt(total_amount) - flt(ref_doc.get("advance_paid"))
+    
+  return frappe._dict(
+    {
+      "due_date": ref_doc.get("due_date"),
+      "total_amount": flt(total_amount),
+      "outstanding_amount": flt(outstanding_amount),
+      "exchange_rate": flt(exchange_rate),
+      "bill_no": ref_doc.get("bill_no")
+    }
+  )

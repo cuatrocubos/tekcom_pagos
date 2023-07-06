@@ -4,5 +4,5 @@
 # import frappe
 from frappe.model.document import Document
 
-class ConceptodeGasto(Document):
+class DetalledeGastosVarios(Document):
 	pass

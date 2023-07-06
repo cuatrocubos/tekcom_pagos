@@ -8,39 +8,41 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "company",
-  "column_break_kh1e3",
   "naming_series",
-  "informacion_general_section",
+  "company",
+  "solicitante",
+  "column_break_kh1e3",
   "fecha_solicitud",
   "fecha_vencimiento",
-  "solicitante",
   "column_break_wqz7e",
-  "monto_pagar",
-  "monto_pagar_base",
   "mode_of_payment",
   "bank_account",
   "divisa_section",
   "currency",
   "column_break_z1fii",
-  "conversion_rate",
+  "exchange_rate",
   "detalle_section_break",
-  "concepto",
   "descripcion",
   "beneficiario_section_break",
   "party_type",
-  "column_break_cbqbb",
   "party",
   "party_name",
+  "column_break_cbqbb",
   "contact_person",
   "contact_email",
   "party_bank_account",
-  "accounting_dimensions_section",
-  "project",
-  "column_break_ipcyw",
-  "cost_center",
+  "section_break_rzd7g",
+  "monto_pagar",
+  "column_break_x32ub",
+  "monto_pagar_base",
   "comprobantes_section",
-  "comprobantes_table",
+  "references",
+  "write_off_section",
+  "total_allocated_amount",
+  "base_total_allocated_amount",
+  "column_break_cqmsv",
+  "unallocated_amount",
+  "difference_amount",
   "amended_from",
   "transaction_references",
   "reference_no",
@@ -48,6 +50,7 @@
   "reference_date",
   "more_information_section",
   "status",
+  "workflow_status",
   "custom_remarks",
   "remarks",
   "column_break_nxoca",
@@ -59,11 +62,14 @@
  ],
  "fields": [
   {
+   "bold": 1,
+   "depends_on": "eval:(doc.mode_of_payment && doc.workflow_status == \"Por Pagar\")",
    "fieldname": "monto_pagar",
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Monto a Pagar",
    "options": "currency",
+   "read_only": 1,
    "reqd": 1
   },
   {
@@ -76,37 +82,12 @@
    "reqd": 1
   },
   {
-   "fieldname": "accounting_dimensions_section",
-   "fieldtype": "Section Break",
-   "label": "Accounting Dimensions"
-  },
-  {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "label": "Project",
-   "options": "Project"
-  },
-  {
-   "fieldname": "cost_center",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Cost Center",
-   "options": "Cost Center",
-   "reqd": 1
-  },
-  {
    "fieldname": "currency",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Currency",
    "options": "Currency",
    "reqd": 1
-  },
-  {
-   "fieldname": "conversion_rate",
-   "fieldtype": "Float",
-   "label": "Exchange Rate",
-   "precision": "9"
   },
   {
    "fieldname": "amended_from",
@@ -125,6 +106,7 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -182,21 +164,10 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "column_break_ipcyw",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "solicitante",
    "fieldtype": "Link",
    "label": "Solicitante",
    "options": "Employee",
-   "reqd": 1
-  },
-  {
-   "fieldname": "concepto",
-   "fieldtype": "Link",
-   "label": "Concepto",
-   "options": "Concepto de Gasto",
    "reqd": 1
   },
   {
@@ -215,12 +186,14 @@
    "label": "Detalles"
   },
   {
+   "depends_on": "eval:(doc.party)",
    "fieldname": "comprobantes_section",
    "fieldtype": "Section Break",
-   "label": "Comprobantes"
+   "label": "Reference"
   },
   {
-   "depends_on": "eval:(doc.company && doc.mode_of_payment)",
+   "allow_on_submit": 1,
+   "depends_on": "eval:(doc.company && doc.mode_of_payment && doc.workflow_status == \"Por Pagar\")",
    "fieldname": "bank_account",
    "fieldtype": "Link",
    "label": "Company Bank Account",
@@ -265,12 +238,16 @@
    "default": "Draft",
    "fieldname": "status",
    "fieldtype": "Select",
+   "in_standard_filter": 1,
    "label": "Status",
-   "options": "\nDraft\nSubmitted\nCancelled",
+   "length": 30,
+   "no_copy": 1,
+   "options": "\nDraft\nSubmitted\nPaid\nUnpaid\nOverdue\nCancelled",
+   "print_hide": 1,
    "read_only": 1
   },
   {
-   "depends_on": "eval:doc.mode_of_payment",
+   "depends_on": "eval:(doc.mode_of_payment && doc.workflow_status == \"Por Pagar\")",
    "fieldname": "transaction_references",
    "fieldtype": "Section Break",
    "label": "Transaction ID"
@@ -305,11 +282,6 @@
    "print_hide": 1,
    "reqd": 1,
    "set_only_once": 1
-  },
-  {
-   "fieldname": "informacion_general_section",
-   "fieldtype": "Section Break",
-   "label": "Informaci\u00f3n General"
   },
   {
    "fieldname": "column_break_nxoca",
@@ -352,25 +324,98 @@
    "fieldtype": "Column Break"
   },
   {
+   "collapsible": 1,
    "fieldname": "divisa_section",
    "fieldtype": "Section Break",
-   "label": "Divisa"
+   "label": "Divisa",
+   "print_hide": 1
   },
   {
    "fieldname": "column_break_z1fii",
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "comprobantes_table",
+   "default": "Borrador",
+   "fieldname": "workflow_status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Workflow Status",
+   "no_copy": 1,
+   "options": "\nBorrador\nPor Revisar\nPor Aprobar\nPor Pagar\nPagado\nCancelado\nRechazado",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_x32ub",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:(doc.party)",
+   "fieldname": "section_break_rzd7g",
+   "fieldtype": "Section Break",
+   "label": "Amount"
+  },
+  {
+   "fieldname": "references",
    "fieldtype": "Table",
-   "label": "Comprobantes",
+   "label": "Payment References",
    "options": "Comprobante de Solicitud de Pago"
+  },
+  {
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "precision": "9"
+  },
+  {
+   "bold": 1,
+   "depends_on": "eval:(doc.monto_pagar && doc.references)",
+   "fieldname": "total_allocated_amount",
+   "fieldtype": "Currency",
+   "label": "Total Allocated Amount",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "base_total_allocated_amount",
+   "fieldtype": "Currency",
+   "label": "Total Allocated Amount (Company Currency)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:(doc.monto_pagar && doc.references)",
+   "fieldname": "unallocated_amount",
+   "fieldtype": "Currency",
+   "label": "Unallocated Amount",
+   "print_hide": 1
+  },
+  {
+   "bold": 1,
+   "depends_on": "eval:(doc.monto_pagar)",
+   "fieldname": "difference_amount",
+   "fieldtype": "Currency",
+   "label": "Difference Amount (Company Currency)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "write_off_section",
+   "fieldtype": "Section Break",
+   "hidden": 1,
+   "label": "Writeoff"
+  },
+  {
+   "fieldname": "column_break_cqmsv",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-05-23 07:55:19.488863",
+ "modified": "2023-06-27 07:27:50.742856",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Solicitud de Pago",

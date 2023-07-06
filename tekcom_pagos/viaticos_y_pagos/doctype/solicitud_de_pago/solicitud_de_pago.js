@@ -9,11 +9,16 @@ frappe.ui.form.on('Solicitud de Pago', {
 	},
 
 	setup: function(frm) {
+		if (frm.doc.docstatus == 0) {
+			if (!frm.doc.fecha_solicitud) {
+				frm.set_value("fecha_solicitud", frappe.datetime.nowdate())
+			}
+		}
 		frm.set_query("party_type", function() {
 			frm.events.validate_company(frm);
 			return{
 				filters: {
-					"name": ["in", Object.keys(frappe.boot.party_account_types)]
+					"name": ["in", ["Supplier","Employee"]]
 				}
 			}
 		})
@@ -44,7 +49,42 @@ frappe.ui.form.on('Solicitud de Pago', {
 					}
 				};
 			}
-		});
+		})
+
+		frm.set_query("reference_doctype", "references", function() {
+			if (frm.doc.party_type == "Supplier") {
+				var doctypes = ["Purchase Order", "Purchase Invoice", "Gastos Varios"]
+			} else {
+				var doctypes = ["Gastos Varios"]
+			}
+
+			return {
+				filters: { "name": ["in", doctypes]}
+			}
+		})
+
+		frm.set_query('payment_term', 'references', function(frm, cdt, cdn) {
+			const child = locals[cdt][cdn];
+			if (in_list(['Purchase Invoice', 'Sales Invoice'], child.reference_doctype) && child.reference_name) {
+				let payment_term_list = []
+				frappe.db.get_list('Payment Schedule', { 
+					fields: ["name","payment_term"],
+					filters: {
+						parent: child.reference_name
+					} 
+				}).then(records => {
+					payment_term_list = records
+					payment_term_list = payment_term_list.map(pt => pt.payment_term);
+					console.log(payment_term_list)
+
+				return {
+					filters: {
+						'name': ['in', payment_term_list]
+					}
+				}
+				});
+			}
+		})
 	},
 
 	refresh: function(frm) {
@@ -77,8 +117,10 @@ frappe.ui.form.on('Solicitud de Pago', {
 	hide_unhide_fields: function(frm) {
 		var company_currency = frm.doc.company ? frappe.get_doc(":Company", frm.doc.company).default_currency : "";
 
-		frm.toggle_display("conversion_rate", (frm.doc.currency != company_currency));
+		frm.toggle_display("exchange_rate", (frm.doc.currency != company_currency));
 		frm.toggle_display("monto_pagar_base", (frm.doc.currency != company_currency));
+
+		// frm.toggle_display(["base_total_allocated_amount"],(frm.doc.monto_pagar && frm.doc.base_total_allocated_amount && (frm.doc.currency != company_currency)))
 
 		frm.refresh_fields();
 	},
@@ -92,7 +134,12 @@ frappe.ui.form.on('Solicitud de Pago', {
 
 		frm.set_df_property("monto_pagar", "options", "currency");
 
-		cur_frm.set_df_property("conversion_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
+		frm.set_df_property("exchange_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
+
+		frm.set_currency_labels(["total_amount", "outstanding_amount","allocated_amount"], frm.doc.currency, "references")
+
+		frm.set_df_property("total_allocated_amount", "options", "currency")
+		frm.set_df_property("unallocated_amount", "options", "currency")
 
 		frm.refresh_fields()
 	},
@@ -136,7 +183,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 
 		if (frm.doc.party_type && frm.doc.party && frm.doc.company) {
 			if (!frm.doc.fecha_solicitud) {
-				frappe.msgprint(__("Por favor selecciones fecha de solicitud antes de seleccionar el Tercero"))
+				frappe.msgprint(__("Por favor seleccione fecha de solicitud antes de seleccionar el Tercero"))
 				frm.set_value("party", "");
 				return ;
 			}
@@ -151,6 +198,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 					};
 				}
 			});
+
 			let company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency;
 
 			return frappe.call({
@@ -170,10 +218,10 @@ frappe.ui.form.on('Solicitud de Pago', {
 							() => frm.events.set_dynamic_labels(frm),
 							() => {
 								if (r.message.bank_account) {
-									frm.set_value("party_bank_account", r.message.party_bank_account);
+									frm.set_value("bank_account", r.message.party_bank_account);
 								}
 							},
-							() => frm.events.set_current_exchange_rate(frm, "conversion_rate", frm.doc.currency, company_currency)
+							() => frm.events.set_current_exchange_rate(frm, "exchange_rate", frm.doc.currency, company_currency)
 						]);
 					}
 				}
@@ -187,7 +235,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 		frm.events.set_dynamic_labels(frm);
 		let company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency;
 		if (frm.doc.currency == company_currency) {
-			frm.set_value("conversion_rate", 1);
+			frm.set_value("exchange_rate", 1);
 		} else {
 			frappe.call({
 				method: "erpnext.setup.utils.get_exchange_rate",
@@ -197,10 +245,11 @@ frappe.ui.form.on('Solicitud de Pago', {
 					transaction_date: frm.doc.fecha_solicitud
 				},
 				callback: function(r, rt) {
-					frm.set_value("conversion_rate", r.message)
+					frm.set_value("exchange_rate", r.message)
 				}
 			})
 		}
+		frm.events.hide_unhide_fields(frm);
 	},
 
 	set_current_exchange_rate: function(frm, exchange_rate_field, from_currency, to_currency) {
@@ -222,15 +271,15 @@ frappe.ui.form.on('Solicitud de Pago', {
 		frm.events.currency(frm);
 	},
 
-	conversion_rate: function(frm) {
+	exchange_rate: function(frm) {
 		if (frm.doc.monto_pagar) {
-			frm.set_value("monto_pagar_base", flt(frm.doc.monto_pagar) * flt(frm.doc.conversion_rate));
-			frm.set_df_property("conversion_rate", "read_only", erpnext.stale_rate_allowed() ? 0 : 1);
+			frm.set_value("monto_pagar_base", flt(frm.doc.monto_pagar) * flt(frm.doc.exchange_rate));
+			frm.set_df_property("exchange_rate", "read_only", erpnext.stale_rate_allowed() ? 0 : 1);
 		}
 	},
 
 	monto_pagar: function(frm) {
-		frm.set_value("monto_pagar_base", flt(frm.doc.monto_pagar) * flt(frm.doc.conversion_rate));
+		frm.set_value("monto_pagar_base", flt(frm.doc.monto_pagar) * flt(frm.doc.exchange_rate));
 		frm.events.hide_unhide_fields(frm);
 	},
 
@@ -250,4 +299,90 @@ frappe.ui.form.on('Solicitud de Pago', {
 			});
 		}
 	},
+
+	set_monto_pagar(frm) {
+		var monto_pagar = 0.0
+		var monto_pagar_base = 0.0
+
+		$.each(frm.doc.references || [], function(i, row) {
+			if (row.allocated_amount) {
+				monto_pagar += flt(row.allocated_amount)
+				monto_pagar_base += flt(flt(row.allocated_amount) * flt(frm.exchange_rate), precision("monto_pagar_base"))
+			}
+		})
+		
+		frm.set_value("monto_pagar", monto_pagar)
+		frm.set_value("monto_pagar_base", monto_pagar_base)
+
+		// frm.events.set_unallocated_amount(frm)
+		// frm.refresh_fields()
+	},
+
+	// set_unallocated_amount(frm) {
+	// 	var unallocated_amount = 0
+		
+	// 	if (frm.doc.party) {
+	// 		unallocated_amount = (frm.doc.monto_pagar_base - frm.doc.base_total_allocated_amount) / frm.doc.exchange_rate
+	// 	}
+
+	// 	frm.set_value("unallocated_amount", unallocated_amount)
+	// 	frm.trigger("set_difference_amount")
+	// },
+
+	// set_difference_amount(frm) {
+	// 	var difference_amount = 0
+	// 	var base_unallocated_amount = flt(frm.doc.unallocated_amount) * frm.doc.exchange_rate
+
+	// 	var base_party_amount = flt(frm.doc.base_total_allocated_amount) + base_unallocated_amount
+
+	// 	difference_amount = flt(frm.doc.monto_pagar_base) - base_party_amount
+
+	// 	frm.set_value("difference_amount", difference_amount)
+
+	// 	frm.events.hide_unhide_fields(frm)
+	// },
+
+	// unallocated_amount(frm) {
+	// 	frm.trigger("set_difference_amount")
+	// }
 });
+
+frappe.ui.form.on('Comprobante de Solicitud de Pago', {
+	reference_doctype(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+	},
+
+	reference_name(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+
+		if (row.reference_name && row.reference_doctype) {
+			return frappe.call({
+				method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_reference_details",
+				args: {
+					reference_doctype: row.reference_doctype,
+					reference_name: row.reference_name,
+					party_account_currency: frm.doc.currency,
+				},
+				callback: function(r, rt) {
+					if (r.message) {
+						$.each(r.message, function(field, value) {
+							frappe.model.set_value(cdt, cdn, field, value)
+						})
+
+						frappe.model.set_value(cdt, cdn, "allocated_amount", row.outstanding_amount)
+
+						frm.refresh_fields()
+					}
+				}
+			})
+		}
+	},
+
+	allocated_amount(frm) {
+		frm.events.set_monto_pagar(frm)
+	},
+
+	references_remove(frm) {
+		frm.events.set_monto_pagar(frm)
+	}
+})

@@ -1,0 +1,50 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2023-06-16 09:12:21.060122",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "concepto_gasto",
+  "monto_solicitado",
+  "monto_aprobado"
+ ],
+ "fields": [
+  {
+   "fieldname": "concepto_gasto",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Tipo de Gasto",
+   "options": "Concepto de Gasto",
+   "reqd": 1
+  },
+  {
+   "fieldname": "monto_solicitado",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Monto Solicitado",
+   "reqd": 1
+  },
+  {
+   "fieldname": "monto_aprobado",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Monto Aprobado",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-06-16 09:12:21.060122",
+ "modified_by": "Administrator",
+ "module": "Viaticos y Pagos",
+ "name": "Presupuesto de Gastos",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
