@@ -1,0 +1,75 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"jE1MnhbbBw\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reportes y Maestros</span>\",\"col\":12}},{\"id\":\"UpdUR2ZUIY\",\"type\":\"card\",\"data\":{\"card_name\":\"Solicitud de Pago\",\"col\":4}},{\"id\":\"WwznTgvA6c\",\"type\":\"card\",\"data\":{\"card_name\":\"Presupuestos de Gastos\",\"col\":4}}]",
+ "creation": "2023-07-13 20:18:56.392646",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "mail",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Solicitudes de Pago",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Solicitud de Pago",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Solicitud de Pago",
+   "link_count": 0,
+   "link_to": "Solicitud de Pago",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Expense Claim Type",
+   "link_count": 0,
+   "link_to": "Expense Claim Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Presupuestos de Gastos",
+   "link_count": 1,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Presupuesto de Gastos",
+   "link_count": 0,
+   "link_to": "Presupuesto de Gastos",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2023-07-13 20:29:41.404713",
+ "modified_by": "Administrator",
+ "module": "Solicitudes de Pagos",
+ "name": "Solicitudes de Pago",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 30.0,
+ "shortcuts": [],
+ "title": "Solicitudes de Pago"
+}

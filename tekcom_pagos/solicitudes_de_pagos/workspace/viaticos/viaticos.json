@@ -1,0 +1,57 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"v2UiYwff8e\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reportes y Maestros</span>\",\"col\":12}},{\"id\":\"qkVHin0XJp\",\"type\":\"card\",\"data\":{\"card_name\":\"Viaticos\",\"col\":4}}]",
+ "creation": "2023-07-13 20:22:51.241059",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "file",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Viaticos",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Viaticos",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Solicitud de Viaticos",
+   "link_count": 0,
+   "link_to": "Solicitud de Viaticos",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Liquidacion de Viaticos",
+   "link_count": 0,
+   "link_to": "Liquidacion de Viaticos",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2023-07-13 20:28:29.439823",
+ "modified_by": "Administrator",
+ "module": "Solicitudes de Pagos",
+ "name": "Viaticos",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 31.0,
+ "shortcuts": [],
+ "title": "Viaticos"
+}
