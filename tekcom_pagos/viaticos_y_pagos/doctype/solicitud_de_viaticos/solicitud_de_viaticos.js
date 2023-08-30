@@ -242,7 +242,6 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			p.monto_solicitado = frm.events.get_total_solicitado_alimentacion(frm)
 		} else {
 			$.each(frm.doc.presupuesto, function(i, row) {
-				console.log(row)
 				if (row.tipo_gasto == "Alimentacion") {
 					frappe.model.set_value(row.doctype, row.name, "monto_solicitado", frm.events.get_total_solicitado_alimentacion(frm))
 				}
