@@ -13,37 +13,61 @@ frappe.ui.form.on('Gastos Varios', {
 			if (!frm.doc.posting_date) {
 				frm.set_value("posting_date", frappe.datetime.nowdate())
 			}
+
+			if (frm.doc.monto_asignado == "" || frm.doc.monto_asignado == null) {
+				frm.set_value("monto_asignado", 0.0)
+				frm.set_value("saldo", 0.0)
+			}
 		}
 
-		frm.set_query("party_type", function() {
-			frm.events.validate_company(frm)
-			return {
-				filters: {
-					"name": ["in", ["Employee", "Supplier"]]
+		if (frm.doc.solicitante == "" || frm.doc.solicitante == null) {
+			frappe.call({
+				method: "frappe.client.get_value",
+				args: {
+					doctype: 'Employee',
+					filters: {
+						user_id: frappe.session.user,
+					},
+					fieldname: ['name']
+				},
+				callback: function(r) {
+					console.log("r ", r)
+					if (r.message != undefined) {
+						frm.set_value("solicitante", r.message.name)
+					}
 				}
-			}
-		})
+			})
+		}
 
-		frm.set_query("credit_to", function() {
-			frm.events.validate_company(frm)
-			return {
-				filters: {
-					"account_type": "Payable",
-					"is_group": 0,
-					"company": frm.doc.company
-				}
-			}
-		})
+		// frm.set_query("party_type", function() {
+		// 	frm.events.validate_company(frm)
+		// 	return {
+		// 		filters: {
+		// 			"name": ["in", ["Employee", "Supplier"]]
+		// 		}
+		// 	}
+		// })
 
-		frm.set_query("expense_account", "references", function() {
-			frm.events.validate_company(frm)
-			return {
-				query: "erpnext.controllers.queries.get_expense_account",
-				filters: {
-					"company": frm.doc.company
-				}
-			}
-		})
+		// frm.set_query("credit_to", function() {
+		// 	frm.events.validate_company(frm)
+		// 	return {
+		// 		filters: {
+		// 			"account_type": "Payable",
+		// 			"is_group": 0,
+		// 			"company": frm.doc.company
+		// 		}
+		// 	}
+		// })
+
+		// frm.set_query("expense_account", "references", function() {
+		// 	frm.events.validate_company(frm)
+		// 	return {
+		// 		query: "erpnext.controllers.queries.get_expense_account",
+		// 		filters: {
+		// 			"company": frm.doc.company
+		// 		}
+		// 	}
+		// })
 	},
 
 	refresh(frm) {
@@ -74,7 +98,7 @@ frappe.ui.form.on('Gastos Varios', {
 					company: frm.doc.company
 				},
 				callback: (response) => {
-					if (response) frm.set_value("credit_to", response.message)
+					// if (response) frm.set_value("credit_to", response.message)
 				}
 			})
 		}
@@ -84,11 +108,13 @@ frappe.ui.form.on('Gastos Varios', {
 		var company_currency = frm.doc.company ? frappe.get_doc(":Company", frm.doc.company).default_currency : "";
 
 		frm.toggle_display("exchange_rate", (frm.doc.currency != company_currency))
+		frm.toggle_display("base_total", (frm.doc.currency != company_currency))
+		frm.toggle_display("base_total_taxes_and_charges", (frm.doc.currency != company_currency))
 		frm.toggle_display("base_grand_total", (frm.doc.currency != company_currency))
 
 		var references_grid = frm.fields_dict["references"].grid
 
-		$.each(["base_total"], function(i, fname) {
+		$.each(["base_total", "base_grand_total", "base_total_taxes_and_charges"], function(i, fname) {
 			if (frappe.meta.get_docfield(references_grid.doctype, fname)) {
 				references_grid.set_column_disp(fname, frm.doc.currency != company_currency)
 			}
@@ -109,7 +135,11 @@ frappe.ui.form.on('Gastos Varios', {
 		frm.set_df_property("exchange_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
 		
 		frm.set_currency_labels(["total"], frm.doc.currency, "references")
+		frm.set_currency_labels(["total_taxes_and_charges"], frm.doc.currency, "references")
+		frm.set_currency_labels(["grand_total"], frm.doc.currency, "references")
 		frm.set_currency_labels(["base_total"], company_currency, "references")
+		frm.set_currency_labels(["base_total_taxes_and_charges"], company_currency, "references")
+		frm.set_currency_labels(["base_grand_total"], company_currency, "references")
 		
 		frm.refresh_fields()
 	},
@@ -168,7 +198,7 @@ frappe.ui.form.on('Gastos Varios', {
 					if (r.message) {
 						frappe.run_serially([
 							() => frm.set_value("party_name", r.message.party_name),
-							() => frm.set_value("credit_to", r.message.party_account),
+							// () => frm.set_value("credit_to", r.message.party_account),
 							() => frm.events.hide_unhide_fields(frm),
 							() => frm.events.set_dynamic_labels(frm),
 							() => frm.events.set_current_exchange_rate(frm, "exchange_rate", frm.doc.currency, company_currency)
@@ -179,24 +209,24 @@ frappe.ui.form.on('Gastos Varios', {
 		}
 	},
 	
-	credit_to(frm) {
-		if (frm.doc.credit_to) {
-			frappe.call({
-				method: "frappe.client.get_value",
-				args: {
-					doctype: "Account",
-					fieldname: "account_currency",
-					filters: { name: frm.doc.credit_to },
-				},
-				callback: function(r, rt) {
-					if (r.message) {
-						frm.set_value("party_account_currency", r.message.account_currency)
-						frm.set_dynamic_labels(frm)
-					}
-				}
-			})
-		}
-	},
+	// credit_to(frm) {
+	// 	if (frm.doc.credit_to) {
+	// 		frappe.call({
+	// 			method: "frappe.client.get_value",
+	// 			args: {
+	// 				doctype: "Account",
+	// 				fieldname: "account_currency",
+	// 				filters: { name: frm.doc.credit_to },
+	// 			},
+	// 			callback: function(r, rt) {
+	// 				if (r.message) {
+	// 					frm.set_value("party_account_currency", r.message.account_currency)
+	// 					frm.set_dynamic_labels(frm)
+	// 				}
+	// 			}
+	// 		})
+	// 	}
+	// },
 
 	currency(frm) {
 		if (!frm.doc.currency || !frm.doc.company) return
@@ -228,6 +258,8 @@ frappe.ui.form.on('Gastos Varios', {
 	set_exchange_rate_for_references(frm,exchange_rate) {
 		$.each(frm.doc.references || [], function(i, d) {
 			frappe.model.set_value(d.doctype, d.name, "base_total", flt(d.total) * flt(exchange_rate))
+			frappe.model.set_value(d.doctype, d.name, "base_total_taxes_and_charges", flt(d.total_taxes_and_charges) * flt(exchange_rate))
+			frappe.model.set_value(d.doctype, d.name, "base_grand_total", flt(d.grand_total) * flt(exchange_rate))
 		})
 	},
 
@@ -252,6 +284,8 @@ frappe.ui.form.on('Gastos Varios', {
 
 	exchange_rate(frm) {
 		if (frm.doc.grand_total) {
+			frm.set_value("base_total", flt(frm.doc.total) * flt(frm.doc.exchange_rate))
+			frm.set_value("base_total_taxes_and_charges", flt(frm.doc.total_taxes_and_charges) * flt(frm.doc.exchange_rate))
 			frm.set_value("base_grand_total", flt(frm.doc.grand_total) * flt(frm.doc.exchange_rate))
 			frm.set_df_property("exchange_rate", "read_only", erpnext.stale_rate_allowed() ? 0 : 1)
 		}
@@ -271,37 +305,80 @@ frappe.ui.form.on('Gastos Varios', {
 				},
 				callback: function(r, rt) {
 					if (!r.exc) {
-						$.each(frm.doc["references_table"] || [], function(i, row) {
-							if (r.message) {
-								frappe.model.set_value(row.supplier, row.reference, "cost_center", r.message)
-								frappe.msgprint(__("Cost Center actualizado para la referencia {0} ha sido actualizado a {1}", [row.reference, r.message]))
-							}
-						})
+						frappe.run_serially([
+							() => frm.set_value("cost_center", r.message),
+							() => frappe.msgprint(__("Centro de Costo actualizado al centro de costos del proyecto selecionado.")),
+						])
+						// $.each(frm.doc["references_table"] || [], function(i, row) {
+						// 	if (r.message) {
+						// 		frappe.model.set_value(row.supplier, row.reference, "cost_center", r.message)
+						// 		frappe.msgprint(__("Cost Center actualizado para la referencia {0} ha sido actualizado a {1}", [row.reference, r.message]))
+						// 	}
+						// })
 					}
 				}
 			})
 		}
 	},
 
+	monto_asignado(frm) {
+		frm.events.set_total_amount(frm)
+	},
+
 	set_total_amount(frm) {
+		var total = 0.0
+		var total_taxes_and_charges = 0.0
 		var grand_total = 0.0
+		var saldo = 0.0
+
+		var base_total = 0.0
+		var base_total_taxes_and_charges = 0.0
 		var base_grand_total = 0.0
+		var base_saldo = 0.0
 
 		$.each(frm.doc.references || [], function(i, row) {
 			if (row.total) {
-				grand_total += flt(row.total)
-				base_grand_total += flt(flt(row.total) * flt(row.exchange_rate), precision("base_grand_total"))
+				total += flt(row.total)
+				base_total += flt(flt(row.total) * flt(row.exchange_rate), precision("base_total"))
+			}
+			if (row.total_taxes_and_charges) {
+				total_taxes_and_charges += flt(row.total_taxes_and_charges)
+				base_total_taxes_and_charges += flt(flt(row.total_taxes_and_charges) * flt(row.exchange_rate), precision("base_total_taxes_and_charges"))
+			}
+			if (row.grand_total) {
+				grand_total += flt(row.grand_total)
+				base_grand_total += flt(flt(row.grand_total) * flt(row.exchange_rate), precision("base_grand_total"))
 			}
 		})
+
+		saldo = flt(frm.doc.monto_asignado) - flt(grand_total) 
 		
+		frm.set_value("total", total)
+		frm.set_value("total_taxes_and_charges", total_taxes_and_charges)
 		frm.set_value("grand_total", grand_total)
+		frm.set_value("base_total", base_total)
+		frm.set_value("base_total_taxes_and_charges", base_total_taxes_and_charges)
 		frm.set_value("base_grand_total", base_grand_total)
 		frm.set_value("outstanding_amount", grand_total)
+		frm.set_value("saldo", saldo)
 	}
 });
 
 frappe.ui.form.on('Detalle de Gastos Varios', {
-	total(frm) {
+	total(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		if ((row.total >= 0) || (row.total_taxes_and_charges >= 0)) {
+			var grand_total = flt(row.total) + flt(row.total_taxes_and_charges)
+			frappe.model.set_value(cdt, cdn, "grand_total", grand_total)
+		}
+		frm.events.set_total_amount(frm)
+	},
+	total_taxes_and_charges(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		if ((row.total >= 0) || (row.total_taxes_and_charges >= 0)) {
+			var grand_total = flt(row.total) + flt(row.total_taxes_and_charges)
+			frappe.model.set_value(cdt, cdn, "grand_total", grand_total)
+		}
 		frm.events.set_total_amount(frm)
 	},
 

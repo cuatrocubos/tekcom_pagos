@@ -10,13 +10,16 @@
   "supplier",
   "column_break_n81go",
   "reference",
+  "purchase_invoice",
   "column_break_hsjtj",
-  "total",
-  "column_break_mdaop",
   "base_total",
+  "base_total_taxes_and_charges",
+  "base_grand_total",
+  "column_break_mdaop",
   "conversion_rate",
-  "account_section_break",
-  "expense_account",
+  "total",
+  "total_taxes_and_charges",
+  "grand_total",
   "accountind_dimensions_section_break",
   "project",
   "column_break_am4xr",
@@ -40,19 +43,8 @@
    "print_hide": 1
   },
   {
-   "fieldname": "expense_account",
-   "fieldtype": "Link",
-   "label": "Expense Account",
-   "options": "Account"
-  },
-  {
    "fieldname": "column_break_hsjtj",
    "fieldtype": "Section Break"
-  },
-  {
-   "fieldname": "account_section_break",
-   "fieldtype": "Section Break",
-   "label": "Account"
   },
   {
    "fieldname": "accountind_dimensions_section_break",
@@ -83,17 +75,15 @@
    "fieldname": "total",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Monto",
+   "label": "Total",
    "options": "currency",
    "reqd": 1
   },
   {
    "fieldname": "base_total",
    "fieldtype": "Currency",
-   "label": "Monto (Moneda Compa\u00f1\u00eda)",
-   "options": "Company:company:default_currency",
-   "print_hide": 1,
-   "read_only": 1
+   "label": "Total (Company Currency)",
+   "options": "Company:company:default_currency"
   },
   {
    "fieldname": "column_break_n81go",
@@ -114,12 +104,52 @@
    "label": "Expense Claim Type",
    "options": "Expense Claim Type",
    "reqd": 1
+  },
+  {
+   "fieldname": "purchase_invoice",
+   "fieldtype": "Link",
+   "label": "Factura de Compra",
+   "options": "Purchase Invoice"
+  },
+  {
+   "fieldname": "base_grand_total",
+   "fieldtype": "Currency",
+   "label": "Grand Total (Company Currency)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_taxes_and_charges",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Total Taxes and Charges",
+   "options": "currency",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "grand_total",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Grand Total",
+   "options": "currency",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "base_total_taxes_and_charges",
+   "fieldtype": "Currency",
+   "hidden": 1,
+   "label": "Total Taxes and Charges (Company Currency)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-07-13 20:09:14.048324",
+ "modified": "2023-09-01 10:19:49.685685",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Detalle de Gastos Varios",

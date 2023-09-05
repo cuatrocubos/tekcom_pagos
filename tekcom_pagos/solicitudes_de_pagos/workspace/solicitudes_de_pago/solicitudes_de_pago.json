@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"jE1MnhbbBw\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reportes y Maestros</span>\",\"col\":12}},{\"id\":\"UpdUR2ZUIY\",\"type\":\"card\",\"data\":{\"card_name\":\"Solicitud de Pago\",\"col\":4}},{\"id\":\"WwznTgvA6c\",\"type\":\"card\",\"data\":{\"card_name\":\"Presupuestos de Gastos\",\"col\":4}}]",
+ "content": "[{\"id\":\"jE1MnhbbBw\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reportes y Maestros</span>\",\"col\":12}},{\"id\":\"UpdUR2ZUIY\",\"type\":\"card\",\"data\":{\"card_name\":\"Solicitud de Pago\",\"col\":3}},{\"id\":\"WwznTgvA6c\",\"type\":\"card\",\"data\":{\"card_name\":\"Presupuestos de Gastos\",\"col\":3}},{\"id\":\"Iqhsy3QuEZ\",\"type\":\"card\",\"data\":{\"card_name\":\"Caja Chica\",\"col\":3}}]",
  "creation": "2023-07-13 20:18:56.392646",
  "custom_blocks": [],
  "docstatus": 0,
@@ -57,9 +57,27 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Caja Chica",
+   "link_count": 1,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Gastos Varios",
+   "link_count": 0,
+   "link_to": "Gastos Varios",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2023-07-13 20:29:41.404713",
+ "modified": "2023-09-01 08:41:41.496879",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitudes de Pago",
