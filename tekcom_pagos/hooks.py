@@ -7,6 +7,16 @@ app_description = "Sistema de Gestion de Gastos de Viaje y Solicitudes de Pagos"
 app_email = "jgiron@cuatrocubos.com"
 app_license = "MIT"
 
+fixtures = [
+  {
+    "dt": "Custom Field", "filters": [["module","like","Tekcom Pagos"]],
+    "dt": "Custom Field", "filters": [["module","like","Solicitudes de Pagos"]],
+    "dt": "Custom Field", "filters": [["module","like","Viaticos"]],
+    "dt": "Custom Field", "filters": [["module","like","Viaticos y Pagos"]],
+    "dt": "Print Format", "filters": [["module","like","Tekcom Pagos"]]
+  }
+]
+
 # Includes in <head>
 # ------------------
 
