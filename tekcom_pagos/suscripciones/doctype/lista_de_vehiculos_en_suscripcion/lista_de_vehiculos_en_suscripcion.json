@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-09-10 18:31:31.397054",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "vehiculo_de_cliente",
+  "fecha_ingreso"
+ ],
+ "fields": [
+  {
+   "fieldname": "vehiculo_de_cliente",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Vehiculo de Cliente",
+   "options": "Vehiculo de Cliente",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fecha_ingreso",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Fecha de Ingreso",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-09-10 18:34:35.188782",
+ "modified_by": "Administrator",
+ "module": "Suscripciones",
+ "name": "Lista de Vehiculos en Suscripcion",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
