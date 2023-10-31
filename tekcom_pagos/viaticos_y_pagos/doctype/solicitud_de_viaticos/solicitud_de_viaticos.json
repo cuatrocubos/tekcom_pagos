@@ -256,7 +256,7 @@
    "fieldname": "workflow_status",
    "fieldtype": "Select",
    "label": "Workflow Status",
-   "options": "\nBorrador\nPor Revisar\nPor Aprobar\nPor Pagar\nPagado\nCancelado\nRejected"
+   "options": "\nBorrador\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected"
   },
   {
    "fieldname": "naming_series",
@@ -269,7 +269,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-10 11:33:22.041243",
+ "modified": "2023-10-23 10:29:00.443180",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Solicitud de Viaticos",

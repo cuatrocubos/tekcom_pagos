@@ -7,10 +7,17 @@
  "engine": "InnoDB",
  "field_order": [
   "employee",
+  "base_asignacion_alimentacion",
+  "asignacion_alimentacion",
   "dias_viaje",
-  "asignacion_diaria",
-  "total_solicitado",
-  "base_asignacion_diaria"
+  "dia_viaje_1",
+  "dia_viaje_2",
+  "dia_viaje_3",
+  "dia_viaje_4",
+  "dia_viaje_5",
+  "dia_viaje_6",
+  "dia_viaje_7",
+  "total_solicitado"
  ],
  "fields": [
   {
@@ -22,43 +29,103 @@
    "reqd": 1
   },
   {
-   "fieldname": "asignacion_diaria",
-   "fieldtype": "Currency",
-   "in_list_view": 1,
-   "label": "Asignaci\u00f3n Diaria",
-   "options": "Currency",
-   "read_only_depends_on": "eval:doc.base_asignacion_diaria > 0",
-   "reqd": 1
-  },
-  {
    "fieldname": "total_solicitado",
    "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Total",
-   "options": "Currency",
+   "options": "Company:company:default_currency",
    "read_only": 1,
    "reqd": 1
   },
   {
-   "fieldname": "base_asignacion_diaria",
+   "fieldname": "dia_viaje_1",
+   "fieldtype": "Currency",
+   "label": "D\u00eda 1",
+   "options": "Company:company:default_currency",
+   "reqd": 1
+  },
+  {
+   "depends_on": "doc.dias_viaje >= 2",
+   "fieldname": "dia_viaje_2",
+   "fieldtype": "Currency",
+   "label": "D\u00eda 2",
+   "mandatory_depends_on": "doc.dias_viaje >= 2",
+   "options": "Company:company:default_currency",
+   "read_only_depends_on": "doc.dias_viaje < 2"
+  },
+  {
+   "depends_on": "doc.dias_viaje >= 3",
+   "fieldname": "dia_viaje_3",
+   "fieldtype": "Currency",
+   "label": "D\u00eda 3",
+   "mandatory_depends_on": "doc.dias_viaje >= 3",
+   "options": "Company:company:default_currency",
+   "read_only_depends_on": "doc.dias_viaje < 3"
+  },
+  {
+   "depends_on": "doc.dias_viaje >= 4",
+   "fieldname": "dia_viaje_4",
+   "fieldtype": "Currency",
+   "label": "D\u00eda 4",
+   "mandatory_depends_on": "doc.dias_viaje >= 4",
+   "options": "Company:company:default_currency",
+   "read_only_depends_on": "doc.dias_viaje < 4"
+  },
+  {
+   "depends_on": "doc.dias_viaje >= 5",
+   "fieldname": "dia_viaje_5",
+   "fieldtype": "Currency",
+   "label": "D\u00eda 5",
+   "mandatory_depends_on": "doc.dias_viaje >= 5",
+   "options": "Company:company:default_currency",
+   "read_only_depends_on": "doc.dias_viaje < 5"
+  },
+  {
+   "depends_on": "doc.dias_viaje >= 6",
+   "fieldname": "dia_viaje_6",
+   "fieldtype": "Currency",
+   "label": "D\u00eda 6",
+   "mandatory_depends_on": "doc.dias_viaje >= 6",
+   "options": "Company:company:default_currency",
+   "read_only_depends_on": "doc.dias_viaje < 6"
+  },
+  {
+   "depends_on": "doc.dias_viaje >= 7",
+   "fieldname": "dia_viaje_7",
+   "fieldtype": "Currency",
+   "label": "D\u00eda 7",
+   "mandatory_depends_on": "doc.dias_viaje >= 7",
+   "options": "Company:company:default_currency",
+   "read_only_depends_on": "doc.dias_viaje < 7"
+  },
+  {
+   "fieldname": "base_asignacion_alimentacion",
    "fieldtype": "Currency",
    "hidden": 1,
-   "label": "Base Asignacion Diaria",
+   "label": "Base Asignaci\u00f3n Alimentaci\u00f3n",
    "no_copy": 1,
    "print_hide": 1
   },
   {
+   "fieldname": "asignacion_alimentacion",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Asignaci\u00f3n por Tiempo",
+   "options": "Company:company:default_currency"
+  },
+  {
+   "default": "1",
    "fieldname": "dias_viaje",
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "D\u00edas de Viaje",
-   "reqd": 1
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-07-13 20:01:00.239206",
+ "modified": "2023-10-27 13:25:43.481914",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Personas de Solicitud de Viaticos",
