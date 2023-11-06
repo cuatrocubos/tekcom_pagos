@@ -65,7 +65,8 @@
   "remarks",
   "column_break_nxoca",
   "bank",
-  "bank_account_no"
+  "bank_account_no",
+  "documentos_adjuntos"
  ],
  "fields": [
   {
@@ -310,7 +311,7 @@
    "in_standard_filter": 1,
    "label": "Workflow Status",
    "no_copy": 1,
-   "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected",
+   "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected\nEntregado a Contabilidad",
    "print_hide": 1,
    "read_only": 1
   },
@@ -466,12 +467,19 @@
    "label": "Departamento Solicitante",
    "options": "Department",
    "reqd": 1
+  },
+  {
+   "fieldname": "documentos_adjuntos",
+   "fieldtype": "Select",
+   "label": "Documentos Adjuntos",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Pagado\")",
+   "options": "\nSin Comprobantes\nCon Copias\nDocumentaci\u00f3n Completa"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-06 08:30:08.188025",
+ "modified": "2023-11-06 14:03:41.705563",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",

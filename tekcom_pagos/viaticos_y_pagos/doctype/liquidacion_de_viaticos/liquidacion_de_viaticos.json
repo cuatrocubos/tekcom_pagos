@@ -29,7 +29,6 @@
   "solicitante",
   "mode_of_payment",
   "bank_account",
-  "currency",
   "detalle_liquidacion_section",
   "detalle_liquidacion",
   "totales_section",
@@ -167,20 +166,15 @@
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "label": "Mode of Payment",
+   "no_copy": 1,
    "options": "Mode of Payment"
   },
   {
    "fieldname": "bank_account",
    "fieldtype": "Link",
    "label": "Bank Account",
+   "no_copy": 1,
    "options": "Bank Account"
-  },
-  {
-   "fieldname": "currency",
-   "fieldtype": "Link",
-   "label": "Currency",
-   "options": "Currency",
-   "reqd": 1
   },
   {
    "fieldname": "detalle_liquidacion_section",
@@ -216,12 +210,14 @@
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
+   "no_copy": 1,
    "options": "\nDraft\nSubmitted\nCancelled"
   },
   {
    "fieldname": "workflow_status",
    "fieldtype": "Select",
    "label": "Workflow Status",
+   "no_copy": 1,
    "options": "\nBorrador\nPor Revisar\nPor Aprobar\nPor Pagar\nPagado\nCancelado\nRechazado"
   },
   {
@@ -264,7 +260,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-06 09:15:38.997060",
+ "modified": "2023-11-06 09:44:34.266538",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Liquidacion de Viaticos",

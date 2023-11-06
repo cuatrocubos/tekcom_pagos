@@ -51,7 +51,8 @@
   "column_break_98leh",
   "bank",
   "bank_account_no",
-  "amended_from"
+  "amended_from",
+  "documentos_adjuntos"
  ],
  "fields": [
   {
@@ -181,18 +182,21 @@
    "fieldtype": "Select",
    "hidden": 1,
    "label": "Status",
+   "no_copy": 1,
    "options": "\nDraft\nSubmitted\nCancelled",
    "print_hide": 1
   },
   {
    "fieldname": "bank",
    "fieldtype": "Read Only",
-   "label": "Bank"
+   "label": "Bank",
+   "no_copy": 1
   },
   {
    "fieldname": "bank_account_no",
    "fieldtype": "Read Only",
-   "label": "Bank Account No"
+   "label": "Bank Account No",
+   "no_copy": 1
   },
   {
    "fieldname": "column_break_8kxc3",
@@ -253,6 +257,7 @@
    "fieldtype": "Select",
    "hidden": 1,
    "label": "Workflow Status",
+   "no_copy": 1,
    "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected"
   },
   {
@@ -289,6 +294,7 @@
    "fieldtype": "Link",
    "label": "Mode of Payment",
    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+   "no_copy": 1,
    "options": "Mode of Payment",
    "read_only_depends_on": "eval:doc.workflow_status!=\"Approved\""
   },
@@ -302,6 +308,7 @@
    "fieldtype": "Data",
    "label": "Cheque/Reference No",
    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+   "no_copy": 1,
    "read_only_depends_on": "eval:doc.workflow_status!=\"Approved\""
   },
   {
@@ -310,6 +317,7 @@
    "fieldtype": "Date",
    "label": "Cheque/Reference Date",
    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+   "no_copy": 1,
    "read_only_depends_on": "eval:doc.workflow_status!=\"Approved\""
   },
   {
@@ -329,12 +337,19 @@
    "no_copy": 1,
    "options": "User",
    "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Revisado\")"
+  },
+  {
+   "fieldname": "documentos_adjuntos",
+   "fieldtype": "Select",
+   "label": "Documentos Adjuntos",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Pagado\")",
+   "options": "\nSin Comprobantes\nCon Copias\nDocumentaci\u00f3n Completa"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-03 10:18:51.021819",
+ "modified": "2023-11-06 14:04:13.266112",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Solicitud de Viaticos",
