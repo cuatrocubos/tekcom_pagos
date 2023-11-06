@@ -8,13 +8,8 @@ app_email = "jgiron@cuatrocubos.com"
 app_license = "MIT"
 
 fixtures = [
-  {
-    "dt": "Custom Field", "filters": [["module","like","Tekcom Pagos"]],
-    "dt": "Custom Field", "filters": [["module","like","Solicitudes de Pagos"]],
-    "dt": "Custom Field", "filters": [["module","like","Viaticos"]],
-    "dt": "Custom Field", "filters": [["module","like","Viaticos y Pagos"]],
-    "dt": "Print Format", "filters": [["module","like","Tekcom Pagos"]]
-  }
+  { "dt": "Print Format", "filters": [["module","in",["Tekcom Pagos"]]] },
+  { "dt": "Custom Field", "filters": [["module","in",["Tekcom Pagos","Solicitudes de Pagos","Viaticos y Pagos","Viaticos"]]] }
 ]
 
 # Includes in <head>

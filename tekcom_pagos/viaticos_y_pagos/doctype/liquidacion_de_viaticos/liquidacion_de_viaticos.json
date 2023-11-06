@@ -20,7 +20,7 @@
   "fecha_liquidacion",
   "fecha_salida",
   "fecha_retorno",
-  "lugar",
+  "lugar_viaje",
   "accounting_dimensions_section",
   "project",
   "column_break_hprpf",
@@ -129,15 +129,6 @@
    "fieldtype": "Datetime",
    "label": "Fecha Real Retorno",
    "reqd": 1
-  },
-  {
-   "depends_on": "eval:doc.solicitud_viaticos",
-   "fetch_from": "solicitud_viaticos.lugar_viaje",
-   "fetch_if_empty": 1,
-   "fieldname": "lugar",
-   "fieldtype": "Data",
-   "label": "Lugar",
-   "options": "solicitud_viaticos.lugar"
   },
   {
    "fieldname": "accounting_dimensions_section",
@@ -259,12 +250,21 @@
   {
    "fieldname": "column_break_bfu1x",
    "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.solicitud_viaticos",
+   "fetch_from": "solicitud_viaticos.lugar_viaje",
+   "fetch_if_empty": 1,
+   "fieldname": "lugar_viaje",
+   "fieldtype": "Data",
+   "label": "Lugar",
+   "options": "solicitud_viaticos.lugar"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-13 20:01:00.869168",
+ "modified": "2023-11-06 09:15:38.997060",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Liquidacion de Viaticos",

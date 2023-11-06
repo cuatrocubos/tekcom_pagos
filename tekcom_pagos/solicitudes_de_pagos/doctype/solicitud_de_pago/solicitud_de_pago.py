@@ -18,6 +18,8 @@ from erpnext.setup.utils import get_exchange_rate
 import json
 from functools import reduce
 
+from hrms.hr.utils import validate_active_employee
+
 class SolicituddePago(Document):
   # def set_indicator(self):
   #   if getdate(self.due_date) >= getdate(nowdate()):
@@ -29,14 +31,27 @@ class SolicituddePago(Document):
   #   else:
   #     self.indicator_color = "green"
   #     self.indicator_title = _("Paid")
-  pass
+  def before_save(self):
+    print ('workflow status', self.workflow_status)
+    if self.workflow_status == 'Rejected':
+      self.revisado_por = ''
+      self.aprobado_por = ''
+      self.mode_of_payment = ''
+      self.reference_no = ''
+      self.reference_date = ''
+      # update_presupuesto_monto_aprobado(self)
+  
+  def validate(self):
+    validate_active_employee(self.solicitante)	
 
 @frappe.whitelist()
 def get_constancia_pago_cuenta(party_type, party, date):
   fecha_vencimiento_constancia_pago_cuenta = None
   _party = frappe.get_doc(party_type, party).as_dict()
-  _constancias = _party.constancias_pago_a_cuenta
+  if party_type == 'Employee':
+    pass
   
+  _constancias = _party.custom_constancias_pago_a_cuenta
   if len(_constancias) == 0:
     pass
   if len(_constancias) == 1:
@@ -57,7 +72,7 @@ def get_party_details(company, party_type, party, date, cost_center=None):
   _party_name = "title" if party_type == "Shareholder" else party_type.lower() + "_name"
   party_name = frappe.db.get_value(party_type, party, _party_name)
   party_balance = get_balance_on(party_type=party_type, party=party, cost_center=cost_center)
-  if party_type in ["Customer", "Supplier", "Employee"]:
+  if party_type in ["Customer", "Supplier"]:
     bank_account = get_party_bank_account(party_type, party)
     
   return {
@@ -83,7 +98,7 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
   
   if not total_amount:
     if party_account_currency == company_currency:
-      total_amount = ref_doc.get("grand_total") or ref_doc.get("base_grand_total")
+      total_amount = ref_doc.get("base_grand_total") or ref_doc.get("base_grand_total")
       exchange_rate = 1
     else:
       total_amount = ref_doc.get("grand_total")

@@ -26,6 +26,8 @@
   "cuadrilla",
   "column_break_qblyq",
   "nombre_solicitante",
+  "depositar_a",
+  "depositar_a_cuenta",
   "section_break_usxgk",
   "personas",
   "detalle_de_gastos_section",
@@ -34,14 +36,19 @@
   "total_anticipo_solicitado",
   "column_break_3qmp3",
   "total_anticipo_aprobado",
+  "transaction_id_section",
+  "mode_of_payment",
+  "column_break_mjann",
+  "reference_no",
+  "reference_date",
   "more_information_section",
+  "revisado_por",
+  "aprobado_por",
   "status",
   "workflow_status",
   "custom_remarks",
   "remarks",
   "column_break_98leh",
-  "letter_head",
-  "print_heading",
   "bank",
   "bank_account_no",
   "amended_from"
@@ -172,21 +179,10 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Status",
    "options": "\nDraft\nSubmitted\nCancelled",
    "print_hide": 1
-  },
-  {
-   "fieldname": "letter_head",
-   "fieldtype": "Link",
-   "label": "Letter Head",
-   "options": "Letter Head"
-  },
-  {
-   "fieldname": "print_heading",
-   "fieldtype": "Link",
-   "label": "Print Heading",
-   "options": "Print Heading"
   },
   {
    "fieldname": "bank",
@@ -255,8 +251,9 @@
   {
    "fieldname": "workflow_status",
    "fieldtype": "Select",
+   "hidden": 1,
    "label": "Workflow Status",
-   "options": "\nBorrador\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected"
+   "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected"
   },
   {
    "fieldname": "naming_series",
@@ -264,12 +261,80 @@
    "label": "Naming Series",
    "options": "GA-FO-001-.YYYY.-",
    "reqd": 1
+  },
+  {
+   "fieldname": "depositar_a",
+   "fieldtype": "Link",
+   "label": "Depositar a",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.depositar_a",
+   "fieldname": "depositar_a_cuenta",
+   "fieldtype": "Link",
+   "label": "Depositar a Cuenta",
+   "options": "Bank Account",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
+   "fieldname": "transaction_id_section",
+   "fieldtype": "Section Break",
+   "label": "Transaction ID"
+  },
+  {
+   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode of Payment",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+   "options": "Mode of Payment",
+   "read_only_depends_on": "eval:doc.workflow_status!=\"Approved\""
+  },
+  {
+   "fieldname": "column_break_mjann",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
+   "fieldname": "reference_no",
+   "fieldtype": "Data",
+   "label": "Cheque/Reference No",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+   "read_only_depends_on": "eval:doc.workflow_status!=\"Approved\""
+  },
+  {
+   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
+   "fieldname": "reference_date",
+   "fieldtype": "Date",
+   "label": "Cheque/Reference Date",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+   "read_only_depends_on": "eval:doc.workflow_status!=\"Approved\""
+  },
+  {
+   "fieldname": "revisado_por",
+   "fieldtype": "Link",
+   "label": "Revisado por",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Solicitado\")",
+   "no_copy": 1,
+   "options": "User",
+   "read_only_depends_on": "eval:(doc.company && doc.workflow_status !=\"Solicitado\")"
+  },
+  {
+   "fieldname": "aprobado_por",
+   "fieldtype": "Link",
+   "label": "Aprobado por",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Revisado\")",
+   "no_copy": 1,
+   "options": "User",
+   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Revisado\")"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-10-23 10:29:00.443180",
+ "modified": "2023-11-03 10:18:51.021819",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Solicitud de Viaticos",

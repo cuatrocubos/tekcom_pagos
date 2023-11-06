@@ -6,7 +6,6 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "expense_claim_type",
   "reference_doctype",
   "reference_name",
   "due_date",
@@ -102,20 +101,12 @@
    "label": "Exchange Gain/Loss",
    "options": "Company:company:default_currency",
    "read_only": 1
-  },
-  {
-   "fieldname": "expense_claim_type",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Expense Claim Type",
-   "options": "Expense Claim Type",
-   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-07-13 20:08:19.440920",
+ "modified": "2023-11-03 11:21:23.482100",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Comprobante de Solicitud de Pago",

@@ -1,13 +1,13 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2023-06-26 18:53:57.093205",
+ "creation": "2023-06-26 19:14:30.266898",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "numero_constancia",
-  "periodo",
+  "fecha_emision",
   "fecha_vencimiento",
   "adjuntar"
  ],
@@ -15,15 +15,14 @@
   {
    "fieldname": "numero_constancia",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "N\u00famero de Constancia",
+   "label": "N\u00famero Constancia",
    "reqd": 1
   },
   {
-   "fieldname": "periodo",
-   "fieldtype": "Int",
+   "fieldname": "fecha_emision",
+   "fieldtype": "Date",
    "in_list_view": 1,
-   "label": "Periodo",
+   "label": "Fecha de Emisi\u00f3n",
    "reqd": 1
   },
   {
@@ -44,10 +43,10 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-06-26 18:53:57.093205",
+ "modified": "2023-11-03 10:32:55.089568",
  "modified_by": "Administrator",
- "module": "Viaticos y Pagos",
- "name": "Constancias Pago a Cuenta",
+ "module": "Solicitudes de Pagos",
+ "name": "Constancias Registro Exonerados",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",

@@ -8,21 +8,26 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "naming_series",
   "company",
-  "solicitante",
-  "column_break_kh1e3",
+  "column_break_wtwdj",
+  "naming_series",
+  "detalles_section_break",
   "fecha_solicitud",
   "fecha_vencimiento",
-  "column_break_wqz7e",
-  "mode_of_payment",
+  "column_break_kh1e3",
+  "solicitante",
+  "departamento_solicitante",
   "bank_account",
+  "detalle_section_break",
+  "descripcion",
+  "accounting_dimensions_section_break",
+  "cost_center",
+  "column_break_c3a1o",
+  "project",
   "divisa_section",
   "currency",
   "column_break_z1fii",
   "exchange_rate",
-  "detalle_section_break",
-  "descripcion",
   "beneficiario_section_break",
   "party_type",
   "party",
@@ -34,9 +39,9 @@
   "contact_email",
   "party_bank_account",
   "section_break_rzd7g",
-  "monto_pagar",
+  "monto_solicitado",
   "column_break_x32ub",
-  "monto_pagar_base",
+  "monto_solicitado_base",
   "comprobantes_section",
   "references",
   "write_off_section",
@@ -47,40 +52,22 @@
   "difference_amount",
   "amended_from",
   "transaction_references",
-  "reference_no",
+  "mode_of_payment",
   "column_break_fwkqf",
+  "reference_no",
   "reference_date",
   "more_information_section",
+  "revisado_por",
+  "aprobado_por",
   "status",
   "workflow_status",
   "custom_remarks",
   "remarks",
   "column_break_nxoca",
   "bank",
-  "bank_account_no",
-  "title"
+  "bank_account_no"
  ],
  "fields": [
-  {
-   "bold": 1,
-   "depends_on": "eval:(doc.mode_of_payment && doc.workflow_status == \"Por Pagar\")",
-   "fieldname": "monto_pagar",
-   "fieldtype": "Currency",
-   "in_list_view": 1,
-   "label": "Monto a Pagar",
-   "options": "currency",
-   "read_only": 1,
-   "reqd": 1
-  },
-  {
-   "fieldname": "monto_pagar_base",
-   "fieldtype": "Currency",
-   "label": "Monto a Pagar (Moneda Compa\u00f1\u00eda)",
-   "options": "Company:company:default_currency",
-   "print_hide": 1,
-   "read_only": 1,
-   "reqd": 1
-  },
   {
    "fieldname": "currency",
    "fieldtype": "Link",
@@ -106,13 +93,14 @@
    "reqd": 1
   },
   {
-   "allow_on_submit": 1,
+   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Mode of Payment",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
    "options": "Mode of Payment",
-   "reqd": 1
+   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
   },
   {
    "fieldname": "fecha_solicitud",
@@ -160,10 +148,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "column_break_wqz7e",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "solicitante",
    "fieldtype": "Link",
    "label": "Solicitante",
@@ -177,13 +161,12 @@
   {
    "fieldname": "descripcion",
    "fieldtype": "Long Text",
-   "label": "Descripci\u00f3n",
+   "label": "Concepto",
    "max_height": "75px"
   },
   {
    "fieldname": "detalle_section_break",
-   "fieldtype": "Section Break",
-   "label": "Detalles"
+   "fieldtype": "Section Break"
   },
   {
    "depends_on": "eval:(doc.party)",
@@ -223,31 +206,36 @@
   },
   {
    "bold": 1,
-   "depends_on": "eval:doc.mode_of_payment",
+   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
    "fieldname": "reference_no",
    "fieldtype": "Data",
-   "label": "Cheque/Reference No"
+   "label": "Cheque/Reference No",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
   },
   {
-   "depends_on": "eval:doc.mode_of_payment",
+   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
    "fieldname": "reference_date",
    "fieldtype": "Date",
-   "label": "Cheque/Reference Date"
+   "label": "Cheque/Reference Date",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
   },
   {
    "default": "Draft",
    "fieldname": "status",
    "fieldtype": "Select",
+   "hidden": 1,
    "in_standard_filter": 1,
    "label": "Status",
    "length": 30,
    "no_copy": 1,
-   "options": "\nDraft\nSubmitted\nPaid\nUnpaid\nOverdue\nCancelled",
+   "options": "\nDraft\nSubmitted\nCancelled",
    "print_hide": 1,
    "read_only": 1
   },
   {
-   "depends_on": "eval:(doc.mode_of_payment && doc.workflow_status == \"Por Pagar\")",
+   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
    "fieldname": "transaction_references",
    "fieldtype": "Section Break",
    "label": "Transaction ID"
@@ -290,20 +278,14 @@
   {
    "fieldname": "bank",
    "fieldtype": "Read Only",
+   "hidden": 1,
    "label": "Bank"
   },
   {
    "fieldname": "bank_account_no",
    "fieldtype": "Read Only",
-   "label": "Bank Account No"
-  },
-  {
-   "fieldname": "title",
-   "fieldtype": "Data",
    "hidden": 1,
-   "label": "Title",
-   "print_hide": 1,
-   "read_only": 1
+   "label": "Bank Account No"
   },
   {
    "fieldname": "column_break_fwkqf",
@@ -321,13 +303,14 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Borrador",
+   "default": "Draft",
    "fieldname": "workflow_status",
    "fieldtype": "Select",
+   "hidden": 1,
    "in_standard_filter": 1,
    "label": "Workflow Status",
    "no_copy": 1,
-   "options": "\nBorrador\nPor Revisar\nPor Aprobar\nPor Pagar\nPagado\nCancelado\nRejected",
+   "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected",
    "print_hide": 1,
    "read_only": 1
   },
@@ -336,7 +319,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval:(doc.party)",
    "fieldname": "section_break_rzd7g",
    "fieldtype": "Section Break",
    "label": "Amount"
@@ -409,12 +391,87 @@
    "fieldtype": "Date",
    "label": "Fecha Vencimiento Constancia Pago a Cuenta",
    "read_only": 1
+  },
+  {
+   "fieldname": "detalles_section_break",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Detalles"
+  },
+  {
+   "fieldname": "column_break_wtwdj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "monto_solicitado_base",
+   "fieldtype": "Currency",
+   "label": "Monto Solicitado (Moneda Compa\u00f1\u00eda)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "monto_solicitado",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Monto Solicitado",
+   "options": "currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "accounting_dimensions_section_break",
+   "fieldtype": "Section Break",
+   "label": "Accounting Dimensions"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "label": "Cost Center",
+   "options": "Cost Center",
+   "reqd": 1
+  },
+  {
+   "fieldname": "project",
+   "fieldtype": "Link",
+   "label": "Project",
+   "options": "Project"
+  },
+  {
+   "fieldname": "column_break_c3a1o",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "revisado_por",
+   "fieldtype": "Link",
+   "label": "Revisado por",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Solicitado\")",
+   "no_copy": 1,
+   "options": "User",
+   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Solicitado\")"
+  },
+  {
+   "fieldname": "aprobado_por",
+   "fieldtype": "Link",
+   "label": "Aprobado por",
+   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Revisado\")",
+   "no_copy": 1,
+   "options": "User",
+   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Revisado\")"
+  },
+  {
+   "fieldname": "departamento_solicitante",
+   "fieldtype": "Link",
+   "label": "Departamento Solicitante",
+   "options": "Department",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-13 22:58:57.426475",
+ "modified": "2023-11-06 08:30:08.188025",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",

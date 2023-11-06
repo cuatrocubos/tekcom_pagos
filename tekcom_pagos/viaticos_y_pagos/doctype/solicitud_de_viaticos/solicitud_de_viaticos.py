@@ -5,6 +5,8 @@ import frappe
 from frappe import ValidationError, _, qb, scrub, throw
 from frappe.utils import cint, comma_or, flt, getdate, nowdate
 from frappe.model.document import Document
+from frappe.model.mapper import get_mapped_doc
+# from frappe.core.doctype import Role
 
 import erpnext
 from erpnext.accounts.utils import get_fiscal_year
@@ -18,9 +20,32 @@ class SolicituddeViaticos(Document):
   #   for presupuesto_disponible, presupuesto_gastos in presupuesto.items():
       
   #     get_presupuesto_disponible(self.fecha_solicitud, self.cost_center)
+  def before_save(self):
+    print ('workflow status', self.workflow_status)
+    if self.workflow_status == 'Rejected':
+      self.revisado_por = ''
+      self.aprobado_por = ''
+      self.mode_of_payment = ''
+      self.reference_no = ''
+      self.reference_date = ''
+      update_presupuesto_monto_aprobado(self)
   
   def validate(self):
     validate_active_employee(self.solicitante)	
+    
+
+def update_presupuesto_monto_aprobado(self):
+  for linea in self.presupuesto:
+    print('monto_aprobado',linea.monto_aprobado)
+    linea.monto_aprobado = 0
+    
+@frappe.whitelist()
+def get_users_by_role(role):
+  usuarios = []
+  usuarios = frappe.get_all(
+    "Has Role", filters={"role": role, "parenttype": "User"}, fields=["parent"]
+  )
+  return usuarios
 
 @frappe.whitelist()
 def get_cuadrillas_solicitante(company, employee):
@@ -78,3 +103,23 @@ def get_presupuesto_disponible(company, fecha, cost_center):
 	)
   
   return presupuesto_de_centro_costos
+
+@frappe.whitelist()
+def make_liquidacion_viaticos(source_name, target_doc=None):
+  doc = get_mapped_doc(
+    "Solicitud de Viaticos",
+    source_name,
+    {
+      "Solicitud de Viaticos": {
+        "doctype": "Liquidacion de Viaticos",
+        "field_map": {},
+      },
+      "Presupuesto Solicitud de Viaticos": {
+        "doctype": "Detalle de Liquidacion de Viaticos",
+        "field_map": {},
+      }
+    },
+    target_doc
+  )
+  
+  return doc
