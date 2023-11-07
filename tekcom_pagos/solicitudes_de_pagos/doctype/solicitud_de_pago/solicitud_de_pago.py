@@ -74,6 +74,7 @@ def get_party_details(company, party_type, party, date, cost_center=None):
   party_balance = get_balance_on(party_type=party_type, party=party, cost_center=cost_center)
   if party_type in ["Customer", "Supplier"]:
     bank_account = get_party_bank_account(party_type, party)
+    party_tax_id = frappe.db.get_value(party_type, party, "tax_id")
     
   return {
 		"party_account": party_account,
@@ -82,6 +83,7 @@ def get_party_details(company, party_type, party, date, cost_center=None):
 		"party_balance": party_balance,
 		"account_balance": account_balance,
 		"bank_account": bank_account,
+    "party_tax_id": party_tax_id
 	}
   
 @frappe.whitelist()

@@ -37,6 +37,7 @@
   "column_break_cbqbb",
   "contact_person",
   "contact_email",
+  "party_tax_id",
   "party_bank_account",
   "section_break_rzd7g",
   "monto_solicitado",
@@ -474,12 +475,18 @@
    "label": "Documentos Adjuntos",
    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Pagado\")",
    "options": "\nSin Comprobantes\nCon Copias\nDocumentaci\u00f3n Completa"
+  },
+  {
+   "depends_on": "party",
+   "fieldname": "party_tax_id",
+   "fieldtype": "Data",
+   "label": "Tax ID"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-06 14:03:41.705563",
+ "modified": "2023-11-07 13:59:41.575602",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",

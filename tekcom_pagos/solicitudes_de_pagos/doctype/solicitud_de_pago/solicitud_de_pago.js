@@ -400,6 +400,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 							() => frm.set_value("party_name", r.message.party_name),
 							() => frm.events.hide_unhide_fields(frm),
 							() => frm.events.set_dynamic_labels(frm),
+							() => frm.set_value("party_tax_id", r.message.party_tax_id),
 							() => {
 								if (r.message.bank_account) {
 									frm.set_value("bank_account", r.message.party_bank_account);
