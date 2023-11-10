@@ -7,11 +7,9 @@ frappe.ui.form.on('Solicitud de Pago', {
 	onload: function(frm) {
 		erpnext.accounts.dimensions.setup_dimension_filters(frm, frm.doctype)
 		if (frm.doc.workflow_status == 'Revisado') {
-			frappe.meta.get_docfield("Presupuesto Solicitud de Viaticos", "monto_aprobado", frm.doc.name).reqd=1
-			frappe.meta.get_docfield("Presupuesto Solicitud de Viaticos", "monto_aprobado", frm.doc.name).read_only=0
+			
 		} else {
-			frappe.meta.get_docfield("Presupuesto Solicitud de Viaticos", "monto_aprobado", frm.doc.name).reqd=0
-			frappe.meta.get_docfield("Presupuesto Solicitud de Viaticos", "monto_aprobado", frm.doc.name).read_only=1
+			
 		}
 		frm.refresh_fields()
 	},
