@@ -364,6 +364,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 		}
 
 		if (frm.doc.party_type && frm.doc.party && frm.doc.company) {
+			console.log(frm.doc)
 			if (!frm.doc.fecha_solicitud) {
 				frappe.msgprint(__("Por favor seleccione fecha de solicitud antes de seleccionar el Tercero"))
 				frm.set_value("party", "");

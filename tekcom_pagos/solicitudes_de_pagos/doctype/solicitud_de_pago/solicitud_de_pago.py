@@ -32,9 +32,10 @@ class SolicituddePago(Document):
   #     self.indicator_color = "green"
   #     self.indicator_title = _("Paid")
   def before_save(self):
-    print ('workflow status', self.workflow_status)
     if self.workflow_status == 'Rejected':
       self.revisado_por = ''
+      self.fecha_hora_revision = ''
+      self.fecha_hora_aprobacion = ''
       self.aprobado_por = ''
       self.mode_of_payment = ''
       self.reference_no = ''
@@ -42,7 +43,15 @@ class SolicituddePago(Document):
       # update_presupuesto_monto_aprobado(self)
   
   def validate(self):
-    validate_active_employee(self.solicitante)	
+    validate_active_employee(self.solicitante)
+    if (self.workflow_status) == 'Revisado':
+      self.fecha_hora_revision = frappe.utils.now_datetime()
+      if self.revisado_por == None or self.revisado_por == '':
+        frappe.throw(_("Seleccione un revisor para el documento"), frappe.ValidationError)
+    if (self.workflow_status) == 'Approved':
+      self.fecha_hora_aprobacion = frappe.utils.now_datetime()
+      if self.aprobado_por == None or self.aprobado_por == '':
+        frappe.throw(_("Seleccione un aprobador para el documento"), frappe.ValidationError)
 
 @frappe.whitelist()
 def get_constancia_pago_cuenta(party_type, party, date):
@@ -75,6 +84,8 @@ def get_party_details(company, party_type, party, date, cost_center=None):
   if party_type in ["Customer", "Supplier"]:
     bank_account = get_party_bank_account(party_type, party)
     party_tax_id = frappe.db.get_value(party_type, party, "tax_id")
+  else:
+    party_tax_id = frappe.db.get_value(party_type, party, "numero_dni")
     
   return {
 		"party_account": party_account,

@@ -44,6 +44,7 @@
   "column_break_x32ub",
   "monto_solicitado_base",
   "comprobantes_section",
+  "documentos_adjuntos",
   "references",
   "write_off_section",
   "total_allocated_amount",
@@ -67,7 +68,8 @@
   "column_break_nxoca",
   "bank",
   "bank_account_no",
-  "documentos_adjuntos"
+  "fecha_hora_revision",
+  "fecha_hora_aprobacion"
  ],
  "fields": [
   {
@@ -448,7 +450,7 @@
    "fieldname": "revisado_por",
    "fieldtype": "Link",
    "label": "Revisado por",
-   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Solicitado\")",
+   "mandatory_depends_on": "eval:(doc.company && (doc.workflow_status == \"Solicitado\" || doc.workflow_status == \"Revisado\"))",
    "no_copy": 1,
    "options": "User",
    "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Solicitado\")"
@@ -481,12 +483,24 @@
    "fieldname": "party_tax_id",
    "fieldtype": "Data",
    "label": "Tax ID"
+  },
+  {
+   "fieldname": "fecha_hora_revision",
+   "fieldtype": "Datetime",
+   "label": "Fecha y Hora Revisi\u00f3n",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fecha_hora_aprobacion",
+   "fieldtype": "Datetime",
+   "label": "Fecha y Hora Aprobaci\u00f3n",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-07 13:59:41.575602",
+ "modified": "2023-11-11 20:25:15.227668",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",
