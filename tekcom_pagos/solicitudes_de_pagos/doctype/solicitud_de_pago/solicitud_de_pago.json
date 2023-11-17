@@ -39,6 +39,8 @@
   "contact_email",
   "party_tax_id",
   "party_bank_account",
+  "bank",
+  "bank_account_no",
   "section_break_rzd7g",
   "monto_solicitado",
   "column_break_x32ub",
@@ -66,8 +68,6 @@
   "custom_remarks",
   "remarks",
   "column_break_nxoca",
-  "bank",
-  "bank_account_no",
   "fecha_hora_revision",
   "fecha_hora_aprobacion"
  ],
@@ -187,9 +187,9 @@
    "options": "Bank Account"
   },
   {
-   "depends_on": "party",
    "fieldname": "party_bank_account",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Party Bank Account",
    "options": "Bank Account"
   },
@@ -281,14 +281,13 @@
   },
   {
    "fieldname": "bank",
-   "fieldtype": "Read Only",
-   "hidden": 1,
-   "label": "Bank"
+   "fieldtype": "Link",
+   "label": "Bank",
+   "options": "Bank"
   },
   {
    "fieldname": "bank_account_no",
-   "fieldtype": "Read Only",
-   "hidden": 1,
+   "fieldtype": "Data",
    "label": "Bank Account No"
   },
   {
@@ -500,7 +499,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-11 20:25:15.227668",
+ "modified": "2023-11-17 15:43:59.960134",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",
