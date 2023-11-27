@@ -201,12 +201,11 @@
    "options": "Contact"
   },
   {
-   "depends_on": "contact_person",
+   "depends_on": "party",
    "fieldname": "contact_email",
    "fieldtype": "Data",
    "label": "Email",
-   "options": "Email",
-   "read_only": 1
+   "options": "Email"
   },
   {
    "bold": 1,
@@ -499,7 +498,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-17 15:43:59.960134",
+ "modified": "2023-11-27 11:10:07.886215",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",
