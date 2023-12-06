@@ -71,6 +71,7 @@ def get_constancia_pago_cuenta(party_type, party, date):
 @frappe.whitelist()
 def get_party_details(company, party_type, party, date, cost_center=None):
   bank_account = ""
+  bank = ""
   if not frappe.db.exists(party_type, party):
     frappe.throw(_("Invalid {0}: {1}").format(party_type, party))
     
@@ -86,6 +87,8 @@ def get_party_details(company, party_type, party, date, cost_center=None):
     party_tax_id = frappe.db.get_value(party_type, party, "tax_id")
   else:
     party_tax_id = frappe.db.get_value(party_type, party, "numero_dni")
+    bank_account = frappe.db.get_value(party_type, party, "bank_ac_no")
+    bank = frappe.db.get_value(party_type, party, "bank_name")
     
   return {
 		"party_account": party_account,
@@ -94,6 +97,7 @@ def get_party_details(company, party_type, party, date, cost_center=None):
 		"party_balance": party_balance,
 		"account_balance": account_balance,
 		"bank_account": bank_account,
+		"bank": bank,
     "party_tax_id": party_tax_id
 	}
   

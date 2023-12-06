@@ -39,8 +39,6 @@
   "contact_email",
   "party_tax_id",
   "party_bank_account",
-  "bank",
-  "bank_account_no",
   "section_break_rzd7g",
   "monto_solicitado",
   "column_break_x32ub",
@@ -68,6 +66,8 @@
   "custom_remarks",
   "remarks",
   "column_break_nxoca",
+  "bank",
+  "bank_account_no",
   "fecha_hora_revision",
   "fecha_hora_aprobacion"
  ],
@@ -187,9 +187,9 @@
    "options": "Bank Account"
   },
   {
+   "depends_on": "party",
    "fieldname": "party_bank_account",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Party Bank Account",
    "options": "Bank Account"
   },
@@ -201,11 +201,12 @@
    "options": "Contact"
   },
   {
-   "depends_on": "party",
+   "depends_on": "contact_person",
    "fieldname": "contact_email",
    "fieldtype": "Data",
    "label": "Email",
-   "options": "Email"
+   "options": "Email",
+   "read_only": 1
   },
   {
    "bold": 1,
@@ -280,13 +281,14 @@
   },
   {
    "fieldname": "bank",
-   "fieldtype": "Link",
-   "label": "Bank",
-   "options": "Bank"
+   "fieldtype": "Read Only",
+   "hidden": 1,
+   "label": "Bank"
   },
   {
    "fieldname": "bank_account_no",
-   "fieldtype": "Data",
+   "fieldtype": "Read Only",
+   "hidden": 1,
    "label": "Bank Account No"
   },
   {
@@ -498,7 +500,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-27 11:10:07.886215",
+ "modified": "2023-12-06 07:30:41.843650",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",
@@ -510,10 +512,39 @@
    "delete": 1,
    "email": 1,
    "export": 1,
+   "if_owner": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "All",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
    "print": 1,
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Revisor de Solicitudes de Pagos",
    "share": 1,
    "write": 1
   }

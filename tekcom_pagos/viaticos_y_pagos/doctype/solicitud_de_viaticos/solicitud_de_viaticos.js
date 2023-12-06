@@ -107,6 +107,35 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		// })
 	},
 
+	depositar_a(frm) {
+		if (frm.doc.depositar_a) {
+			return frappe.call({
+				method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_party_details",
+				args: {
+					company: frm.doc.company,
+					party_type: 'Employee',
+					party: frm.doc.depositar_a,
+					date: frm.doc.fecha_solicitud,
+					cost_center: frm.doc.cost_center
+				},
+				callback: function(r, rt) {
+					if (r.message) {
+						frappe.run_serially([
+							() => frm.events.hide_unhide_fields(frm),
+							() => frm.events.set_dynamic_labels(frm),
+							() => {
+								if (r.message.bank_account) {
+									frm.set_value("bank", r.message.bank);
+									frm.set_value("depositar_a_cuenta", r.message.bank_account);
+								}
+							},
+						]);
+					}
+				}
+			});
+		}
+	},
+
 	validate_company(frm) {
 		if (!frm.doc.company){
 			frappe.throw({message:__("Please select a Company first."), title: __("Mandatory")});
@@ -270,7 +299,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		// frm.set_df_property("monto_pagar", "options", "currency");
 
 		// cur_frm.set_df_property("conversion_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
-		cur_frm.set_df_property
+		// cur_frm.set_df_property
 
 		frm.refresh_fields()
 	},
@@ -346,10 +375,12 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			var p = frm.add_child("presupuesto")
 			p.tipo_gasto = "Alimentación"
 			p.monto_solicitado = total_solicitado
+			p.monto_aprobado = total_solicitado
 		} else {
 			$.each(frm.doc.presupuesto, function(i, row) {
 				if (row.tipo_gasto == "Alimentación") {
 					frappe.model.set_value(row.doctype, row.name, "monto_solicitado", total_solicitado)
+					frappe.model.set_value(row.doctype, row.name, "monto_aprobado", total_solicitado)
 				}
 			})
 		}
@@ -551,6 +582,10 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 
 frappe.ui.form.on("Presupuesto Solicitud de Viaticos", {
 	monto_solicitado(frm, cdt, cdn) {
+		frappe.model.set_value(cdt, cdn, "monto_aprobado", frappe.model.get_value(cdt, cdn, "monto_solicitado"))
+		frm.events.set_totales(frm)
+	},
+	monto_aprobado(frm, cdt, cdn) {
 		frm.events.set_totales(frm)
 	}
 } )

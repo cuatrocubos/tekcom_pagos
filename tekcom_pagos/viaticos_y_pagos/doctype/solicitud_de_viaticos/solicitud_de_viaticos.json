@@ -27,6 +27,7 @@
   "column_break_qblyq",
   "nombre_solicitante",
   "depositar_a",
+  "bank",
   "depositar_a_cuenta",
   "section_break_usxgk",
   "personas",
@@ -49,8 +50,6 @@
   "custom_remarks",
   "remarks",
   "column_break_98leh",
-  "bank",
-  "bank_account_no",
   "amended_from",
   "documentos_adjuntos"
  ],
@@ -187,16 +186,11 @@
    "print_hide": 1
   },
   {
+   "depends_on": "eval:doc.depositar_a",
    "fieldname": "bank",
-   "fieldtype": "Read Only",
+   "fieldtype": "Data",
    "label": "Bank",
-   "no_copy": 1
-  },
-  {
-   "fieldname": "bank_account_no",
-   "fieldtype": "Read Only",
-   "label": "Bank Account No",
-   "no_copy": 1
+   "reqd": 1
   },
   {
    "fieldname": "column_break_8kxc3",
@@ -277,9 +271,8 @@
   {
    "depends_on": "eval:doc.depositar_a",
    "fieldname": "depositar_a_cuenta",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "label": "Depositar a Cuenta",
-   "options": "Bank Account",
    "reqd": 1
   },
   {
@@ -349,7 +342,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-06 14:04:13.266112",
+ "modified": "2023-12-04 11:32:06.073781",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Solicitud de Viaticos",
