@@ -19,8 +19,9 @@ def solicitud_de_pago_query(user):
     return None
   else:
     if employee:
-      return "(`tabSolicitud de Pago`.owner = {user} or `tabSolicitud de Pago`.solicitante = {employee})".format(user=frappe.db.escape(user))
+      return "(`tabSolicitud de Pago`.owner = {user} or `tabSolicitud de Pago`.solicitante = {employee} or `tabSolicitud de Pago`.revisado_por = {user} or `tabSolicitud de Pago`.aprobado_por = {user} or `tabSolicitud de Pago`._assign = {user}".format(user=frappe.db.escape(user))
     else: 
-      return "(`tabSolicitud de Pago`.owner = {user})".format(user=frappe.db.escape(user))
+      return "(`tabSolicitud de Pago`.owner = {user} or `tabSolicitud de Pago`.revisado_por = {user} or `tabSolicitud de Pago`.aprobado_por = {user} or `tabSolicitud de Pago`._assign = {user})".format(user=frappe.db.escape(user))
+    # return "(`tabSolicitud de Pago`._assign = {user})".format(user=frappe.db.escape(user))
   
     
