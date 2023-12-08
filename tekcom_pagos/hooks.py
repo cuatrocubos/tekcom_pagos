@@ -8,7 +8,7 @@ app_email = "jgiron@cuatrocubos.com"
 app_license = "MIT"
 
 fixtures = [
-  { "dt": "Print Format", "filters": [["module","in",["Tekcom Pagos", "Solicitudes de Pagos"]]] },
+  { "dt": "Print Format", "filters": [["module","in",["Tekcom Pagos", "Solicitudes de Pagos", "Viaticos y Pagos"]]] },
   { "dt": "Custom Field", "filters": [["module","in",["Tekcom Pagos","Solicitudes de Pagos","Viaticos y Pagos","Viaticos"]]] }
 ]
 
