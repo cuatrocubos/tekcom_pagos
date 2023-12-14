@@ -21,10 +21,11 @@ class SolicituddeViaticos(Document):
       
   #     get_presupuesto_disponible(self.fecha_solicitud, self.cost_center)
   def before_save(self):
-    print ('workflow status', self.workflow_status)
     if self.workflow_status == 'Rejected':
       self.revisado_por = ''
       self.aprobado_por = ''
+      self.fecha_hora_revision = ''
+      self.fecha_hora_aprobacion = ''
       self.mode_of_payment = ''
       self.reference_no = ''
       self.reference_date = ''
@@ -32,7 +33,14 @@ class SolicituddeViaticos(Document):
   
   def validate(self):
     validate_active_employee(self.solicitante)	
-    
+    if (self.workflow_status) == 'Revisado':
+      self.fecha_hora_revision = frappe.utils.now_datetime()
+      if self.revisado_por == None or self.revisado_por == '':
+        frappe.throw(_("Seleccione un revisor para el documento"), frappe.ValidationError)
+    if (self.workflow_status) == 'Approved':
+      self.fecha_hora_aprobacion = frappe.utils.now_datetime()
+      if self.aprobado_por == None or self.aprobado_por == '':
+        frappe.throw(_("Seleccione un aprobador para el documento"), frappe.ValidationError)
 
 def update_presupuesto_monto_aprobado(self):
   for linea in self.presupuesto:

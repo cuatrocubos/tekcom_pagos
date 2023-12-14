@@ -139,6 +139,7 @@
    "fieldtype": "Dynamic Link",
    "in_standard_filter": 1,
    "label": "Party",
+   "mandatory_depends_on": "eval:doc.party_type",
    "options": "party_type"
   },
   {
@@ -201,11 +202,12 @@
    "options": "Contact"
   },
   {
-   "depends_on": "party",
+   "depends_on": "contact_person",
    "fieldname": "contact_email",
    "fieldtype": "Data",
    "label": "Email",
-   "options": "Email"
+   "options": "Email",
+   "read_only": 1
   },
   {
    "bold": 1,
@@ -497,7 +499,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-08 09:45:09.464026",
+ "modified": "2023-12-14 07:42:27.417517",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",

@@ -45,19 +45,20 @@
   "more_information_section",
   "revisado_por",
   "aprobado_por",
+  "documentos_adjuntos",
   "status",
   "workflow_status",
   "custom_remarks",
   "remarks",
   "column_break_98leh",
   "amended_from",
-  "documentos_adjuntos"
+  "fecha_hora_revision",
+  "fecha_hora_aprobacion"
  ],
  "fields": [
   {
    "fieldname": "company",
    "fieldtype": "Link",
-   "in_list_view": 1,
    "label": "Company",
    "options": "Company",
    "reqd": 1
@@ -79,6 +80,7 @@
   {
    "fieldname": "fecha_solicitud",
    "fieldtype": "Date",
+   "in_list_view": 1,
    "label": "Fecha Solicitud",
    "reqd": 1
   },
@@ -117,6 +119,7 @@
   {
    "fieldname": "cost_center",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Cost Center",
    "options": "Cost Center",
    "reqd": 1
@@ -147,7 +150,6 @@
   {
    "fieldname": "total_anticipo_aprobado",
    "fieldtype": "Currency",
-   "in_list_view": 1,
    "label": "Total Anticipo Aprobado",
    "non_negative": 1,
    "read_only": 1,
@@ -188,8 +190,9 @@
   {
    "depends_on": "eval:doc.depositar_a",
    "fieldname": "bank",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "label": "Bank",
+   "options": "Bank",
    "reqd": 1
   },
   {
@@ -204,8 +207,8 @@
    "depends_on": "solicitante",
    "fieldname": "nombre_solicitante",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "label": "Nombre Solicitante",
-   "options": "solicitante.employee_name",
    "read_only": 1
   },
   {
@@ -215,6 +218,7 @@
   {
    "fieldname": "solicitante",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Solicitante",
    "options": "Employee",
    "reqd": 1
@@ -337,12 +341,24 @@
    "label": "Documentos Adjuntos",
    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Pagado\")",
    "options": "\nSin Comprobantes\nCon Copias\nDocumentaci\u00f3n Completa"
+  },
+  {
+   "fieldname": "fecha_hora_revision",
+   "fieldtype": "Datetime",
+   "label": "Fecha y Hora de Revisi\u00f3n",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fecha_hora_aprobacion",
+   "fieldtype": "Datetime",
+   "label": "Fecha y Hora de Aprobaci\u00f3n",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-04 11:32:06.073781",
+ "modified": "2023-12-13 10:02:40.185370",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Solicitud de Viaticos",

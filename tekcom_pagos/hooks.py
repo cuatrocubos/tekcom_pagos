@@ -87,10 +87,11 @@ fixtures = [
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
+permission_query_conditions = {
 #	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-  # "Solicitud de Pago": "tekcom_pagos.permissions.solicitud_de_pago_query"
-# }
+  "Solicitud de Pago": "tekcom_pagos.permissions.solicitud_de_pago_query",
+  "Solicitud de Viaticos": "tekcom_pagos.permissions.solicitud_de_viaticos_query"
+}
 #
 # has_permission = {
 #	"Event": "frappe.desk.doctype.event.event.has_permission",
