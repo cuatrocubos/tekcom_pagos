@@ -38,8 +38,10 @@
   "contact_person",
   "contact_email",
   "party_tax_id",
+  "forma_pago",
   "party_bank_account",
   "bank",
+  "bank_account_type",
   "bank_account_no",
   "section_break_rzd7g",
   "monto_solicitado",
@@ -48,6 +50,10 @@
   "comprobantes_section",
   "documentos_adjuntos",
   "references",
+  "otras_referencias_section",
+  "otros_ordenes_de_compra",
+  "otros_factura_de_compra",
+  "otros_compra_al_contado",
   "write_off_section",
   "total_allocated_amount",
   "base_total_allocated_amount",
@@ -195,19 +201,17 @@
    "options": "Bank Account"
   },
   {
-   "depends_on": "party",
    "fieldname": "contact_person",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Contact",
    "options": "Contact"
   },
   {
-   "depends_on": "contact_person",
+   "depends_on": "party",
    "fieldname": "contact_email",
    "fieldtype": "Data",
-   "label": "Email",
-   "options": "Email",
-   "read_only": 1
+   "label": "Email"
   },
   {
    "bold": 1,
@@ -281,15 +285,19 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.forma_pago!='Cheque'",
    "fieldname": "bank",
    "fieldtype": "Link",
    "label": "Bank",
+   "mandatory_depends_on": "eval:(doc.forma_pago!='Cheque')",
    "options": "Bank"
   },
   {
+   "depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')",
    "fieldname": "bank_account_no",
    "fieldtype": "Data",
-   "label": "Bank Account No"
+   "label": "Bank Account No",
+   "mandatory_depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')"
   },
   {
    "fieldname": "column_break_fwkqf",
@@ -494,12 +502,49 @@
    "fieldtype": "Datetime",
    "label": "Fecha y Hora Aprobaci\u00f3n",
    "read_only": 1
+  },
+  {
+   "depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')",
+   "fieldname": "bank_account_type",
+   "fieldtype": "Link",
+   "label": "Bank Account Type",
+   "mandatory_depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')",
+   "options": "Bank Account Type"
+  },
+  {
+   "default": "Transferencia",
+   "fieldname": "forma_pago",
+   "fieldtype": "Select",
+   "label": "Forma de Pago",
+   "options": "Transferencia\nCheque",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "otras_referencias_section",
+   "fieldtype": "Section Break",
+   "label": "Otras Referencias"
+  },
+  {
+   "fieldname": "otros_ordenes_de_compra",
+   "fieldtype": "Data",
+   "label": "Ordenes de Compra"
+  },
+  {
+   "fieldname": "otros_factura_de_compra",
+   "fieldtype": "Data",
+   "label": "Factura de Compra"
+  },
+  {
+   "fieldname": "otros_compra_al_contado",
+   "fieldtype": "Data",
+   "label": "Compra al Contado"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-12-14 07:42:27.417517",
+ "modified": "2023-12-18 12:21:05.688225",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",
