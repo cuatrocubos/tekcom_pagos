@@ -63,7 +63,7 @@ def get_constancia_pago_cuenta(party_type, party, date):
   _constancias = _party.custom_constancias_pago_a_cuenta
   if len(_constancias) == 0:
     pass
-  if len(_constancias) == 1:
+  if len(_constancias) > 0:
     fecha_vencimiento_constancia_pago_cuenta = getdate(_constancias[0].fecha_vencimiento)
   
   return fecha_vencimiento_constancia_pago_cuenta

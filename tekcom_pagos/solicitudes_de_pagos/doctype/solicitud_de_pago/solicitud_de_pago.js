@@ -148,11 +148,9 @@ frappe.ui.form.on('Solicitud de Pago', {
 		})
 
 		frm.set_query("reference_name", "references", function(doc, cdt, cdn) {
-			console.log(doc, cdt, cdn)
 			var jvd = frappe.get_doc(cdt, cdn);
 
 			// journal entry
-			console.log(jvd)
 			if(jvd.reference_doctype==="Journal Entry") {
 				// frappe.model.validate_missing(jvd, "account");
 				return {
@@ -346,6 +344,8 @@ frappe.ui.form.on('Solicitud de Pago', {
 			frm.set_value("fecha_vencimiento_constancia_pago_cuenta", null)
 		}
 		if (frm.doc.party_type == 'Supplier') {
+			console.log(frm.doc.party_type)
+			console.log(frm.doc.fecha_vencimiento_constancia_pago_cuenta)
 			if (frm.doc.fecha_vencimiento_constancia_pago_cuenta == "" || frm.doc.fecha_vencimiento_constancia_pago_cuenta == null) {
 				frappe.call({
 					method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_constancia_pago_cuenta",
@@ -356,6 +356,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 					},
 					callback: function (r) {
 						if (r.message) {
+							console.log(r)
 							frm.set_value("fecha_vencimiento_constancia_pago_cuenta", r.message)
 						}
 					}
@@ -364,7 +365,6 @@ frappe.ui.form.on('Solicitud de Pago', {
 		}
 
 		if (frm.doc.party_type && frm.doc.party && frm.doc.company) {
-			console.log(frm.doc)
 			if (!frm.doc.fecha_solicitud) {
 				frappe.msgprint(__("Por favor seleccione fecha de solicitud antes de seleccionar el Tercero"))
 				frm.set_value("party", "");
