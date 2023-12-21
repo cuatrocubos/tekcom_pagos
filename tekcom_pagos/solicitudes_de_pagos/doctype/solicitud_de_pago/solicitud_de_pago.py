@@ -136,3 +136,9 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
       "bill_no": ref_doc.get("bill_no")
     }
   )
+  
+@frappe.whitelist()
+def get_bank_account_details(bank_account):
+	return frappe.db.get_value(
+		"Bank Account", bank_account, ["account", "bank", "bank_account_no", "account_type"], as_dict=1
+	)

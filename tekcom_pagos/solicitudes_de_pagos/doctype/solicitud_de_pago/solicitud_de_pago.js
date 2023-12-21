@@ -340,12 +340,15 @@ frappe.ui.form.on('Solicitud de Pago', {
 			frm.set_value("contact_person", "");
 		};
 
+		frm.set_value("party_bank_account", "")
+		frm.set_value("bank", "")
+		frm.set_value("bank_account_no", "")
+		frm.set_value("bank_account_type", "")
+		
 		if (frm.doc.fecha_vencimiento_constancia_pago_cuenta){
 			frm.set_value("fecha_vencimiento_constancia_pago_cuenta", null)
 		}
 		if (frm.doc.party_type == 'Supplier') {
-			console.log(frm.doc.party_type)
-			console.log(frm.doc.fecha_vencimiento_constancia_pago_cuenta)
 			if (frm.doc.fecha_vencimiento_constancia_pago_cuenta == "" || frm.doc.fecha_vencimiento_constancia_pago_cuenta == null) {
 				frappe.call({
 					method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_constancia_pago_cuenta",
@@ -356,7 +359,6 @@ frappe.ui.form.on('Solicitud de Pago', {
 					},
 					callback: function (r) {
 						if (r.message) {
-							console.log(r)
 							frm.set_value("fecha_vencimiento_constancia_pago_cuenta", r.message)
 						}
 					}
@@ -401,8 +403,16 @@ frappe.ui.form.on('Solicitud de Pago', {
 							() => frm.events.set_dynamic_labels(frm),
 							() => frm.set_value("party_tax_id", r.message.party_tax_id),
 							() => {
-								if (r.message.bank_account) {
-									frm.set_value("bank_account", r.message.party_bank_account);
+								if (frm.doc.party_type == 'Supplier' || frm.doc.party_type == 'Customer') {
+									if (r.message.bank_account) {
+										frm.set_value("party_bank_account", r.message.party_bank_account);
+									}
+								} else {
+									if (r.message.bank_account) {
+										frm.set_value("bank", r.message.bank_account);
+										frm.set_value("bank_account_no", r.message.bank_account);
+										frm.set_value("bank_account_type", "Ahorros HNL")
+									}
 								}
 							},
 							() => frm.events.set_current_exchange_rate(frm, "exchange_rate", frm.doc.currency, company_currency)
@@ -467,17 +477,18 @@ frappe.ui.form.on('Solicitud de Pago', {
 		frm.events.hide_unhide_fields(frm);
 	},
 
-	bank_account: function(frm) {
-		if (frm.doc.bank_account) {
+	party_bank_account: function(frm) {
+		if (frm.doc.party_bank_account) {
 			frappe.call({
-				method: "erpnext.accounts.doctype.bank_account.bank_account.get_bank_account_details",
+				method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_bank_account_details",
 				args: {
-					bank_account: frm.doc.bank_account
+					bank_account: frm.doc.party_bank_account
 				},
 				callback: function(r) {
 					if (r.message) {
 						frm.set_value("bank", r.message.bank);
 						frm.set_value("bank_account_no", r.message.bank_account_no)
+						frm.set_value("bank_account_type", r.message.account_type)
 					}
 				}
 			});
