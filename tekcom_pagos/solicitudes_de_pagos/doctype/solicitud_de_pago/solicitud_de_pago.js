@@ -409,7 +409,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 									}
 								} else {
 									if (r.message.bank_account) {
-										frm.set_value("bank", r.message.bank_account);
+										frm.set_value("bank", r.message.bank);
 										frm.set_value("bank_account_no", r.message.bank_account);
 										frm.set_value("bank_account_type", "Ahorros HNL")
 									}
