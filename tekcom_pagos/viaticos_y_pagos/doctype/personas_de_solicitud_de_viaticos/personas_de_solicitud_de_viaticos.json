@@ -30,12 +30,19 @@
   "fecha_dia_7",
   "column_break_b4shl",
   "tiempos_dia_1",
+  "permite_asignar_viaticos_dia_1",
   "tiempos_dia_2",
+  "permite_asignar_viaticos_dia_2",
   "tiempos_dia_3",
+  "permite_asignar_viaticos_dia_3",
   "tiempos_dia_4",
+  "permite_asignar_viaticos_dia_4",
   "tiempos_dia_5",
+  "permite_asignar_viaticos_dia_5",
   "tiempos_dia_6",
-  "tiempos_dia_7"
+  "permite_asignar_viaticos_dia_6",
+  "tiempos_dia_7",
+  "permite_asignar_viaticos_dia_7"
  ],
  "fields": [
   {
@@ -254,12 +261,63 @@
    "fieldtype": "Data",
    "label": "Tiempos de Alimentaci\u00f3n D\u00eda 7",
    "mandatory_depends_on": "eval:(doc.dias_viaje>=7)"
+  },
+  {
+   "default": "0",
+   "fieldname": "permite_asignar_viaticos_dia_1",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "permite_asignar_viaticos_dia_1",
+   "print_hide": 1,
+   "report_hide": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "permite_asignar_viaticos_dia_2",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "permite_asignar_viaticos_dia_2"
+  },
+  {
+   "default": "0",
+   "fieldname": "permite_asignar_viaticos_dia_3",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "permite_asignar_viaticos_dia_3"
+  },
+  {
+   "default": "0",
+   "fieldname": "permite_asignar_viaticos_dia_4",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "permite_asignar_viaticos_dia_4"
+  },
+  {
+   "default": "0",
+   "fieldname": "permite_asignar_viaticos_dia_5",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "permite_asignar_viaticos_dia_5"
+  },
+  {
+   "default": "0",
+   "fieldname": "permite_asignar_viaticos_dia_6",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "permite_asignar_viaticos_dia_6"
+  },
+  {
+   "default": "0",
+   "fieldname": "permite_asignar_viaticos_dia_7",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "permite_asignar_viaticos_dia_7"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-12-13 09:55:41.409069",
+ "modified": "2024-02-22 09:59:17.696158",
  "modified_by": "Administrator",
  "module": "Viaticos y Pagos",
  "name": "Personas de Solicitud de Viaticos",

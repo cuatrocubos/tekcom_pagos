@@ -6,6 +6,7 @@ from frappe import ValidationError, _, qb, scrub, throw
 from frappe.utils import cint, comma_or, flt, getdate, nowdate
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
+from frappe.query_builder.functions import Count
 # from frappe.core.doctype import Role
 
 import erpnext
@@ -33,19 +34,92 @@ class SolicituddeViaticos(Document):
   
   def validate(self):
     validate_active_employee(self.solicitante)	
-    if (self.workflow_status) == 'Revisado':
-      self.fecha_hora_revision = frappe.utils.now_datetime()
-      if self.revisado_por == None or self.revisado_por == '':
-        frappe.throw(_("Seleccione un revisor para el documento"), frappe.ValidationError)
-    if (self.workflow_status) == 'Approved':
-      self.fecha_hora_aprobacion = frappe.utils.now_datetime()
-      if self.aprobado_por == None or self.aprobado_por == '':
-        frappe.throw(_("Seleccione un aprobador para el documento"), frappe.ValidationError)
+    validate_employee_permite_asignar_viaticos(self)
+    set_revision(self)
+    set_aprobado(self)
 
+def validate_employee_permite_asignar_viaticos(self):
+  for persona in self.personas:
+    
+    persona.permite_asignar_viaticos_dia_1 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_1, self.name)
+    # print(persona.employee, persona.permite_asignar_viaticos_dia_1, persona.fecha_dia_1)
+
+    persona.permite_asignar_viaticos_dia_2 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_2, self.name)
+    # print(persona.employee, persona.permite_asignar_viaticos_dia_2, persona.fecha_dia_2)
+
+    persona.permite_asignar_viaticos_dia_3 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_3, self.name)
+    # print(persona.employee, persona.permite_asignar_viaticos_dia_3, persona.fecha_dia_3)
+
+    persona.permite_asignar_viaticos_dia_4 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_4, self.name)
+    # print(persona.employee, persona.permite_asignar_viaticos_dia_4, persona.fecha_dia_4)
+
+    persona.permite_asignar_viaticos_dia_5 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_5, self.name)
+    # print(persona.employee, persona.permite_asignar_viaticos_dia_5, persona.fecha_dia_5)
+
+    persona.permite_asignar_viaticos_dia_6 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_6, self.name)
+    # print(persona.employee, persona.permite_asignar_viaticos_dia_6, persona.fecha_dia_6)
+
+    persona.permite_asignar_viaticos_dia_7 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_7, self.name)
+    # print(persona.employee, persona.permite_asignar_viaticos_dia_7, persona.fecha_dia_7)
+    if persona.permite_asignar_viaticos_dia_1 == 0:
+      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_1), frappe.ValidationError)
+    if persona.permite_asignar_viaticos_dia_2 == 0:
+      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_2), frappe.ValidationError)
+    if persona.permite_asignar_viaticos_dia_3 == 0:
+      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_3), frappe.ValidationError)
+    if persona.permite_asignar_viaticos_dia_4 == 0:
+      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_4), frappe.ValidationError)
+    if persona.permite_asignar_viaticos_dia_5 == 0:
+      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_5), frappe.ValidationError)
+    if persona.permite_asignar_viaticos_dia_6 == 0:
+      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_6), frappe.ValidationError)
+    if persona.permite_asignar_viaticos_dia_7 == 0:
+      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_7), frappe.ValidationError)
+
+def set_revision(self):
+  if (self.workflow_status) == 'Revisado' and self.fecha_hora_revision == None:
+    self.fecha_hora_revision = frappe.utils.now_datetime()
+    if self.revisado_por == None or self.revisado_por == '':
+      frappe.throw(_("Seleccione un revisor para el documento"), frappe.ValidationError)
+  
+def set_aprobado(self):
+  if (self.workflow_status) == 'Approved' and self.fecha_hora_aprobacion == None:
+    self.fecha_hora_aprobacion = frappe.utils.now_datetime()
+    if self.aprobado_por == None or self.aprobado_por == '':
+      frappe.throw(_("Seleccione un aprobador para el documento"), frappe.ValidationError)
+        
 def update_presupuesto_monto_aprobado(self):
   for linea in self.presupuesto:
-    print('monto_aprobado',linea.monto_aprobado)
+    # print('monto_aprobado',linea.monto_aprobado)
     linea.monto_aprobado = 0
+    
+@frappe.whitelist()
+def validate_permite_asignar_viaticos_dia(employee, fecha, solicitud):
+  if fecha == None:
+    return 1
+  
+  PersonasSolicitudViaticos = frappe.qb.DocType('Personas de Solicitud de Viaticos')
+  SolicitudViaticos = frappe.qb.DocType('Solicitud de Viaticos')
+  count_all = Count('*').as_("count")
+  query = (frappe.qb.from_(PersonasSolicitudViaticos)
+           .left_join(SolicitudViaticos)
+           .on(SolicitudViaticos.name == PersonasSolicitudViaticos.parent)
+           .select(count_all)
+           .where(PersonasSolicitudViaticos.employee == employee)
+           .where(PersonasSolicitudViaticos.parent != solicitud)
+           .where(
+             (PersonasSolicitudViaticos.fecha_dia_1 == fecha)
+             | (PersonasSolicitudViaticos.fecha_dia_2 == fecha)
+             | (PersonasSolicitudViaticos.fecha_dia_3 == fecha)
+             | (PersonasSolicitudViaticos.fecha_dia_4 == fecha)
+             | (PersonasSolicitudViaticos.fecha_dia_5 == fecha)
+             | (PersonasSolicitudViaticos.fecha_dia_6 == fecha)
+             | (PersonasSolicitudViaticos.fecha_dia_7 == fecha))).run(as_dict=True)
+  
+  if query[0].count > 0:
+    return 0
+  
+  return 1
     
 @frappe.whitelist()
 def get_users_by_role(role):

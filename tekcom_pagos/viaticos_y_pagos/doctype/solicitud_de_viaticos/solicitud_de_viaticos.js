@@ -20,6 +20,8 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		if (frm.doc.workflow_status == 'Draft' || frm.doc.workflow_status == 'Rejected') {
 			frm.set_value("revisado_por", null)
 			frm.set_value("aprobado_por", null)
+			frm.set_value("fecha_hora_revision", null)
+			frm.set_value("fecha_hora_aprobacion", null)
 		}
 		frm.refresh_fields()
 	},
@@ -324,12 +326,19 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			})
 		}
 
-		let fecha_salida = new Date(frm.doc.fecha_salida)
-		let fecha_retorno = new Date(frm.doc.fecha_retorno)
+		// let fecha_salida = new Date(frm.doc.fecha_salida)
+		let fs = new Date(frm.doc.fecha_salida)
+		let fecha_salida = new Date(fs.getFullYear(), fs.getMonth(), fs.getDate())
+		let fr = new Date(frm.doc.fecha_retorno)
+		// let fecha_retorno = frappe.utils.getdate(frm.doc.fecha_retorno).strftime('%Y-%m-%d')
+		let fecha_retorno = new Date(fr.getFullYear(), fr.getMonth(), fr.getDate())
 
-		// let diferencia_en_tiempo = fecha_retorno.getTime() - fecha_salida.getTime()
-		// let dias_viaje = Math.ceil(diferencia_en_tiempo / (1000 * 3600 * 24))
-		let dias_viaje = (fecha_retorno.getDate() - fecha_salida.getDate()) + 1
+		let Difference_In_Time = fecha_retorno.getTime() - fecha_salida.getTime();
+ 
+		// Calculating the no. of days between
+		// two dates
+		let dias_viaje = Math.round(Difference_In_Time / (1000 * 3600 * 24)) + 1;
+		// let dias_viaje = frappe.datetime.get_day_diff(frm.doc.fecha_retorno, frm.doc.fecha_salida)
 		return dias_viaje
 	},
 
@@ -392,69 +401,121 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		let hora_retorno = new Date(frm.doc.fecha_retorno).getHours()
 		let tiempos_dia_1 = 3
 		let tiempos_dia_ultimo = 3
-		tiempos_dia_1 = hora_salida > 12 ? 1 : hora_salida > 7 ? 2 : 3
-		tiempos_dia_ultimo = hora_retorno >= 17 ? 3 : hora_retorno > 12 ? 2 : 1
+		let fs = new Date(frm.doc.fecha_salida)
+		let fecha_salida = new Date(fs.getFullYear(), fs.getMonth(), fs.getDate()).toISOString().split('T')[0]
+		let fr = new Date(frm.doc.fecha_retorno)
+		let fecha_retorno = new Date(fr.getFullYear(), fr.getMonth(), fr.getDate()).toISOString().split('T')[0]
+		tiempos_dia_1 = 3
+		if (hora_salida > 8) {
+			tiempos_dia_1 = tiempos_dia_1 - 1
+		}
+		if (hora_salida >= 12) {
+			tiempos_dia_1 = tiempos_dia_1 - 1
+		}
+		if (hora_retorno < 17 ) {
+			tiempos_dia_ultimo = tiempos_dia_ultimo - 1
+		}
+		if (hora_retorno < 12 ) {
+			tiempos_dia_ultimo = tiempos_dia_ultimo - 1
+		}
+		// tiempos_dia_ultimo = hora_retorno >= 17 ? 3 : hora_retorno > 12 ? 2 : 1
 		frappe.model.set_value(cdt, cdn, "tiempos_dia_1", tiempos_dia_1)
 		switch (row.dias_viaje) {
 			case 1:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_2", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_3", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_4", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_5", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_6", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_7", flt(0))
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_2", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_3", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", 0)
+				frappe.model.set_value(cdt, cdn, "dia_viaje_2", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_3", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_4", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_5", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_6", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_7", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_2", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_3", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				var total = flt(row.dia_viaje_1)
+				frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 				break;
 			case 2:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_2", flt(tiempos_dia_ultimo) * flt(row.asignacion_alimentacion))
+				frappe.model.set_value(cdt, cdn, "dia_viaje_3", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_4", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_5", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_6", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_7", "")
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_2", tiempos_dia_ultimo)
-				frappe.model.set_value(cdt, cdn, "dia_viaje_3", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_4", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_5", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_6", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_7", flt(0))
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_3", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", 0)
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_3", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", fecha_retorno)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				var total = flt(row.dia_viaje_1) + flt(row.dia_viaje_2)
+				frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 				break;
 			case 3:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_2", flt(3) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_3", flt(tiempos_dia_ultimo) * flt(row.asignacion_alimentacion))
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_3", tiempos_dia_ultimo)
-				frappe.model.set_value(cdt, cdn, "dia_viaje_4", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_5", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_6", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_7", flt(0))
+				frappe.model.set_value(cdt, cdn, "dia_viaje_4", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_5", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_6", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_7", "")
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_2", 3)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", 0)
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_3", tiempos_dia_ultimo)
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", fecha_retorno)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				var total = flt(row.dia_viaje_1) + flt(row.dia_viaje_2) + flt(row.dia_viaje_3)
+				frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 				break;
 			case 4:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_2", flt(3) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_3", flt(3) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_4", flt(tiempos_dia_ultimo) * flt(row.asignacion_alimentacion))
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", tiempos_dia_ultimo)
-				frappe.model.set_value(cdt, cdn, "dia_viaje_5", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_6", flt(0))
-				frappe.model.set_value(cdt, cdn, "dia_viaje_7", flt(0))
+				frappe.model.set_value(cdt, cdn, "dia_viaje_5", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_6", "")
+				frappe.model.set_value(cdt, cdn, "dia_viaje_7", "")
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_2", 3)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_3", 3)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", 0)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", 0)
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", tiempos_dia_ultimo)
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(fecha_salida, 2))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", fecha_retorno)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				var total = flt(row.dia_viaje_1) + flt(row.dia_viaje_2) + flt(row.dia_viaje_3) + flt(row.dia_viaje_4)
+				frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 				break;
 			case 5:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
@@ -462,14 +523,23 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				frappe.model.set_value(cdt, cdn, "dia_viaje_3", flt(3) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_4", flt(3) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_5", flt(tiempos_dia_ultimo) * flt(row.asignacion_alimentacion))
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", tiempos_dia_ultimo)
 				frappe.model.set_value(cdt, cdn, "dia_viaje_6", flt(0))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_7", flt(0))
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_2", 3)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_3", 3)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", 3)
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", tiempos_dia_ultimo)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", 0)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", 0)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(fecha_salida, 2))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", frappe.datetime.add_days(fecha_salida, 3))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", fecha_retorno)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				var total = flt(row.dia_viaje_1) + flt(row.dia_viaje_2) + flt(row.dia_viaje_3) + flt(row.dia_viaje_4) + flt(row.dia_viaje_5)
+				frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 				break;
 			case 6:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
@@ -478,13 +548,23 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				frappe.model.set_value(cdt, cdn, "dia_viaje_4", flt(3) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_5", flt(3) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_6", flt(tiempos_dia_ultimo) * flt(row.asignacion_alimentacion))
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", tiempos_dia_ultimo)
-				frappe.model.set_value(cdt, cdn, "dia_viaje_7", flt(0))
+				frappe.model.set_value(cdt, cdn, "dia_viaje_7", "")
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_2", 3)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_3", 3)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_4", 3)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", 3)
-				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", 0)
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", tiempos_dia_ultimo)
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(fecha_salida, 2))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", frappe.datetime.add_days(fecha_salida, 3))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", frappe.datetime.add_days(fecha_salida, 4))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", fecha_retorno)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				var total = flt(row.dia_viaje_1) + flt(row.dia_viaje_2) + flt(row.dia_viaje_3) + flt(row.dia_viaje_4) + flt(row.dia_viaje_5) + flt(row.dia_viaje_6)
+				frappe.model.set_value(cdt, cdn, "total_solicitado", total)
+				break;
 			case 7:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
 				frappe.model.set_value(cdt, cdn, "dia_viaje_2", flt(3) * flt(row.asignacion_alimentacion))
@@ -499,84 +579,65 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_5", 3)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_6", 3)
 				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", tiempos_dia_ultimo)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(fecha_salida, 2))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", frappe.datetime.add_days(fecha_salida, 3))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", frappe.datetime.add_days(fecha_salida, 4))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", frappe.datetime.add_days(fecha_salida, 5))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", fecha_retorno)
+				var total = flt(row.dia_viaje_1) + flt(row.dia_viaje_2) + flt(row.dia_viaje_3) + flt(row.dia_viaje_4) + flt(row.dia_viaje_5) + flt(row.dia_viaje_6) + flt(row.dia_viaje_7)
+				frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 				break;
 			default:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
 				break;
-			}
-			var total = flt(row.dia_viaje_1) + flt(row.dia_viaje_2) + flt(row.dia_viaje_3) + flt(row.dia_viaje_4) + flt(row.dia_viaje_5) + flt(row.dia_viaje_6) + flt(row.dia_viaje_7)
-			frappe.model.set_value(cdt, cdn, "total_solicitado", total)
+		}
 
-			if ((row.dias_viaje >= 0)) {
-				switch (row.dias_viaje) {
-					case 1:
-						frappe.model.set_value(cdt, cdn, "fecha_dia_1", frm.doc.fecha_salida)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_2", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_3", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_4", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
-						break;
-					case 2:
-						frappe.model.set_value(cdt, cdn, "fecha_dia_1", frm.doc.fecha_salida)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_2", frm.doc.fecha_retorno)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_3", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_4", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
-						break;
-					case 3:
-						frappe.model.set_value(cdt, cdn, "fecha_dia_1", frm.doc.fecha_salida)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(frm.doc.fecha_salida, 1))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_3", frm.doc.fecha_retorno)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_4", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
-						break;
-					case 4:
-						frappe.model.set_value(cdt, cdn, "fecha_dia_1", frm.doc.fecha_salida)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(frm.doc.fecha_salida, 1))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(frm.doc.fecha_salida, 2))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_4", frm.doc.fecha_retorno)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
-						break;
-					case 5:
-						frappe.model.set_value(cdt, cdn, "fecha_dia_1", frm.doc.fecha_salida)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(frm.doc.fecha_salida, 1))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(frm.doc.fecha_salida, 2))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_4", frappe.datetime.add_days(frm.doc.fecha_salida, 3))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_5", frm.doc.fecha_retorno)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
-						break;
-					case 6:
-						frappe.model.set_value(cdt, cdn, "fecha_dia_1", frm.doc.fecha_salida)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(frm.doc.fecha_salida, 1))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(frm.doc.fecha_salida, 2))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_4", frappe.datetime.add_days(frm.doc.fecha_salida, 3))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_5", frappe.datetime.add_days(frm.doc.fecha_salida, 4))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_6", frm.doc.fecha_retorno)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
-						frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
-					case 7:
-						frappe.model.set_value(cdt, cdn, "fecha_dia_1", frm.doc.fecha_salida)
-						frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(frm.doc.fecha_salida, 1))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(frm.doc.fecha_salida, 2))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_4", frappe.datetime.add_days(frm.doc.fecha_salida, 3))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_5", frappe.datetime.add_days(frm.doc.fecha_salida, 4))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_6", frappe.datetime.add_days(frm.doc.fecha_salida, 5))
-						frappe.model.set_value(cdt, cdn, "fecha_dia_7", frm.doc.fecha_retorno)
-						break;
-					default:
-						frappe.model.set_value(cdt, cdn, "fecha_dia_1", frm.doc.fecha_salida)
-						break;
-					}
+		frm.refresh_fields()
+	},
+
+	validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, _employee, _fecha) {
+		return frappe.call({
+			method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.validate_permite_asignar_viaticos_dia",
+			args: {
+				employee: _employee,
+				fecha: _fecha,
+				solicitud: frm.doc.name
+			},
+			callback: function(r, rt) {
+				if (r.message) {
+					frappe.run_serially([
+						() => {
+							if (row.employee) {
+								if (row.fecha_dia_1 == _fecha) {
+									frappe.model.set_value(cdt, cdn, `permite_asignar_viaticos_dia_1`, r.message)
+								}
+								if (row.fecha_dia_2 == _fecha) {
+									frappe.model.set_value(cdt, cdn, `permite_asignar_viaticos_dia_2`, r.message)
+								}
+								if (row.fecha_dia_3 == _fecha) {
+									frappe.model.set_value(cdt, cdn, `permite_asignar_viaticos_dia_3`, r.message)
+								}
+								if (row.fecha_dia_4 == _fecha) {
+									frappe.model.set_value(cdt, cdn, `permite_asignar_viaticos_dia_4`, r.message)
+								}
+								if (row.fecha_dia_5 == _fecha) {
+									frappe.model.set_value(cdt, cdn, `permite_asignar_viaticos_dia_5`, r.message)
+								}
+								if (row.fecha_dia_6 == _fecha) {
+									frappe.model.set_value(cdt, cdn, `permite_asignar_viaticos_dia_6`, r.message)
+								}
+								if (row.fecha_dia_7 == _fecha) {
+									frappe.model.set_value(cdt, cdn, `permite_asignar_viaticos_dia_7`, r.message)
+								}
+							}
+						},
+					])
+				}
 			}
+		})
 	},
 });
 
@@ -614,12 +675,12 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 	},
 
 	dias_viaje(frm, cdt, cdn) {
-		console.log('dias_viaje')
 		var row = locals[cdt][cdn]
 		
 		frm.refresh_fields()
 		frm.events.set_asignacion_diaria_alimentacion(frm, row, cdt, cdn)
 		frm.events.set_or_update_alimentacion(frm)
+		frm.refresh_fields()
 	},
 
 	asignacion_alimentacion(frm, cdt, cdn) {
@@ -627,6 +688,50 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		frm.refresh_fields()
 		frm.events.set_asignacion_diaria_alimentacion(frm, row, cdt, cdn)
 		frm.events.set_or_update_alimentacion(frm)
+		frm.refresh_fields()
+	},
+
+	fecha_dia_1(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		let fecha = row.fecha_dia_1
+		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		frm.refresh_fields()
+	},
+	fecha_dia_2(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		let fecha = row.fecha_dia_2
+		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		frm.refresh_fields()
+	},
+	fecha_dia_3(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		let fecha = row.fecha_dia_3
+		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		frm.refresh_fields()
+	},
+	fecha_dia_4(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		let fecha = row.fecha_dia_4
+		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		frm.refresh_fields()
+	},
+	fecha_dia_5(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		let fecha = row.fecha_dia_5
+		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		frm.refresh_fields()
+	},
+	fecha_dia_6(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		let fecha = row.fecha_dia_6
+		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		frm.refresh_fields()
+	},
+	fecha_dia_7(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		let fecha = row.fecha_dia_7
+		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		frm.refresh_fields()
 	},
 
 	// asignacion_alimentacion(frm, cdt, cdn) {
@@ -640,5 +745,6 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 
 	total_solicitado(frm, cdt, cdn) {
 		frm.events.set_or_update_alimentacion(frm)
+		frm.refresh_fields()
 	}
 })
