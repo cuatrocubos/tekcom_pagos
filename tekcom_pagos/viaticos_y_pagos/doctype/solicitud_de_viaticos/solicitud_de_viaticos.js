@@ -396,6 +396,119 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		frm.events.set_totales(frm)
 	},
 
+	get_tiempos_dia_1(frm) {
+		let hora_salida = new Date(frm.doc.fecha_salida).getHours()
+		let tiempos_dia_1 = 3
+
+		if (hora_salida > 8) {
+			tiempos_dia_1 = tiempos_dia_1 - 1
+		}
+		if (hora_salida >= 12) {
+			tiempos_dia_1 = tiempos_dia_1 - 1
+		}
+
+		return tiempos_dia_1
+	},
+
+	get_tiempos_dia_ultimo(frm) {
+		let hora_retorno = new Date(frm.doc.fecha_retorno).getHours()
+		let tiempos_dia_ultimo = 3
+		
+		if (hora_retorno < 17 ) {
+			tiempos_dia_ultimo = tiempos_dia_ultimo - 1
+		}
+		if (hora_retorno < 12 ) {
+			tiempos_dia_ultimo = tiempos_dia_ultimo - 1
+		}
+
+		return tiempos_dia_ultimo
+	},
+
+	calculate_asignacion_alimentacion_diaria(frm, dia_viaje, row, cdt, cdn) {
+		let asignacion_alimentacion_diaria = 0
+
+		frappe.model.set_value(cdt, cdn, `dia_viaje_${dia_viaje}`, flt(`tiempos_dia_${dia_viaje}`) * flt(row.asignacion_alimentacion))
+
+		return asignacion_alimentacion_diaria
+	},
+
+	set_fechas_dia(frm, row, cdt, cdn) {
+		let fs = new Date(frm.doc.fecha_salida)
+		let fecha_salida = new Date(fs.getFullYear(), fs.getMonth(), fs.getDate()).toISOString().split('T')[0]
+		let fr = new Date(frm.doc.fecha_retorno)
+		let fecha_retorno = new Date(fr.getFullYear(), fr.getMonth(), fr.getDate()).toISOString().split('T')[0]
+		switch (row.dias_viaje) {
+			case 1:
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				break;
+			case 2:
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", row.dias_viaje == frm.events.get_dias_de_viaje(frm) ? fecha_retorno : frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				break;
+			case 3:
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", row.dias_viaje == frm.events.get_dias_de_viaje(frm) ? fecha_retorno : frappe.datetime.add_days(fecha_salida, 2))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				break;
+			case 4:
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(fecha_salida, 2))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", row.dias_viaje == frm.events.get_dias_de_viaje(frm) ? fecha_retorno : frappe.datetime.add_days(fecha_salida, 3))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				break;
+			case 5:
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(fecha_salida, 2))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", frappe.datetime.add_days(fecha_salida, 3))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", row.dias_viaje == frm.events.get_dias_de_viaje(frm) ? fecha_retorno : frappe.datetime.add_days(fecha_salida, 4))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", "")
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				break;
+			case 6:
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(fecha_salida, 2))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", frappe.datetime.add_days(fecha_salida, 3))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", frappe.datetime.add_days(fecha_salida, 4))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", row.dias_viaje == frm.events.get_dias_de_viaje(frm) ? fecha_retorno : frappe.datetime.add_days(fecha_salida, 5))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", "")
+				break;
+			case 7:
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				frappe.model.set_value(cdt, cdn, "fecha_dia_2", frappe.datetime.add_days(fecha_salida, 1))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_3", frappe.datetime.add_days(fecha_salida, 2))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_4", frappe.datetime.add_days(fecha_salida, 3))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_5", frappe.datetime.add_days(fecha_salida, 4))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_6", frappe.datetime.add_days(fecha_salida, 5))
+				frappe.model.set_value(cdt, cdn, "fecha_dia_7", fecha_retorno)
+				break;
+			default:
+				frappe.model.set_value(cdt, cdn, "fecha_dia_1", fecha_salida)
+				break;
+		}
+
+		frm.refresh_fields()
+	},
+
 	set_asignacion_diaria_alimentacion(frm, row, cdt, cdn) {
 		let hora_salida = new Date(frm.doc.fecha_salida).getHours()
 		let hora_retorno = new Date(frm.doc.fecha_retorno).getHours()
@@ -639,6 +752,22 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			}
 		})
 	},
+
+	set_dia_viaje(frm, row, cdt, cdn, dia, tiempos_dia) {
+		let dia_viaje = 0
+
+		if (tiempos_dia != '' && tiempos_dia > 0 && tiempos_dia <= 3) {
+			dia_viaje = flt(tiempos_dia) * flt(row.asignacion_alimentacion)
+		}
+		frappe.model.set_value(cdt, cdn, `dia_viaje_${dia}`, dia_viaje)
+		frm.refresh_fields()
+	},
+
+	set_total_solicitado(frm, row, cdt, cdn) {
+		let total = flt(row.dia_viaje_1) + flt(row.dia_viaje_2) + flt(row.dia_viaje_3) + flt(row.dia_viaje_4) + flt(row.dia_viaje_5) + flt(row.dia_viaje_6) + flt(row.dia_viaje_7)
+		frappe.model.set_value(cdt, cdn, "total_solicitado", total)
+		// frm.refresh_fields()
+	}
 });
 
 frappe.ui.form.on("Presupuesto Solicitud de Viaticos", {
@@ -678,7 +807,7 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		var row = locals[cdt][cdn]
 		
 		frm.refresh_fields()
-		frm.events.set_asignacion_diaria_alimentacion(frm, row, cdt, cdn)
+		frm.events.set_fechas_dia(frm, row, cdt, cdn)
 		frm.events.set_or_update_alimentacion(frm)
 		frm.refresh_fields()
 	},
@@ -686,7 +815,7 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 	asignacion_alimentacion(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		frm.refresh_fields()
-		frm.events.set_asignacion_diaria_alimentacion(frm, row, cdt, cdn)
+		frm.events.set_fechas_dia(frm, row, cdt, cdn)
 		frm.events.set_or_update_alimentacion(frm)
 		frm.refresh_fields()
 	},
@@ -694,44 +823,172 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 	fecha_dia_1(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		let fecha = row.fecha_dia_1
-		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		if (fecha != '') {
+			frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_1", frm.events.get_tiempos_dia_1(frm))
+		} else {
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_1", 0)
+		}
 		frm.refresh_fields()
 	},
 	fecha_dia_2(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		let fecha = row.fecha_dia_2
-		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		if (fecha != '') {
+			frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_2", row.dias_viaje > 2 ? 3 : frm.events.get_tiempos_dia_ultimo(frm))
+		} else {
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_2", 0)
+		}
 		frm.refresh_fields()
 	},
 	fecha_dia_3(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		let fecha = row.fecha_dia_3
-		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		if (fecha != '') {
+			frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_3", row.dias_viaje > 3 ? 3 : frm.events.get_tiempos_dia_ultimo(frm))
+		} else {
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_3", 0)
+		}
 		frm.refresh_fields()
 	},
 	fecha_dia_4(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		let fecha = row.fecha_dia_4
-		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		if (fecha != '') {
+			frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_4", row.dias_viaje > 4 ? 3 : frm.events.get_tiempos_dia_ultimo(frm))
+		} else {
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_4", 0)
+		}
 		frm.refresh_fields()
 	},
 	fecha_dia_5(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		let fecha = row.fecha_dia_5
-		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		if (fecha != '') {
+			frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_5", row.dias_viaje > 5 ? 3 : frm.events.get_tiempos_dia_ultimo(frm))
+		} else {
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_5", 0)
+		}
 		frm.refresh_fields()
 	},
 	fecha_dia_6(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		let fecha = row.fecha_dia_6
-		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		if (fecha != '') {
+			frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_6", row.dias_viaje > 6 ? 3 : frm.events.get_tiempos_dia_ultimo(frm))
+		} else {
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_6", 0)
+		}
 		frm.refresh_fields()
 	},
 	fecha_dia_7(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		let fecha = row.fecha_dia_7
-		frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+		if (fecha != '') {
+			frm.events.validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, row.employee, fecha)
+			if (row.dias_viaje == 7) {
+				frappe.model.set_value(cdt, cdn, "tiempos_dia_7", frm.events.get_tiempos_dia_ultimo(frm))
+			}
+		} else {
+			frappe.model.set_value(cdt, cdn, "tiempos_dia_7", 0)
+		}
 		frm.refresh_fields()
+	},
+
+	tiempos_dia_1(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		frm.events.set_dia_viaje(frm, row, cdt, cdn, 1,row.tiempos_dia_1)
+	},
+
+	tiempos_dia_2(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		frm.events.set_dia_viaje(frm, row, cdt, cdn, 2,row.tiempos_dia_2)
+	},
+
+	tiempos_dia_3(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		frm.events.set_dia_viaje(frm, row, cdt, cdn, 3,row.tiempos_dia_3)
+	},
+
+	tiempos_dia_4(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		frm.events.set_dia_viaje(frm, row, cdt, cdn, 4,row.tiempos_dia_4)
+	},
+
+	tiempos_dia_5(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		frm.events.set_dia_viaje(frm, row, cdt, cdn, 5,row.tiempos_dia_5)
+	},
+
+	tiempos_dia_6(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		frm.events.set_dia_viaje(frm, row, cdt, cdn, 6,row.tiempos_dia_6)
+	},
+
+	tiempos_dia_7(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		frm.events.set_dia_viaje(frm, row, cdt, cdn, 7,row.tiempos_dia_7)
+	},
+
+	dia_viaje_1(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		if (row.dia_viaje_1 != '' && row.dia_viaje_1 > 0) {
+			frm.events.set_total_solicitado(frm, row, cdt, cdn)
+			frm.refresh_fields()
+		}
+	},
+
+	dia_viaje_2(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		if (row.dia_viaje_2 != '' && row.dia_viaje_2 > 0) {
+			frm.events.set_total_solicitado(frm, row, cdt, cdn)
+			frm.refresh_fields()
+		}
+	},
+
+	dia_viaje_3(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		if (row.dia_viaje_3 != '' && row.dia_viaje_3 > 0) {
+			frm.events.set_total_solicitado(frm, row, cdt, cdn)
+			frm.refresh_fields()
+		}
+	},
+
+	dia_viaje_4(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		if (row.dia_viaje_4 != '' && row.dia_viaje_4 > 0) {
+			frm.events.set_total_solicitado(frm, row, cdt, cdn)
+			frm.refresh_fields()
+		}
+	},
+
+	dia_viaje_5(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		if (row.dia_viaje_5 != '' && row.dia_viaje_5 > 0) {
+			frm.events.set_total_solicitado(frm, row, cdt, cdn)
+			frm.refresh_fields()
+		}
+	},
+
+	dia_viaje_6(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		if (row.dia_viaje_6 != '' && row.dia_viaje_6 > 0) {
+			frm.events.set_total_solicitado(frm, row, cdt, cdn)
+			frm.refresh_fields()
+		}
+	},
+
+	dia_viaje_7(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		if (row.dia_viaje_7 != '' && row.dia_viaje_7 > 0) {
+			frm.events.set_total_solicitado(frm, row, cdt, cdn)
+			frm.refresh_fields()
+		}
 	},
 
 	// asignacion_alimentacion(frm, cdt, cdn) {

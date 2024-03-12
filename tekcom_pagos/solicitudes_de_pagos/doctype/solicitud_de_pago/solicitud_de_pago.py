@@ -53,6 +53,25 @@ class SolicituddePago(Document):
       if self.aprobado_por == None or self.aprobado_por == '':
         frappe.throw(_("Seleccione un aprobador para el documento"), frappe.ValidationError)
 
+def get_constancia_date(constancia):
+  return constancia['fecha_vencimiento']
+
+@frappe.whitelist()
+def get_constancia_pago_cuenta(party_type, party, date):
+  fecha_vencimiento_constancia_pago_cuenta = None
+  _party = frappe.get_doc(party_type, party).as_dict()
+  if party_type == 'Employee':
+    pass
+  
+  _constancias = _party.custom_constancias_pago_a_cuenta
+  if len(_constancias) == 0:
+    pass
+  if len(_constancias) > 0:
+    _constancias.sort(key = get_constancia_date, reverse = True)
+    fecha_vencimiento_constancia_pago_cuenta = getdate(_constancias[0].fecha_vencimiento)
+  
+  return fecha_vencimiento_constancia_pago_cuenta
+
 @frappe.whitelist()
 def get_constancia_pago_cuenta(party_type, party, date):
   fecha_vencimiento_constancia_pago_cuenta = None

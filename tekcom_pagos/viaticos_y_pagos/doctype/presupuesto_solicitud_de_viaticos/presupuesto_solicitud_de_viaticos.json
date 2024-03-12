@@ -32,7 +32,8 @@
    "fieldname": "monto_aprobado",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Monto Aprobado"
+   "label": "Monto Aprobado",
+   "read_only": 1
   },
   {
    "fieldname": "presupuesto_disponible",

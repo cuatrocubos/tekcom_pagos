@@ -47,12 +47,12 @@ frappe.ui.form.on('Solicitud de Pago', {
 			})
 		}
 
-		if (frm.doc.workflow_status == 'Solicitado') {
+		if (frm.doc.workflow_status != 'Draft') {
 			if (frm.doc.revisado_por == "" || frm.doc.revisado_por == null) {
 				frappe.call({
 					method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
 					args: {
-						role: 'Revisor de Solicitudes de Pago'
+						role: '%Revisor de Solicitudes de Pago%'
 					},
 					callback: function(r) {
 						if (r.message != undefined) {
@@ -69,16 +69,16 @@ frappe.ui.form.on('Solicitud de Pago', {
 			}
 		}
 
-		if (frm.doc.workflow_status == 'Revisado') {
+		if (frm.doc.workflow_status != 'Draft') {
 			if (frm.doc.aprobado_por == "" || frm.doc.aprobado_por == null) {
 				frappe.call({
 					method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
 					args: {
-						role: 'Aprobador de Solicitudes de Pago'
+						role: '%Aprobador de Solicitudes de Pago%'
 					},
 					callback: function(r) {
 						if (r.message != undefined) {
-							frm.set_query("revisado_por", function() {
+							frm.set_query("aprobado_por", function() {
 								return {
 									filters: {
 										name: ["in", r.message.map(c => c.parent)]

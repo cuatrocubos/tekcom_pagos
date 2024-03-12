@@ -39,8 +39,8 @@ class SolicituddeViaticos(Document):
     set_aprobado(self)
 
 def validate_employee_permite_asignar_viaticos(self):
+  message = []
   for persona in self.personas:
-    
     persona.permite_asignar_viaticos_dia_1 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_1, self.name)
     # print(persona.employee, persona.permite_asignar_viaticos_dia_1, persona.fecha_dia_1)
 
@@ -62,20 +62,22 @@ def validate_employee_permite_asignar_viaticos(self):
     persona.permite_asignar_viaticos_dia_7 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_7, self.name)
     # print(persona.employee, persona.permite_asignar_viaticos_dia_7, persona.fecha_dia_7)
     if persona.permite_asignar_viaticos_dia_1 == 0:
-      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_1), frappe.ValidationError)
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_1))
     if persona.permite_asignar_viaticos_dia_2 == 0:
-      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_2), frappe.ValidationError)
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_2))
     if persona.permite_asignar_viaticos_dia_3 == 0:
-      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_3), frappe.ValidationError)
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_3))
     if persona.permite_asignar_viaticos_dia_4 == 0:
-      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_4), frappe.ValidationError)
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_4))
     if persona.permite_asignar_viaticos_dia_5 == 0:
-      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_5), frappe.ValidationError)
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_5))
     if persona.permite_asignar_viaticos_dia_6 == 0:
-      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_6), frappe.ValidationError)
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_6))
     if persona.permite_asignar_viaticos_dia_7 == 0:
-      frappe.throw(_("Empleado {0} ya tiene viaticos asignados en fecha {1}").format(persona.employee, persona.fecha_dia_7), frappe.ValidationError)
-
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_7))
+  if (len(message) > 0):
+    frappe.msgprint(msg=message,title='Alerta de viaticos duplicados',as_list=True)
+  
 def set_revision(self):
   if (self.workflow_status) == 'Revisado' and self.fecha_hora_revision == None:
     self.fecha_hora_revision = frappe.utils.now_datetime()
@@ -125,7 +127,7 @@ def validate_permite_asignar_viaticos_dia(employee, fecha, solicitud):
 def get_users_by_role(role):
   usuarios = []
   usuarios = frappe.get_all(
-    "Has Role", filters={"role": role, "parenttype": "User"}, fields=["parent"]
+    "Has Role", filters={"role": ['like', role], "parenttype": "User"}, fields=["parent"]
   )
   return usuarios
 

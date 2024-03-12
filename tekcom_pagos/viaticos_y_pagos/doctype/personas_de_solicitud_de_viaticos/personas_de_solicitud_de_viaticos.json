@@ -263,55 +263,74 @@
    "mandatory_depends_on": "eval:(doc.dias_viaje>=7)"
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "permite_asignar_viaticos_dia_1",
    "fieldtype": "Check",
    "hidden": 1,
    "label": "permite_asignar_viaticos_dia_1",
+   "no_copy": 1,
    "print_hide": 1,
    "report_hide": 1
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "permite_asignar_viaticos_dia_2",
    "fieldtype": "Check",
    "hidden": 1,
-   "label": "permite_asignar_viaticos_dia_2"
+   "label": "permite_asignar_viaticos_dia_2",
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "permite_asignar_viaticos_dia_3",
    "fieldtype": "Check",
    "hidden": 1,
-   "label": "permite_asignar_viaticos_dia_3"
+   "label": "permite_asignar_viaticos_dia_3",
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "permite_asignar_viaticos_dia_4",
    "fieldtype": "Check",
    "hidden": 1,
-   "label": "permite_asignar_viaticos_dia_4"
+   "label": "permite_asignar_viaticos_dia_4",
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "permite_asignar_viaticos_dia_5",
    "fieldtype": "Check",
    "hidden": 1,
-   "label": "permite_asignar_viaticos_dia_5"
+   "label": "permite_asignar_viaticos_dia_5",
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "permite_asignar_viaticos_dia_6",
    "fieldtype": "Check",
    "hidden": 1,
-   "label": "permite_asignar_viaticos_dia_6"
+   "label": "permite_asignar_viaticos_dia_6",
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "permite_asignar_viaticos_dia_7",
    "fieldtype": "Check",
    "hidden": 1,
-   "label": "permite_asignar_viaticos_dia_7"
+   "label": "permite_asignar_viaticos_dia_7",
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1
   }
  ],
  "index_web_pages_for_search": 1,
