@@ -1,577 +1,577 @@
 {
- "actions": [],
- "allow_rename": 1,
- "autoname": "naming_series:",
- "creation": "2023-05-21 21:07:22.440548",
- "default_view": "List",
- "doctype": "DocType",
- "editable_grid": 1,
- "engine": "InnoDB",
- "field_order": [
-  "company",
-  "column_break_wtwdj",
-  "naming_series",
-  "detalles_section_break",
-  "fecha_solicitud",
-  "fecha_vencimiento",
-  "column_break_kh1e3",
-  "solicitante",
-  "departamento_solicitante",
-  "bank_account",
-  "detalle_section_break",
-  "descripcion",
-  "accounting_dimensions_section_break",
-  "cost_center",
-  "column_break_c3a1o",
-  "project",
-  "divisa_section",
-  "currency",
-  "column_break_z1fii",
-  "exchange_rate",
-  "beneficiario_section_break",
-  "party_type",
-  "party",
-  "party_name",
-  "party_tax_id",
-  "fecha_vencimiento_constancia_pago_cuenta",
-  "contact_person",
-  "contact_email",
-  "alerta_constancia_pago_cuenta",
-  "column_break_cbqbb",
-  "forma_pago",
-  "party_bank_account",
-  "bank",
-  "bank_account_type",
-  "bank_account_no",
-  "section_break_rzd7g",
-  "monto_solicitado",
-  "column_break_x32ub",
-  "monto_solicitado_base",
-  "comprobantes_section",
-  "documentos_adjuntos",
-  "references",
-  "otras_referencias_section",
-  "otros_ordenes_de_compra",
-  "otros_factura_de_compra",
-  "otros_compra_al_contado",
-  "write_off_section",
-  "total_allocated_amount",
-  "base_total_allocated_amount",
-  "column_break_cqmsv",
-  "unallocated_amount",
-  "difference_amount",
-  "amended_from",
-  "transaction_references",
-  "mode_of_payment",
-  "column_break_fwkqf",
-  "reference_no",
-  "reference_date",
-  "more_information_section",
-  "revisado_por",
-  "aprobado_por",
-  "status",
-  "workflow_status",
-  "custom_remarks",
-  "remarks",
-  "column_break_nxoca",
-  "fecha_hora_revision",
-  "fecha_hora_aprobacion"
- ],
- "fields": [
-  {
-   "fieldname": "currency",
-   "fieldtype": "Link",
-   "label": "Currency",
-   "options": "Currency",
-   "reqd": 1
-  },
-  {
-   "fieldname": "amended_from",
-   "fieldtype": "Link",
-   "label": "Amended From",
-   "no_copy": 1,
-   "options": "Solicitud de Pago",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "company",
-   "fieldtype": "Link",
-   "label": "Company",
-   "options": "Company",
-   "reqd": 1
-  },
-  {
-   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
-   "fieldname": "mode_of_payment",
-   "fieldtype": "Link",
-   "label": "Mode of Payment",
-   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
-   "options": "Mode of Payment",
-   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
-  },
-  {
-   "fieldname": "fecha_solicitud",
-   "fieldtype": "Date",
-   "in_list_view": 1,
-   "label": "Fecha de Solicitud",
-   "reqd": 1
-  },
-  {
-   "fieldname": "fecha_vencimiento",
-   "fieldtype": "Date",
-   "label": "Fecha de Vencimiento",
-   "reqd": 1
-  },
-  {
-   "fieldname": "beneficiario_section_break",
-   "fieldtype": "Section Break",
-   "label": "Beneficiario"
-  },
-  {
-   "depends_on": "eval:doc.docstatus==0",
-   "fieldname": "party_type",
-   "fieldtype": "Link",
-   "in_standard_filter": 1,
-   "label": "Party Type",
-   "options": "DocType",
-   "print_hide": 1,
-   "search_index": 1
-  },
-  {
-   "bold": 1,
-   "depends_on": "eval:doc.party_type",
-   "fieldname": "party",
-   "fieldtype": "Dynamic Link",
-   "in_standard_filter": 1,
-   "label": "Party",
-   "mandatory_depends_on": "eval:doc.party_type",
-   "options": "party_type"
-  },
-  {
-   "allow_on_submit": 1,
-   "depends_on": "eval:doc.party",
-   "fieldname": "party_name",
-   "fieldtype": "Data",
-   "in_global_search": 1,
-   "label": "Party Name",
-   "read_only": 1
-  },
-  {
-   "fieldname": "solicitante",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Solicitante",
-   "options": "Employee",
-   "reqd": 1
-  },
-  {
-   "fieldname": "column_break_cbqbb",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "descripcion",
-   "fieldtype": "Long Text",
-   "label": "Concepto",
-   "max_height": "75px"
-  },
-  {
-   "fieldname": "detalle_section_break",
-   "fieldtype": "Section Break"
-  },
-  {
-   "depends_on": "eval:(doc.party)",
-   "fieldname": "comprobantes_section",
-   "fieldtype": "Section Break",
-   "label": "Reference"
-  },
-  {
-   "allow_on_submit": 1,
-   "depends_on": "eval:(doc.company && doc.mode_of_payment && doc.workflow_status == \"Por Pagar\")",
-   "fieldname": "bank_account",
-   "fieldtype": "Link",
-   "label": "Company Bank Account",
-   "options": "Bank Account"
-  },
-  {
-   "depends_on": "eval:doc.party_type=='Supplier'",
-   "description": "Seleccione una de las cuentas de la lista o ingrese los datos manualmente",
-   "fieldname": "party_bank_account",
-   "fieldtype": "Link",
-   "label": "Party Bank Account",
-   "options": "Bank Account"
-  },
-  {
-   "fieldname": "contact_person",
-   "fieldtype": "Link",
-   "hidden": 1,
-   "label": "Contact",
-   "options": "Contact"
-  },
-  {
-   "depends_on": "party",
-   "fieldname": "contact_email",
-   "fieldtype": "Data",
-   "label": "Email"
-  },
-  {
-   "bold": 1,
-   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
-   "fieldname": "reference_no",
-   "fieldtype": "Data",
-   "label": "Cheque/Reference No",
-   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
-   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
-  },
-  {
-   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
-   "fieldname": "reference_date",
-   "fieldtype": "Date",
-   "label": "Cheque/Reference Date",
-   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
-   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
-  },
-  {
-   "default": "Draft",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "in_standard_filter": 1,
-   "label": "Status",
-   "length": 30,
-   "no_copy": 1,
-   "options": "\nDraft\nSubmitted\nCancelled",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
-   "fieldname": "transaction_references",
-   "fieldtype": "Section Break",
-   "label": "Transaction ID"
-  },
-  {
-   "fieldname": "more_information_section",
-   "fieldtype": "Section Break",
-   "label": "More Information"
-  },
-  {
-   "default": "0",
-   "fieldname": "custom_remarks",
-   "fieldtype": "Check",
-   "label": "Custom Remarks"
-  },
-  {
-   "fieldname": "remarks",
-   "fieldtype": "Small Text",
-   "label": "Remarks",
-   "read_only_depends_on": "eval:doc.custom_remarks == 0"
-  },
-  {
-   "fieldname": "column_break_kh1e3",
-   "fieldtype": "Column Break"
-  },
-  {
-   "bold": 1,
-   "fieldname": "naming_series",
-   "fieldtype": "Select",
-   "label": "Series",
-   "options": "CO-FO-003-.YYYY.-",
-   "print_hide": 1,
-   "reqd": 1,
-   "set_only_once": 1
-  },
-  {
-   "fieldname": "column_break_nxoca",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:doc.forma_pago!='Cheque'",
-   "fieldname": "bank",
-   "fieldtype": "Link",
-   "label": "Bank",
-   "mandatory_depends_on": "eval:(doc.forma_pago!='Cheque')",
-   "options": "Bank"
-  },
-  {
-   "depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')",
-   "fieldname": "bank_account_no",
-   "fieldtype": "Data",
-   "label": "Bank Account No",
-   "mandatory_depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')"
-  },
-  {
-   "fieldname": "column_break_fwkqf",
-   "fieldtype": "Column Break"
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "divisa_section",
-   "fieldtype": "Section Break",
-   "label": "Divisa",
-   "print_hide": 1
-  },
-  {
-   "fieldname": "column_break_z1fii",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "Draft",
-   "fieldname": "workflow_status",
-   "fieldtype": "Select",
-   "hidden": 1,
-   "in_standard_filter": 1,
-   "label": "Workflow Status",
-   "no_copy": 1,
-   "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected\nEntregado a Contabilidad",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_x32ub",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "section_break_rzd7g",
-   "fieldtype": "Section Break",
-   "label": "Amount"
-  },
-  {
-   "fieldname": "references",
-   "fieldtype": "Table",
-   "label": "Payment References",
-   "options": "Comprobante de Solicitud de Pago"
-  },
-  {
-   "fieldname": "exchange_rate",
-   "fieldtype": "Float",
-   "label": "Exchange Rate",
-   "precision": "9"
-  },
-  {
-   "bold": 1,
-   "depends_on": "eval:(doc.monto_pagar && doc.references)",
-   "fieldname": "total_allocated_amount",
-   "fieldtype": "Currency",
-   "label": "Total Allocated Amount",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "base_total_allocated_amount",
-   "fieldtype": "Currency",
-   "label": "Total Allocated Amount (Company Currency)",
-   "options": "Company:company:default_currency",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "depends_on": "eval:(doc.monto_pagar && doc.references)",
-   "fieldname": "unallocated_amount",
-   "fieldtype": "Currency",
-   "label": "Unallocated Amount",
-   "print_hide": 1
-  },
-  {
-   "bold": 1,
-   "depends_on": "eval:(doc.monto_pagar)",
-   "fieldname": "difference_amount",
-   "fieldtype": "Currency",
-   "label": "Difference Amount (Company Currency)",
-   "options": "Company:company:default_currency",
-   "print_hide": 1,
-   "read_only": 1
-  },
-  {
-   "fieldname": "write_off_section",
-   "fieldtype": "Section Break",
-   "hidden": 1,
-   "label": "Writeoff"
-  },
-  {
-   "fieldname": "column_break_cqmsv",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:(doc.party_type == \"Supplier\" && doc.party && \n(doc.fecha_vencimiento_constancia_pago_cuenta < doc.fecha_solicitud || !doc.fecha_vencimiento_constancia_pago_cuenta))",
-   "fieldname": "alerta_constancia_pago_cuenta",
-   "fieldtype": "HTML",
-   "options": "<p class=\"alert alert-warning\">Proveedor no posee constancia de estar inscrito en regimen de pagos a cuenta</p>"
-  },
-  {
-   "depends_on": "eval:(doc.party && doc.fecha_vencimiento_constancia_pago_cuenta)",
-   "fieldname": "fecha_vencimiento_constancia_pago_cuenta",
-   "fieldtype": "Date",
-   "label": "Fecha Vencimiento Constancia Pago a Cuenta",
-   "read_only": 1
-  },
-  {
-   "fieldname": "detalles_section_break",
-   "fieldtype": "Section Break",
-   "hide_border": 1,
-   "label": "Detalles"
-  },
-  {
-   "fieldname": "column_break_wtwdj",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "monto_solicitado_base",
-   "fieldtype": "Currency",
-   "label": "Monto Solicitado (Moneda Compa\u00f1\u00eda)",
-   "options": "Company:company:default_currency",
-   "print_hide": 1,
-   "read_only": 1,
-   "reqd": 1
-  },
-  {
-   "bold": 1,
-   "fieldname": "monto_solicitado",
-   "fieldtype": "Currency",
-   "label": "Monto Solicitado",
-   "options": "currency",
-   "reqd": 1
-  },
-  {
-   "fieldname": "accounting_dimensions_section_break",
-   "fieldtype": "Section Break",
-   "label": "Accounting Dimensions"
-  },
-  {
-   "fieldname": "cost_center",
-   "fieldtype": "Link",
-   "label": "Cost Center",
-   "options": "Cost Center",
-   "reqd": 1
-  },
-  {
-   "fieldname": "project",
-   "fieldtype": "Link",
-   "label": "Project",
-   "options": "Project"
-  },
-  {
-   "fieldname": "column_break_c3a1o",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "revisado_por",
-   "fieldtype": "Link",
-   "label": "Revisado por",
-   "mandatory_depends_on": "eval:(doc.company && (doc.workflow_status == \"Solicitado\" || doc.workflow_status == \"Revisado\"))",
-   "no_copy": 1,
-   "options": "User",
-   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Solicitado\")"
-  },
-  {
-   "fieldname": "aprobado_por",
-   "fieldtype": "Link",
-   "label": "Aprobado por",
-   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Revisado\")",
-   "no_copy": 1,
-   "options": "User",
-   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Revisado\")"
-  },
-  {
-   "fieldname": "departamento_solicitante",
-   "fieldtype": "Link",
-   "label": "Departamento Solicitante",
-   "options": "Department",
-   "reqd": 1
-  },
-  {
-   "fieldname": "documentos_adjuntos",
-   "fieldtype": "Select",
-   "label": "Documentos Adjuntos",
-   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Pagado\")",
-   "options": "\nSin Comprobantes\nCon Copias\nDocumentaci\u00f3n Completa"
-  },
-  {
-   "depends_on": "party",
-   "fieldname": "party_tax_id",
-   "fieldtype": "Data",
-   "label": "Tax ID"
-  },
-  {
-   "fieldname": "fecha_hora_revision",
-   "fieldtype": "Datetime",
-   "label": "Fecha y Hora Revisi\u00f3n",
-   "read_only": 1
-  },
-  {
-   "fieldname": "fecha_hora_aprobacion",
-   "fieldtype": "Datetime",
-   "label": "Fecha y Hora Aprobaci\u00f3n",
-   "read_only": 1
-  },
-  {
-   "depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')",
-   "fieldname": "bank_account_type",
-   "fieldtype": "Link",
-   "label": "Bank Account Type",
-   "mandatory_depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')",
-   "options": "Bank Account Type"
-  },
-  {
-   "default": "Transferencia",
-   "fieldname": "forma_pago",
-   "fieldtype": "Select",
-   "label": "Forma de Pago",
-   "options": "Transferencia\nCheque",
-   "reqd": 1
-  },
-  {
-   "collapsible": 1,
-   "fieldname": "otras_referencias_section",
-   "fieldtype": "Section Break",
-   "label": "Otras Referencias"
-  },
-  {
-   "fieldname": "otros_ordenes_de_compra",
-   "fieldtype": "Data",
-   "label": "Ordenes de Compra"
-  },
-  {
-   "fieldname": "otros_factura_de_compra",
-   "fieldtype": "Data",
-   "label": "Factura de Compra"
-  },
-  {
-   "fieldname": "otros_compra_al_contado",
-   "fieldtype": "Data",
-   "label": "Compra al Contado"
-  }
- ],
- "index_web_pages_for_search": 1,
- "is_submittable": 1,
- "links": [],
- "modified": "2023-12-20 22:31:35.058080",
- "modified_by": "Administrator",
- "module": "Solicitudes de Pagos",
- "name": "Solicitud de Pago",
- "naming_rule": "By \"Naming Series\" field",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  }
- ],
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": [
-  {
-   "color": "Blue",
-   "title": "Borrador"
-  }
- ],
- "track_changes": 1
-}
+  "actions": [],
+  "allow_rename": 1,
+  "autoname": "naming_series:",
+  "creation": "2023-05-21 21:07:22.440548",
+  "default_view": "List",
+  "doctype": "DocType",
+  "editable_grid": 1,
+  "engine": "InnoDB",
+  "field_order": [
+   "company",
+   "column_break_wtwdj",
+   "naming_series",
+   "detalles_section_break",
+   "fecha_solicitud",
+   "fecha_vencimiento",
+   "column_break_kh1e3",
+   "solicitante",
+   "departamento_solicitante",
+   "bank_account",
+   "detalle_section_break",
+   "descripcion",
+   "accounting_dimensions_section_break",
+   "cost_center",
+   "column_break_c3a1o",
+   "project",
+   "divisa_section",
+   "currency",
+   "column_break_z1fii",
+   "exchange_rate",
+   "beneficiario_section_break",
+   "party_type",
+   "party",
+   "party_name",
+   "party_tax_id",
+   "fecha_vencimiento_constancia_pago_cuenta",
+   "contact_person",
+   "contact_email",
+   "alerta_constancia_pago_cuenta",
+   "column_break_cbqbb",
+   "forma_pago",
+   "party_bank_account",
+   "bank",
+   "bank_account_type",
+   "bank_account_no",
+   "section_break_rzd7g",
+   "monto_solicitado",
+   "column_break_x32ub",
+   "monto_solicitado_base",
+   "comprobantes_section",
+   "documentos_adjuntos",
+   "references",
+   "otras_referencias_section",
+   "otros_ordenes_de_compra",
+   "otros_factura_de_compra",
+   "otros_compra_al_contado",
+   "write_off_section",
+   "total_allocated_amount",
+   "base_total_allocated_amount",
+   "column_break_cqmsv",
+   "unallocated_amount",
+   "difference_amount",
+   "amended_from",
+   "transaction_references",
+   "mode_of_payment",
+   "column_break_fwkqf",
+   "reference_no",
+   "reference_date",
+   "more_information_section",
+   "revisado_por",
+   "aprobado_por",
+   "status",
+   "workflow_status",
+   "custom_remarks",
+   "remarks",
+   "column_break_nxoca",
+   "fecha_hora_revision",
+   "fecha_hora_aprobacion"
+  ],
+  "fields": [
+   {
+    "fieldname": "currency",
+    "fieldtype": "Link",
+    "label": "Currency",
+    "options": "Currency",
+    "reqd": 1
+   },
+   {
+    "fieldname": "amended_from",
+    "fieldtype": "Link",
+    "label": "Amended From",
+    "no_copy": 1,
+    "options": "Solicitud de Pago",
+    "print_hide": 1,
+    "read_only": 1
+   },
+   {
+    "fieldname": "company",
+    "fieldtype": "Link",
+    "label": "Company",
+    "options": "Company",
+    "reqd": 1
+   },
+   {
+    "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
+    "fieldname": "mode_of_payment",
+    "fieldtype": "Link",
+    "label": "Mode of Payment",
+    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+    "options": "Mode of Payment",
+    "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
+   },
+   {
+    "fieldname": "fecha_solicitud",
+    "fieldtype": "Date",
+    "in_list_view": 1,
+    "label": "Fecha de Solicitud",
+    "reqd": 1
+   },
+   {
+    "fieldname": "fecha_vencimiento",
+    "fieldtype": "Date",
+    "label": "Fecha de Vencimiento",
+    "reqd": 1
+   },
+   {
+    "fieldname": "beneficiario_section_break",
+    "fieldtype": "Section Break",
+    "label": "Beneficiario"
+   },
+   {
+    "depends_on": "eval:doc.docstatus==0",
+    "fieldname": "party_type",
+    "fieldtype": "Link",
+    "in_standard_filter": 1,
+    "label": "Party Type",
+    "options": "DocType",
+    "print_hide": 1,
+    "search_index": 1
+   },
+   {
+    "bold": 1,
+    "depends_on": "eval:doc.party_type",
+    "fieldname": "party",
+    "fieldtype": "Dynamic Link",
+    "in_standard_filter": 1,
+    "label": "Party",
+    "mandatory_depends_on": "eval:doc.party_type",
+    "options": "party_type"
+   },
+   {
+    "allow_on_submit": 1,
+    "depends_on": "eval:doc.party",
+    "fieldname": "party_name",
+    "fieldtype": "Data",
+    "in_global_search": 1,
+    "label": "Party Name",
+    "read_only": 1
+   },
+   {
+    "fieldname": "solicitante",
+    "fieldtype": "Link",
+    "in_list_view": 1,
+    "label": "Solicitante",
+    "options": "Employee",
+    "reqd": 1
+   },
+   {
+    "fieldname": "column_break_cbqbb",
+    "fieldtype": "Column Break"
+   },
+   {
+    "fieldname": "descripcion",
+    "fieldtype": "Long Text",
+    "label": "Concepto",
+    "max_height": "75px"
+   },
+   {
+    "fieldname": "detalle_section_break",
+    "fieldtype": "Section Break"
+   },
+   {
+    "depends_on": "eval:(doc.party)",
+    "fieldname": "comprobantes_section",
+    "fieldtype": "Section Break",
+    "label": "Reference"
+   },
+   {
+    "allow_on_submit": 1,
+    "depends_on": "eval:(doc.company && doc.mode_of_payment && doc.workflow_status == \"Por Pagar\")",
+    "fieldname": "bank_account",
+    "fieldtype": "Link",
+    "label": "Company Bank Account",
+    "options": "Bank Account"
+   },
+   {
+    "depends_on": "eval:doc.party_type=='Supplier'",
+    "description": "Seleccione una de las cuentas de la lista o ingrese los datos manualmente",
+    "fieldname": "party_bank_account",
+    "fieldtype": "Link",
+    "label": "Party Bank Account",
+    "options": "Bank Account"
+   },
+   {
+    "fieldname": "contact_person",
+    "fieldtype": "Link",
+    "hidden": 1,
+    "label": "Contact",
+    "options": "Contact"
+   },
+   {
+    "depends_on": "party",
+    "fieldname": "contact_email",
+    "fieldtype": "Data",
+    "label": "Email"
+   },
+   {
+    "bold": 1,
+    "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
+    "fieldname": "reference_no",
+    "fieldtype": "Data",
+    "label": "Cheque/Reference No",
+    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+    "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
+   },
+   {
+    "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
+    "fieldname": "reference_date",
+    "fieldtype": "Date",
+    "label": "Cheque/Reference Date",
+    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Approved\")",
+    "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
+   },
+   {
+    "default": "Draft",
+    "fieldname": "status",
+    "fieldtype": "Select",
+    "hidden": 1,
+    "in_standard_filter": 1,
+    "label": "Status",
+    "length": 30,
+    "no_copy": 1,
+    "options": "\nDraft\nSubmitted\nCancelled",
+    "print_hide": 1,
+    "read_only": 1
+   },
+   {
+    "depends_on": "eval:(doc.company && (doc.workflow_status == \"Approved\" || doc.mode_of_payment))",
+    "fieldname": "transaction_references",
+    "fieldtype": "Section Break",
+    "label": "Transaction ID"
+   },
+   {
+    "fieldname": "more_information_section",
+    "fieldtype": "Section Break",
+    "label": "More Information"
+   },
+   {
+    "default": "0",
+    "fieldname": "custom_remarks",
+    "fieldtype": "Check",
+    "label": "Custom Remarks"
+   },
+   {
+    "fieldname": "remarks",
+    "fieldtype": "Small Text",
+    "label": "Remarks",
+    "read_only_depends_on": "eval:doc.custom_remarks == 0"
+   },
+   {
+    "fieldname": "column_break_kh1e3",
+    "fieldtype": "Column Break"
+   },
+   {
+    "bold": 1,
+    "fieldname": "naming_series",
+    "fieldtype": "Select",
+    "label": "Series",
+    "options": "CO-FO-003-.YYYY.-",
+    "print_hide": 1,
+    "reqd": 1,
+    "set_only_once": 1
+   },
+   {
+    "fieldname": "column_break_nxoca",
+    "fieldtype": "Column Break"
+   },
+   {
+    "depends_on": "eval:doc.forma_pago!='Cheque'",
+    "fieldname": "bank",
+    "fieldtype": "Link",
+    "label": "Bank",
+    "mandatory_depends_on": "eval:(doc.forma_pago!='Cheque')",
+    "options": "Bank"
+   },
+   {
+    "depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')",
+    "fieldname": "bank_account_no",
+    "fieldtype": "Data",
+    "label": "Bank Account No",
+    "mandatory_depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')"
+   },
+   {
+    "fieldname": "column_break_fwkqf",
+    "fieldtype": "Column Break"
+   },
+   {
+    "collapsible": 1,
+    "fieldname": "divisa_section",
+    "fieldtype": "Section Break",
+    "label": "Divisa",
+    "print_hide": 1
+   },
+   {
+    "fieldname": "column_break_z1fii",
+    "fieldtype": "Column Break"
+   },
+   {
+    "default": "Draft",
+    "fieldname": "workflow_status",
+    "fieldtype": "Select",
+    "hidden": 1,
+    "in_standard_filter": 1,
+    "label": "Workflow Status",
+    "no_copy": 1,
+    "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected\nEntregado a Contabilidad",
+    "print_hide": 1,
+    "read_only": 1
+   },
+   {
+    "fieldname": "column_break_x32ub",
+    "fieldtype": "Column Break"
+   },
+   {
+    "fieldname": "section_break_rzd7g",
+    "fieldtype": "Section Break",
+    "label": "Amount"
+   },
+   {
+    "fieldname": "references",
+    "fieldtype": "Table",
+    "label": "Payment References",
+    "options": "Comprobante de Solicitud de Pago"
+   },
+   {
+    "fieldname": "exchange_rate",
+    "fieldtype": "Float",
+    "label": "Exchange Rate",
+    "precision": "9"
+   },
+   {
+    "bold": 1,
+    "depends_on": "eval:(doc.monto_pagar && doc.references)",
+    "fieldname": "total_allocated_amount",
+    "fieldtype": "Currency",
+    "label": "Total Allocated Amount",
+    "print_hide": 1,
+    "read_only": 1
+   },
+   {
+    "fieldname": "base_total_allocated_amount",
+    "fieldtype": "Currency",
+    "label": "Total Allocated Amount (Company Currency)",
+    "options": "Company:company:default_currency",
+    "print_hide": 1,
+    "read_only": 1
+   },
+   {
+    "depends_on": "eval:(doc.monto_pagar && doc.references)",
+    "fieldname": "unallocated_amount",
+    "fieldtype": "Currency",
+    "label": "Unallocated Amount",
+    "print_hide": 1
+   },
+   {
+    "bold": 1,
+    "depends_on": "eval:(doc.monto_pagar)",
+    "fieldname": "difference_amount",
+    "fieldtype": "Currency",
+    "label": "Difference Amount (Company Currency)",
+    "options": "Company:company:default_currency",
+    "print_hide": 1,
+    "read_only": 1
+   },
+   {
+    "fieldname": "write_off_section",
+    "fieldtype": "Section Break",
+    "hidden": 1,
+    "label": "Writeoff"
+   },
+   {
+    "fieldname": "column_break_cqmsv",
+    "fieldtype": "Column Break"
+   },
+   {
+    "depends_on": "eval:(doc.party_type == \"Supplier\" && doc.party && \n(doc.fecha_vencimiento_constancia_pago_cuenta < doc.fecha_solicitud || !doc.fecha_vencimiento_constancia_pago_cuenta))",
+    "fieldname": "alerta_constancia_pago_cuenta",
+    "fieldtype": "HTML",
+    "options": "<p class=\"alert alert-warning\">Proveedor no posee constancia de estar inscrito en regimen de pagos a cuenta</p>"
+   },
+   {
+    "depends_on": "eval:(doc.party && doc.fecha_vencimiento_constancia_pago_cuenta)",
+    "fieldname": "fecha_vencimiento_constancia_pago_cuenta",
+    "fieldtype": "Date",
+    "label": "Fecha Vencimiento Constancia Pago a Cuenta",
+    "read_only": 1
+   },
+   {
+    "fieldname": "detalles_section_break",
+    "fieldtype": "Section Break",
+    "hide_border": 1,
+    "label": "Detalles"
+   },
+   {
+    "fieldname": "column_break_wtwdj",
+    "fieldtype": "Column Break"
+   },
+   {
+    "fieldname": "monto_solicitado_base",
+    "fieldtype": "Currency",
+    "label": "Monto Solicitado (Moneda Compa\u00f1\u00eda)",
+    "options": "Company:company:default_currency",
+    "print_hide": 1,
+    "read_only": 1,
+    "reqd": 1
+   },
+   {
+    "bold": 1,
+    "fieldname": "monto_solicitado",
+    "fieldtype": "Currency",
+    "label": "Monto Solicitado",
+    "options": "currency",
+    "reqd": 1
+   },
+   {
+    "fieldname": "accounting_dimensions_section_break",
+    "fieldtype": "Section Break",
+    "label": "Accounting Dimensions"
+   },
+   {
+    "fieldname": "cost_center",
+    "fieldtype": "Link",
+    "label": "Cost Center",
+    "options": "Cost Center",
+    "reqd": 1
+   },
+   {
+    "fieldname": "project",
+    "fieldtype": "Link",
+    "label": "Project",
+    "options": "Project"
+   },
+   {
+    "fieldname": "column_break_c3a1o",
+    "fieldtype": "Column Break"
+   },
+   {
+    "fieldname": "revisado_por",
+    "fieldtype": "Link",
+    "label": "Revisado por",
+    "mandatory_depends_on": "eval:(doc.company && (doc.workflow_status == \"Solicitado\" || doc.workflow_status == \"Revisado\"))",
+    "no_copy": 1,
+    "options": "User",
+    "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Solicitado\")"
+   },
+   {
+    "fieldname": "aprobado_por",
+    "fieldtype": "Link",
+    "label": "Aprobado por",
+    "mandatory_depends_on": "eval:(doc.company && (doc.workflow_status == \"Solicitado\" || doc.workflow_status == \"Revisado\"))",
+    "no_copy": 1,
+    "options": "User",
+    "read_only_depends_on": "eval:(doc.company && (doc.workflow_status == \"Draft\"))"
+   },
+   {
+    "fieldname": "departamento_solicitante",
+    "fieldtype": "Link",
+    "label": "Departamento Solicitante",
+    "options": "Department",
+    "reqd": 1
+   },
+   {
+    "fieldname": "documentos_adjuntos",
+    "fieldtype": "Select",
+    "label": "Documentos Adjuntos",
+    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Pagado\")",
+    "options": "\nSin Comprobantes\nCon Copias\nDocumentaci\u00f3n Completa"
+   },
+   {
+    "depends_on": "party",
+    "fieldname": "party_tax_id",
+    "fieldtype": "Data",
+    "label": "Tax ID"
+   },
+   {
+    "fieldname": "fecha_hora_revision",
+    "fieldtype": "Datetime",
+    "label": "Fecha y Hora Revisi\u00f3n",
+    "read_only": 1
+   },
+   {
+    "fieldname": "fecha_hora_aprobacion",
+    "fieldtype": "Datetime",
+    "label": "Fecha y Hora Aprobaci\u00f3n",
+    "read_only": 1
+   },
+   {
+    "depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')",
+    "fieldname": "bank_account_type",
+    "fieldtype": "Link",
+    "label": "Bank Account Type",
+    "mandatory_depends_on": "eval:(doc.bank && doc.forma_pago!='Cheque')",
+    "options": "Bank Account Type"
+   },
+   {
+    "default": "Transferencia",
+    "fieldname": "forma_pago",
+    "fieldtype": "Select",
+    "label": "Forma de Pago",
+    "options": "Transferencia\nCheque",
+    "reqd": 1
+   },
+   {
+    "collapsible": 1,
+    "fieldname": "otras_referencias_section",
+    "fieldtype": "Section Break",
+    "label": "Otras Referencias"
+   },
+   {
+    "fieldname": "otros_ordenes_de_compra",
+    "fieldtype": "Data",
+    "label": "Ordenes de Compra"
+   },
+   {
+    "fieldname": "otros_factura_de_compra",
+    "fieldtype": "Data",
+    "label": "Factura de Compra"
+   },
+   {
+    "fieldname": "otros_compra_al_contado",
+    "fieldtype": "Data",
+    "label": "Compra al Contado"
+   }
+  ],
+  "index_web_pages_for_search": 1,
+  "is_submittable": 1,
+  "links": [],
+  "modified": "2024-03-05 12:42:04.438396",
+  "modified_by": "Administrator",
+  "module": "Solicitudes de Pagos",
+  "name": "Solicitud de Pago",
+  "naming_rule": "By \"Naming Series\" field",
+  "owner": "Administrator",
+  "permissions": [
+   {
+    "create": 1,
+    "delete": 1,
+    "email": 1,
+    "export": 1,
+    "print": 1,
+    "read": 1,
+    "report": 1,
+    "role": "System Manager",
+    "share": 1,
+    "write": 1
+   }
+  ],
+  "sort_field": "modified",
+  "sort_order": "DESC",
+  "states": [
+   {
+    "color": "Blue",
+    "title": "Borrador"
+   }
+  ],
+  "track_changes": 1
+ }
