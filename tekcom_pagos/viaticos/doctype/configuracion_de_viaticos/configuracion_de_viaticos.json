@@ -1,0 +1,85 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-03-18 00:03:14.108396",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "predeterminados_tab",
+  "revisi\u00f3n_y_aprobaci\u00f3n_section",
+  "revisor_predeterminado",
+  "aprobador_predeterminado",
+  "coordinador_pagos_predeterminado",
+  "column_break_sfzu",
+  "section_break_dash",
+  "cost_center_predeterminados"
+ ],
+ "fields": [
+  {
+   "fieldname": "predeterminados_tab",
+   "fieldtype": "Tab Break",
+   "label": "Predeterminados"
+  },
+  {
+   "fieldname": "revisi\u00f3n_y_aprobaci\u00f3n_section",
+   "fieldtype": "Section Break",
+   "label": "Revisi\u00f3n y Aprobaci\u00f3n"
+  },
+  {
+   "fieldname": "revisor_predeterminado",
+   "fieldtype": "Link",
+   "label": "Revisor Predeterminado",
+   "options": "User"
+  },
+  {
+   "fieldname": "aprobador_predeterminado",
+   "fieldtype": "Link",
+   "label": "Aprobador Predeterminado",
+   "options": "User"
+  },
+  {
+   "fieldname": "column_break_sfzu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "coordinador_pagos_predeterminado",
+   "fieldtype": "Link",
+   "label": "Coordinador de Pagos Predeterminado",
+   "options": "User"
+  },
+  {
+   "fieldname": "section_break_dash",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "cost_center_predeterminados",
+   "fieldtype": "Table",
+   "label": "Predeterminados por Centro de Costo",
+   "options": "Configuracion Viaticos por Centro de Costo"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-03-18 01:00:22.185648",
+ "modified_by": "Administrator",
+ "module": "Viaticos",
+ "name": "Configuracion de Viaticos",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -118,7 +118,7 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
 		frm.events.validate_company(frm)
 		if (frm.doc.solicitante) {
 			frappe.call({
-				method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_cuadrillas_solicitante",
+				method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_cuadrillas_solicitante",
 				args: {
 					company: frm.doc.company,
 					employee: frm.doc.solicitante

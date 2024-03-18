@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"v2UiYwff8e\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reportes y Maestros</span>\",\"col\":12}},{\"id\":\"qkVHin0XJp\",\"type\":\"card\",\"data\":{\"card_name\":\"Viaticos\",\"col\":4}}]",
+ "content": "[{\"id\":\"v2UiYwff8e\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Reportes y Maestros</span>\",\"col\":12}},{\"id\":\"qkVHin0XJp\",\"type\":\"card\",\"data\":{\"card_name\":\"Viaticos\",\"col\":4}},{\"id\":\"aF9DHmNh7e\",\"type\":\"card\",\"data\":{\"card_name\":\"Configuraci\u00f3n\",\"col\":4}}]",
  "creation": "2023-07-13 20:22:51.241059",
  "custom_blocks": [],
  "docstatus": 0,
@@ -39,11 +39,30 @@
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Configuraci\u00f3n",
+   "link_count": 1,
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Configuracion de Viaticos",
+   "link_count": 0,
+   "link_to": "Configuracion de Viaticos",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
   }
  ],
- "modified": "2023-07-13 20:28:29.439823",
+ "modified": "2024-03-18 00:04:17.713027",
  "modified_by": "Administrator",
- "module": "Solicitudes de Pagos",
+ "module": "Viaticos",
  "name": "Viaticos",
  "number_cards": [],
  "owner": "Administrator",

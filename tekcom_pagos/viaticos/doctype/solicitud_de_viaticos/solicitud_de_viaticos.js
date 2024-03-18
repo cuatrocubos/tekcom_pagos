@@ -53,7 +53,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		if (frm.doc.workflow_status == 'Solicitado') {
 			if (frm.doc.revisado_por == "" || frm.doc.revisado_por == null) {
 				frappe.call({
-					method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
+					method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
 					args: {
 						role: 'Revisor de Solicitud de Viaticos'
 					},
@@ -75,7 +75,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		if (frm.doc.workflow_status == 'Revisado') {
 			if (frm.doc.aprobado_por == "" || frm.doc.aprobado_por == null) {
 				frappe.call({
-					method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
+					method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
 					args: {
 						role: 'Aprobador de Solicitud de Viaticos'
 					},
@@ -191,7 +191,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		frm.events.validate_company(frm)
 		if (frm.doc.solicitante) {
 			frappe.call({
-				method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_cuadrillas_solicitante",
+				method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_cuadrillas_solicitante",
 				args: {
 					company: frm.doc.company,
 					employee: frm.doc.solicitante
@@ -230,7 +230,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		}
 
 		return frappe.call({
-			method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_cuadrilla_details",
+			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_cuadrilla_details",
 			args: {
 				cuadrilla: frm.doc.cuadrilla
 			},
@@ -275,7 +275,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 
 	make_liquidacion_viaticos() {
 		frappe.model.open_mapped_doc({
-			method: 'tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.make_liquidacion_viaticos',
+			method: 'tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.make_liquidacion_viaticos',
 			frm: cur_frm
 		})
 	},
@@ -713,7 +713,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 
 	validate_permite_asignar_viaticos_dia(frm, row, cdt, cdn, _employee, _fecha) {
 		return frappe.call({
-			method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.validate_permite_asignar_viaticos_dia",
+			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.validate_permite_asignar_viaticos_dia",
 			args: {
 				employee: _employee,
 				fecha: _fecha,
