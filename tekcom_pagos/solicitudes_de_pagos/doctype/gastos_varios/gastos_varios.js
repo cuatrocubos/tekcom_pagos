@@ -186,7 +186,7 @@ frappe.ui.form.on('Gastos Varios', {
 			let company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency
 
 			return frappe.call({
-				method: "tekcom_pagos.viaticos_y_pagos.doctype.gastos_varios.gastos_varios.get_party_details",
+				method: "tekcom_pagos.viaticos.doctype.gastos_varios.gastos_varios.get_party_details",
 				args: {
 					company: frm.doc.company,
 					party_type: frm.doc.party_type,

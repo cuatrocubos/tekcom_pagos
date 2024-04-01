@@ -6,7 +6,7 @@ from frappe.model.document import Document
 
 
 class ConfiguraciondeViaticos(Document):
-	pass
+  pass
 
 @frappe.whitelist()
 def get_users_by_role(role):

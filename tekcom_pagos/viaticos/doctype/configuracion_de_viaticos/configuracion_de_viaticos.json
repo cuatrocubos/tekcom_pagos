@@ -61,7 +61,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-03-18 01:00:22.185648",
+ "modified": "2024-03-18 13:37:05.297614",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Configuracion de Viaticos",
@@ -76,6 +76,13 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "All",
+   "share": 1
   }
  ],
  "sort_field": "modified",

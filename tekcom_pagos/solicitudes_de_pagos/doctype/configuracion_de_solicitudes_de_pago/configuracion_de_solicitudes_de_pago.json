@@ -56,13 +56,13 @@
    "fieldname": "cost_center_predeterminados",
    "fieldtype": "Table",
    "label": "Predeterminados por Centro de Costo",
-   "options": "Configuracion Viaticos por Centro de Costo"
+   "options": "Configuracion de Solicitudes de Pago por Centro de Costo"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-03-18 01:02:15.239404",
+ "modified": "2024-03-22 09:41:14.501888",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Configuracion de Solicitudes de Pago",

@@ -20,6 +20,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		if (frm.doc.workflow_status == 'Draft' || frm.doc.workflow_status == 'Rejected') {
 			frm.set_value("revisado_por", null)
 			frm.set_value("aprobado_por", null)
+			
 			frm.set_value("fecha_hora_revision", null)
 			frm.set_value("fecha_hora_aprobacion", null)
 		}
@@ -50,49 +51,49 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				}
 			})
 		}
-		if (frm.doc.workflow_status == 'Solicitado') {
-			if (frm.doc.revisado_por == "" || frm.doc.revisado_por == null) {
-				frappe.call({
-					method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
-					args: {
-						role: 'Revisor de Solicitud de Viaticos'
-					},
-					callback: function(r) {
-						if (r.message != undefined) {
-							frm.set_query("revisado_por", function() {
-								return {
-									filters: {
-										name: ["in", r.message.map(c => c.parent)]
-									}
-								}
-							})
-						}
-					}
-				})
-			}
-		}
+		// if (frm.doc.workflow_status == 'Solicitado') {
+		// 	if (frm.doc.revisado_por == "" || frm.doc.revisado_por == null) {
+		// 		frappe.call({
+		// 			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
+		// 			args: {
+		// 				role: 'Revisor de Solicitud de Viaticos'
+		// 			},
+		// 			callback: function(r) {
+		// 				if (r.message != undefined) {
+		// 					frm.set_query("revisado_por", function() {
+		// 						return {
+		// 							filters: {
+		// 								name: ["in", r.message.map(c => c.parent)]
+		// 							}
+		// 						}
+		// 					})
+		// 				}
+		// 			}
+		// 		})
+		// 	}
+		// }
 
-		if (frm.doc.workflow_status == 'Revisado') {
-			if (frm.doc.aprobado_por == "" || frm.doc.aprobado_por == null) {
-				frappe.call({
-					method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
-					args: {
-						role: 'Aprobador de Solicitud de Viaticos'
-					},
-					callback: function(r) {
-						if (r.message != undefined) {
-							frm.set_query("revisado_por", function() {
-								return {
-									filters: {
-										name: ["in", r.message.map(c => c.parent)]
-									}
-								}
-							})
-						}
-					}
-				})
-			}
-		}
+		// if (frm.doc.workflow_status == 'Revisado') {
+		// 	if (frm.doc.aprobado_por == "" || frm.doc.aprobado_por == null) {
+		// 		frappe.call({
+		// 			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
+		// 			args: {
+		// 				role: 'Aprobador de Solicitud de Viaticos'
+		// 			},
+		// 			callback: function(r) {
+		// 				if (r.message != undefined) {
+		// 					frm.set_query("aprobado_por", function() {
+		// 						return {
+		// 							filters: {
+		// 								name: ["in", r.message.map(c => c.parent)]
+		// 							}
+		// 						}
+		// 					})
+		// 				}
+		// 			}
+		// 		})
+		// 	}
+		// }
 
 		frm.set_query("depositar_a_cuenta", function() {
 			return {
@@ -358,7 +359,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		frm.set_value("total_anticipo_solicitado", total_anticipo_solicitado)
 		frm.set_value("total_anticipo_aprobado", total_anticipo_aprobado)
 
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 
 	get_total_solicitado_alimentacion(frm) {
@@ -400,10 +401,13 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		let hora_salida = new Date(frm.doc.fecha_salida).getHours()
 		let tiempos_dia_1 = 3
 
-		if (hora_salida > 8) {
+		if (hora_salida > 7) {
 			tiempos_dia_1 = tiempos_dia_1 - 1
 		}
 		if (hora_salida >= 12) {
+			tiempos_dia_1 = tiempos_dia_1 - 1
+		}
+		if (hora_salida >= 17) {
 			tiempos_dia_1 = tiempos_dia_1 - 1
 		}
 
@@ -417,7 +421,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		if (hora_retorno < 17 ) {
 			tiempos_dia_ultimo = tiempos_dia_ultimo - 1
 		}
-		if (hora_retorno < 12 ) {
+		if (hora_retorno <= 12 ) {
 			tiempos_dia_ultimo = tiempos_dia_ultimo - 1
 		}
 
@@ -506,7 +510,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				break;
 		}
 
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 
 	set_asignacion_diaria_alimentacion(frm, row, cdt, cdn) {
@@ -533,6 +537,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		}
 		// tiempos_dia_ultimo = hora_retorno >= 17 ? 3 : hora_retorno > 12 ? 2 : 1
 		frappe.model.set_value(cdt, cdn, "tiempos_dia_1", tiempos_dia_1)
+		console.log('dias_viaje', row.dias_viaje, row)
 		switch (row.dias_viaje) {
 			case 1:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
@@ -760,11 +765,34 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			dia_viaje = flt(tiempos_dia) * flt(row.asignacion_alimentacion)
 		}
 		frappe.model.set_value(cdt, cdn, `dia_viaje_${dia}`, dia_viaje)
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 
-	set_total_solicitado(frm, row, cdt, cdn) {
-		let total = flt(row.dia_viaje_1) + flt(row.dia_viaje_2) + flt(row.dia_viaje_3) + flt(row.dia_viaje_4) + flt(row.dia_viaje_5) + flt(row.dia_viaje_6) + flt(row.dia_viaje_7)
+	set_total_solicitado(frm, cdt, cdn) {
+		var row = locals[cdt][cdn]
+		var dia_1 = row.dia_viaje_1
+		var dia_2 = row.dia_viaje_2
+		var dia_3 = row.dia_viaje_3
+		var dia_4 = row.dia_viaje_4
+		var dia_5 = row.dia_viaje_5
+		var dia_6 = row.dia_viaje_6
+		var dia_7 = row.dia_viaje_7
+		console.log('row', row)
+		console.log('flt(row.dia_viaje_1) ',flt(dia_1) )
+		console.log('flt(dia_2) ',flt(dia_2) )
+		console.log('flt(dia_3) ',flt(dia_3) )
+		console.log('flt(dia_4) ',flt(dia_4) )
+		console.log('flt(dia_5) ',flt(dia_5) )
+		console.log('flt(dia_6) ',flt(dia_6) )
+		console.log('flt(dia_7)',flt(dia_7))
+		let total = flt(dia_1) 
+			+ flt(dia_2) 
+			+ flt(dia_3) 
+			+ flt(dia_4) 
+			+ flt(dia_5) 
+			+ flt(dia_6) 
+			+ flt(dia_7)
+		console.log('total',total)
 		frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 		// frm.refresh_fields()
 	}
@@ -785,39 +813,57 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		var row = locals[cdt][cdn]
 		let dias_viaje = frm.events.get_dias_de_viaje(frm)
 		row.dias_viaje = dias_viaje
-		frm.refresh_field("personas")
+		// frm.refresh_field("personas")
 	},
 
 	employee(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		if (row.employee) {
-			frappe.db.get_value("Employee", row.employee, "custom_asignacion_viaticos_alimentacion", (values) => {
-				// frm.set_df_property(cdt, cdn, "custom_asignacion_viaticos_alimentacion", "read_only", values.custom_asignacion_viaticos_alimentacion > 0 ? 1 : 0)
-				if (values.custom_asignacion_viaticos_alimentacion > 0) {
-					frappe.model.set_value(cdt, cdn, "base_asignacion_alimentacion", values.custom_asignacion_viaticos_alimentacion)
-					frappe.model.set_value(cdt, cdn, "asignacion_alimentacion", values.custom_asignacion_viaticos_alimentacion)
+			// frappe.db.get_value("Employee", row.employee, "custom_asignacion_viaticos_alimentacion", (values) => {
+			// 	console.log('values', values)
+			// 	// frm.set_df_property(cdt, cdn, "custom_asignacion_viaticos_alimentacion", "read_only", values.custom_asignacion_viaticos_alimentacion > 0 ? 1 : 0)
+			// 	if (values.custom_asignacion_viaticos_alimentacion > 0) {
+			// 		frappe.model.set_value(cdt, cdn, "base_asignacion_alimentacion", values.custom_asignacion_viaticos_alimentacion)
+			// 		frappe.model.set_value(cdt, cdn, "asignacion_alimentacion", values.custom_asignacion_viaticos_alimentacion)
+			// 	}
+			// })
+			frappe.call({
+				method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_asignacion_diaria_alimentacion",
+				args: {
+					employee: row.employee
+				},
+				callback: function(r, rt) {
+					if (r.message) {
+						// console.log(r.message)
+						frappe.run_serially([
+							// () => frm.set_df_property(cdt, cdn, "base_asignacion_alimentacion", "read_only", r.message > 0 ? 1 : 0),
+							() => frappe.model.set_value(cdt, cdn, "base_asignacion_alimentacion", r.message),
+							() => frappe.model.set_value(cdt, cdn, "asignacion_alimentacion", r.message)
+						])
+					}
 				}
 			})
 		}
-		frm.refresh_fields()
+		// frm.refresh_fields()
 		// frm.events.update_grid_fields(frm)
 	},
 
 	dias_viaje(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
-		
 		frm.refresh_fields()
 		frm.events.set_fechas_dia(frm, row, cdt, cdn)
+		frm.events.set_total_solicitado(frm, cdt, cdn)
 		frm.events.set_or_update_alimentacion(frm)
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 
 	asignacion_alimentacion(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
-		frm.refresh_fields()
+		// frm.refresh_fields()
 		frm.events.set_fechas_dia(frm, row, cdt, cdn)
+		frm.events.set_total_solicitado(frm, cdt, cdn)
 		frm.events.set_or_update_alimentacion(frm)
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 
 	fecha_dia_1(frm, cdt, cdn) {
@@ -829,7 +875,7 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		} else {
 			frappe.model.set_value(cdt, cdn, "tiempos_dia_1", 0)
 		}
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 	fecha_dia_2(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
@@ -840,7 +886,7 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		} else {
 			frappe.model.set_value(cdt, cdn, "tiempos_dia_2", 0)
 		}
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 	fecha_dia_3(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
@@ -851,7 +897,7 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		} else {
 			frappe.model.set_value(cdt, cdn, "tiempos_dia_3", 0)
 		}
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 	fecha_dia_4(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
@@ -862,7 +908,7 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		} else {
 			frappe.model.set_value(cdt, cdn, "tiempos_dia_4", 0)
 		}
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 	fecha_dia_5(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
@@ -873,7 +919,7 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		} else {
 			frappe.model.set_value(cdt, cdn, "tiempos_dia_5", 0)
 		}
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 	fecha_dia_6(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
@@ -884,7 +930,7 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		} else {
 			frappe.model.set_value(cdt, cdn, "tiempos_dia_6", 0)
 		}
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 	fecha_dia_7(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
@@ -897,7 +943,7 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 		} else {
 			frappe.model.set_value(cdt, cdn, "tiempos_dia_7", 0)
 		}
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	},
 
 	tiempos_dia_1(frm, cdt, cdn) {
@@ -938,56 +984,56 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 	dia_viaje_1(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		if (row.dia_viaje_1 != '' && row.dia_viaje_1 > 0) {
-			frm.events.set_total_solicitado(frm, row, cdt, cdn)
-			frm.refresh_fields()
+			frm.events.set_total_solicitado(frm, cdt, cdn)
+			// frm.refresh_fields()
 		}
 	},
 
 	dia_viaje_2(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		if (row.dia_viaje_2 != '' && row.dia_viaje_2 > 0) {
-			frm.events.set_total_solicitado(frm, row, cdt, cdn)
-			frm.refresh_fields()
+			frm.events.set_total_solicitado(frm, cdt, cdn)
+			// frm.refresh_fields()
 		}
 	},
 
 	dia_viaje_3(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		if (row.dia_viaje_3 != '' && row.dia_viaje_3 > 0) {
-			frm.events.set_total_solicitado(frm, row, cdt, cdn)
-			frm.refresh_fields()
+			frm.events.set_total_solicitado(frm, cdt, cdn)
+			// frm.refresh_fields()
 		}
 	},
 
 	dia_viaje_4(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		if (row.dia_viaje_4 != '' && row.dia_viaje_4 > 0) {
-			frm.events.set_total_solicitado(frm, row, cdt, cdn)
-			frm.refresh_fields()
+			frm.events.set_total_solicitado(frm, cdt, cdn)
+			// frm.refresh_fields()
 		}
 	},
 
 	dia_viaje_5(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		if (row.dia_viaje_5 != '' && row.dia_viaje_5 > 0) {
-			frm.events.set_total_solicitado(frm, row, cdt, cdn)
-			frm.refresh_fields()
+			frm.events.set_total_solicitado(frm, cdt, cdn)
+			// frm.refresh_fields()
 		}
 	},
 
 	dia_viaje_6(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		if (row.dia_viaje_6 != '' && row.dia_viaje_6 > 0) {
-			frm.events.set_total_solicitado(frm, row, cdt, cdn)
-			frm.refresh_fields()
+			frm.events.set_total_solicitado(frm, cdt, cdn)
+			// frm.refresh_fields()
 		}
 	},
 
 	dia_viaje_7(frm, cdt, cdn) {
 		var row = locals[cdt][cdn]
 		if (row.dia_viaje_7 != '' && row.dia_viaje_7 > 0) {
-			frm.events.set_total_solicitado(frm, row, cdt, cdn)
-			frm.refresh_fields()
+			frm.events.set_total_solicitado(frm, cdt, cdn)
+			// frm.refresh_fields()
 		}
 	},
 
@@ -1002,6 +1048,6 @@ frappe.ui.form.on('Personas de Solicitud de Viaticos', {
 
 	total_solicitado(frm, cdt, cdn) {
 		frm.events.set_or_update_alimentacion(frm)
-		frm.refresh_fields()
+		// frm.refresh_fields()
 	}
 })

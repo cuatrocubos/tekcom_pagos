@@ -18,6 +18,8 @@ frappe.ui.form.on('Solicitud de Pago', {
 		if (frm.doc.workflow_status == 'Draft' || frm.doc.workflow_status == 'Rejected') {
 			frm.set_value("revisado_por", null)
 			frm.set_value("aprobado_por", null)
+			frm.set_value("fecha_hora_revision", null)
+			frm.set_value("fecha_hora_aprobacion", null)
 		}
 		frm.refresh_fields()
 	},
@@ -50,7 +52,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 		if (frm.doc.workflow_status != 'Draft') {
 			if (frm.doc.revisado_por == "" || frm.doc.revisado_por == null) {
 				frappe.call({
-					method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
+					method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
 					args: {
 						role: '%Revisor de Solicitudes de Pago%'
 					},
@@ -72,7 +74,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 		if (frm.doc.workflow_status != 'Draft') {
 			if (frm.doc.aprobado_por == "" || frm.doc.aprobado_por == null) {
 				frappe.call({
-					method: "tekcom_pagos.viaticos_y_pagos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
+					method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
 					args: {
 						role: '%Aprobador de Solicitudes de Pago%'
 					},
@@ -93,7 +95,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 
 		frm.set_query("party_type", function() {
 			frm.events.validate_company(frm);
-			return{
+			return{		
 				filters: {
 					"name": ["in", ["Supplier","Employee"]]
 				}
@@ -171,9 +173,9 @@ frappe.ui.form.on('Solicitud de Pago', {
 			if(in_list(["Sales Invoice", "Purchase Invoice"], jvd.reference_doctype)) {
 				out.filters.push([jvd.reference_doctype, "outstanding_amount", "!=", 0]);
 				// Filter by cost center
-				if(doc.cost_center) {
-					out.filters.push([jvd.reference_doctype, "cost_center", "in", ["", doc.cost_center]]);
-				}
+				// if(doc.cost_center) {
+				// 	out.filters.push([jvd.reference_doctype, "cost_center", "in", ["", doc.cost_center]]);
+				// }
 				// account filter
 				// frappe.model.validate_missing(jvd, "account");
 				// var party_account_field = jvd.reference_doctype==="Sales Invoice" ? "debit_to": "credit_to";
@@ -314,7 +316,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 		frm.set_query("party", function() {
 			if (frm.doc.party_type == 'Employee') {
 				return {
-					query: "erpnext.controllers.queries.employee_query"
+					query: "tekcom_pagos.tekcom_pagos.utils.employee_query"
 				}
 			} else if (frm.doc.party_type == 'Customer') {
 				return {

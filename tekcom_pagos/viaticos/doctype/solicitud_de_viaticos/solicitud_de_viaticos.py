@@ -23,8 +23,12 @@ class SolicituddeViaticos(Document):
   #     get_presupuesto_disponible(self.fecha_solicitud, self.cost_center)
   def before_save(self):
     if self.workflow_status == 'Rejected':
+      self.revisor = ''
+      self.aprobador = ''
+      self.coordinador_pagos = ''
       self.revisado_por = ''
       self.aprobado_por = ''
+      self.fecha_hora_solicitud = ''
       self.fecha_hora_revision = ''
       self.fecha_hora_aprobacion = ''
       self.mode_of_payment = ''
@@ -35,8 +39,10 @@ class SolicituddeViaticos(Document):
   def validate(self):
     validate_active_employee(self.solicitante)	
     validate_employee_permite_asignar_viaticos(self)
-    set_revision(self)
-    set_aprobado(self)
+    set_totales_personas_dia(self)
+    update_workflow_details(self)
+    # set_revision(self)
+    # set_aprobado(self)
 
 def validate_employee_permite_asignar_viaticos(self):
   message = []
@@ -89,12 +95,93 @@ def set_aprobado(self):
     self.fecha_hora_aprobacion = frappe.utils.now_datetime()
     if self.aprobado_por == None or self.aprobado_por == '':
       frappe.throw(_("Seleccione un aprobador para el documento"), frappe.ValidationError)
+      
+def get_configuracion_viaticos(self):
+  configuracion_viaticos = frappe.get_doc('Configuracion de Viaticos')
+  configuracion_centro_costos = configuracion_viaticos.cost_center_predeterminados
+  
+  revisor_predeterminado = configuracion_viaticos.revisor_predeterminado
+  aprobador_predeterminado = configuracion_viaticos.aprobador_predeterminado
+  coordinador_pagos_predeterminado = configuracion_viaticos.coordinador_pagos_predeterminado
+  if len(configuracion_centro_costos) > 0:
+    cc_predeterminado = next((ele for ele in configuracion_centro_costos if ele.cost_center == self.cost_center), None)
+
+    if cc_predeterminado != None:
+      if cc_predeterminado.revisor_predeterminado != None:
+        revisor_predeterminado = cc_predeterminado.revisor_predeterminado
+      if cc_predeterminado.aprobador_predeterminado != None:
+        aprobador_predeterminado = cc_predeterminado.aprobador_predeterminado
+      if cc_predeterminado.coordinador_pagos_predeterminado != None:
+        coordinador_pagos_predeterminado = cc_predeterminado.coordinador_pagos_predeterminado
+        
+  return {
+    "revisor_predeterminado": revisor_predeterminado,
+    "aprobador_predeterminado": aprobador_predeterminado,
+    "coordinador_pagos_predeterminado": coordinador_pagos_predeterminado
+  }
+  
+def update_workflow_details(self):
+  old_doc = Document.get_doc_before_save(self)
+  
+  configuracion_viaticos = get_configuracion_viaticos(self)
+  if self.revisor == None or self.revisor == '':
+    self.revisor = configuracion_viaticos["revisor_predeterminado"]
+  if self.aprobador == None or self.aprobador == '':
+    self.aprobador = configuracion_viaticos["aprobador_predeterminado"]
+  if self.coordinador_pagos == None or self.coordinador_pagos == '':
+    self.coordinador_pagos = configuracion_viaticos["coordinador_pagos_predeterminado"]
+  
+  if old_doc != None:
+    if old_doc.workflow_status != self.workflow_status:
+      if (self.workflow_status) == 'Solicitado' and self.fecha_hora_revision == None:
+        # set fecha hora revision
+        self.fecha_hora_solicitud = frappe.utils.now_datetime()
+        # if self.solicitado_por == None or self.solicitado_por == '':
+        #   self.solicitado_por = frappe.session.user
+      if (self.workflow_status) == 'Revisado' and self.fecha_hora_revision == None:
+        # set fecha hora revision
+        self.fecha_hora_revision = frappe.utils.now_datetime()
+        if self.revisado_por == None or self.revisado_por == '':
+          self.revisado_por = frappe.session.user
+      if (self.workflow_status) == 'Approved' and self.fecha_hora_aprobacion == None:
+        # set fecha hora aprobacion
+        self.fecha_hora_aprobacion = frappe.utils.now_datetime()
+        if self.aprobado_por == None or self.aprobado_por == '':
+          self.aprobado_por = frappe.session.user
         
 def update_presupuesto_monto_aprobado(self):
   for linea in self.presupuesto:
     # print('monto_aprobado',linea.monto_aprobado)
-    linea.monto_aprobado = 0
+    linea.monto_aprobado = linea.monto_solicitado
     
+def set_totales_personas_dia(self):
+  total_solicitado_alimentacion = flt(0)
+  total_anticipo_solicitado = flt(0)
+  for persona in self.personas:
+    persona.total_solicitado = flt(persona.dia_viaje_1) + flt(persona.dia_viaje_2) + flt(persona.dia_viaje_3) + flt(persona.dia_viaje_4) + flt(persona.dia_viaje_5) + flt(persona.dia_viaje_6) + flt(persona.dia_viaje_7)
+    total_solicitado_alimentacion = total_solicitado_alimentacion + persona.total_solicitado
+  for presupuesto in self.presupuesto:
+    if presupuesto.tipo_gasto == "Alimentación":
+      presupuesto.monto_solicitado = total_solicitado_alimentacion
+      presupuesto.monto_aprobado = total_solicitado_alimentacion
+    total_anticipo_solicitado = total_anticipo_solicitado + presupuesto.monto_solicitado
+  self.total_anticipo_solicitado = total_anticipo_solicitado
+  self.total_anticipo_aprobado = total_anticipo_solicitado
+  
+    
+    
+@frappe.whitelist()
+def get_asignacion_diaria_alimentacion(employee):
+  Employee = frappe.qb.DocType('Employee')
+  query = (frappe.qb.from_(Employee)
+           .select(Employee.custom_asignacion_viaticos_alimentacion)
+           .where(Employee.name == employee)).run(as_dict=True,debug=True)
+  
+  if len(query) > 0:
+    return query[0].custom_asignacion_viaticos_alimentacion
+
+  return "0.0"
+
 @frappe.whitelist()
 def validate_permite_asignar_viaticos_dia(employee, fecha, solicitud):
   if fecha == None:

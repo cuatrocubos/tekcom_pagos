@@ -33,10 +33,14 @@ class SolicituddePago(Document):
   #     self.indicator_title = _("Paid")
   def before_save(self):
     if self.workflow_status == 'Rejected':
+      self.revisor = ''
+      self.aprobador = ''
+      self.coordinador_pagos = ''
       self.revisado_por = ''
+      self.aprobado_por = ''
+      self.fecha_hora_solicitud = ''
       self.fecha_hora_revision = ''
       self.fecha_hora_aprobacion = ''
-      self.aprobado_por = ''
       self.mode_of_payment = ''
       self.reference_no = ''
       self.reference_date = ''
@@ -44,17 +48,69 @@ class SolicituddePago(Document):
   
   def validate(self):
     validate_active_employee(self.solicitante)
-    if (self.workflow_status) == 'Revisado':
-      self.fecha_hora_revision = frappe.utils.now_datetime()
-      if self.revisado_por == None or self.revisado_por == '':
-        frappe.throw(_("Seleccione un revisor para el documento"), frappe.ValidationError)
-    if (self.workflow_status) == 'Approved':
-      self.fecha_hora_aprobacion = frappe.utils.now_datetime()
-      if self.aprobado_por == None or self.aprobado_por == '':
-        frappe.throw(_("Seleccione un aprobador para el documento"), frappe.ValidationError)
+    update_workflow_details(self)
 
 def get_constancia_date(constancia):
   return constancia['fecha_vencimiento']
+
+def get_configuracion_pagos(self):
+  configuracion_pagos = frappe.get_doc('Configuracion de Solicitudes de Pago')
+  configuracion_centro_costos = configuracion_pagos.cost_center_predeterminados
+  
+  revisor_predeterminado = configuracion_pagos.revisor_predeterminado
+  aprobador_predeterminado = configuracion_pagos.aprobador_predeterminado
+  coordinador_pagos_predeterminado = configuracion_pagos.coordinador_pagos_predeterminado
+  if len(configuracion_centro_costos) > 0:
+    cc_predeterminado = next((ele for ele in configuracion_centro_costos if ele.cost_center == self.cost_center), None)
+
+    if cc_predeterminado != None:
+      if cc_predeterminado.revisor_predeterminado != None:
+        revisor_predeterminado = cc_predeterminado.revisor_predeterminado
+      if cc_predeterminado.aprobador_predeterminado != None:
+        aprobador_predeterminado = cc_predeterminado.aprobador_predeterminado
+      if cc_predeterminado.coordinador_pagos_predeterminado != None:
+        coordinador_pagos_predeterminado = cc_predeterminado.coordinador_pagos_predeterminado
+        
+  return {
+    "revisor_predeterminado": revisor_predeterminado,
+    "aprobador_predeterminado": aprobador_predeterminado,
+    "coordinador_pagos_predeterminado": coordinador_pagos_predeterminado
+  }
+  
+def update_workflow_details(self):
+  old_doc = Document.get_doc_before_save(self)
+  
+  configuracion_pagos = get_configuracion_pagos(self)
+  
+  if self.workflow_status == 'Draft':
+    self.revisor = configuracion_pagos["revisor_predeterminado"]
+    self.aprobador = configuracion_pagos["aprobador_predeterminado"]
+    self.coordinador_pagos = configuracion_pagos["coordinador_pagos_predeterminado"]
+    
+  if self.revisor == None or self.revisor == '':
+    self.revisor = configuracion_pagos["revisor_predeterminado"]
+  if self.aprobador == None or self.aprobador == '':
+    self.aprobador = configuracion_pagos["aprobador_predeterminado"]
+  if self.coordinador_pagos == None or self.coordinador_pagos == '':
+    self.coordinador_pagos = configuracion_pagos["coordinador_pagos_predeterminado"]
+  
+  if old_doc != None:
+    if old_doc.workflow_status != self.workflow_status:
+      if (self.workflow_status) == 'Solicitado' and self.fecha_hora_revision == None:
+        # set fecha hora revision
+        self.fecha_hora_solicitud = frappe.utils.now_datetime()
+        # if self.solicitado_por == None or self.solicitado_por == '':
+        #   self.solicitado_por = frappe.session.user
+      if (self.workflow_status) == 'Revisado' and self.fecha_hora_revision == None:
+        # set fecha hora revision
+        self.fecha_hora_revision = frappe.utils.now_datetime()
+        if self.revisado_por == None or self.revisado_por == '':
+          self.revisado_por = frappe.session.user
+      if (self.workflow_status) == 'Approved' and self.fecha_hora_aprobacion == None:
+        # set fecha hora aprobacion
+        self.fecha_hora_aprobacion = frappe.utils.now_datetime()
+        if self.aprobado_por == None or self.aprobado_por == '':
+          self.aprobado_por = frappe.session.user
 
 @frappe.whitelist()
 def get_constancia_pago_cuenta(party_type, party, date):
@@ -72,20 +128,20 @@ def get_constancia_pago_cuenta(party_type, party, date):
   
   return fecha_vencimiento_constancia_pago_cuenta
 
-@frappe.whitelist()
-def get_constancia_pago_cuenta(party_type, party, date):
-  fecha_vencimiento_constancia_pago_cuenta = None
-  _party = frappe.get_doc(party_type, party).as_dict()
-  if party_type == 'Employee':
-    pass
+# @frappe.whitelist()
+# def get_constancia_pago_cuenta(party_type, party, date):
+#   fecha_vencimiento_constancia_pago_cuenta = None
+#   _party = frappe.get_doc(party_type, party).as_dict()
+#   if party_type == 'Employee':
+#     pass
   
-  _constancias = _party.custom_constancias_pago_a_cuenta
-  if len(_constancias) == 0:
-    pass
-  if len(_constancias) > 0:
-    fecha_vencimiento_constancia_pago_cuenta = getdate(_constancias[0].fecha_vencimiento)
+#   _constancias = _party.custom_constancias_pago_a_cuenta
+#   if len(_constancias) == 0:
+#     pass
+#   if len(_constancias) > 0:
+#     fecha_vencimiento_constancia_pago_cuenta = getdate(_constancias[0].fecha_vencimiento)
   
-  return fecha_vencimiento_constancia_pago_cuenta
+#   return fecha_vencimiento_constancia_pago_cuenta
 
 @frappe.whitelist()
 def get_party_details(company, party_type, party, date, cost_center=None):

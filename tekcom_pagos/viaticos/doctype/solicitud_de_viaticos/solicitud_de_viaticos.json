@@ -49,14 +49,18 @@
   "workflow_status",
   "amended_from",
   "flujo_de_trabajo_tab",
-  "revisor",
-  "revisado_por",
-  "aprobador",
-  "aprobado_por",
-  "column_break_cnwo",
+  "section_break_froc",
   "fecha_hora_solicitud",
+  "column_break_kneu",
   "fecha_hora_revision",
-  "fecha_hora_aprobacion"
+  "fecha_hora_aprobacion",
+  "section_break_ugdj",
+  "revisor",
+  "aprobador",
+  "coordinador_pagos",
+  "column_break_cnwo",
+  "revisado_por",
+  "aprobado_por"
  ],
  "fields": [
   {
@@ -211,6 +215,7 @@
   {
    "fieldname": "solicitante",
    "fieldtype": "Link",
+   "ignore_user_permissions": 1,
    "label": "Solicitante",
    "options": "Employee",
    "reqd": 1
@@ -260,6 +265,7 @@
   {
    "fieldname": "depositar_a",
    "fieldtype": "Link",
+   "ignore_user_permissions": 1,
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Depositar a",
@@ -316,23 +322,20 @@
    "fieldname": "revisado_por",
    "fieldtype": "Link",
    "label": "Revisado Por",
-   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Solicitado\")",
    "no_copy": 1,
    "options": "User",
-   "read_only": 1,
-   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Solicitado\")"
+   "read_only": 1
   },
   {
    "fieldname": "aprobado_por",
    "fieldtype": "Link",
    "label": "Aprobado Por",
-   "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Solicitado\")",
    "no_copy": 1,
    "options": "User",
-   "read_only": 1,
-   "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Solicitado\")"
+   "read_only": 1
   },
   {
+   "description": "Sin Comprobantes = No se adjuntan documentos con la solicitud || Con Copias = Solo se incluye copias con la solicitud || Documentaci\u00f3n Completa = Se incluye documentaci\u00f3n original",
    "fieldname": "documentos_adjuntos",
    "fieldtype": "Select",
    "label": "Documentos Adjuntos",
@@ -356,7 +359,8 @@
   {
    "fieldname": "flujo_de_trabajo_tab",
    "fieldtype": "Tab Break",
-   "label": "Flujo de Trabajo"
+   "label": "Flujo de Trabajo",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_cnwo",
@@ -368,14 +372,15 @@
    "label": "Revisor",
    "no_copy": 1,
    "options": "User",
-   "read_only_depends_on": "eval:(doc.company && doc.workflow_status!='Draft' && frappe.user.has_role(\"Revisor de Solicitudes de Pago\"))"
+   "read_only": 1
   },
   {
    "fieldname": "aprobador",
    "fieldtype": "Link",
    "label": "Aprobador",
    "no_copy": 1,
-   "options": "User"
+   "options": "User",
+   "read_only": 1
   },
   {
    "fieldname": "fecha_hora_solicitud",
@@ -383,12 +388,34 @@
    "label": "Fecha y Hora de Solicitud",
    "no_copy": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "coordinador_pagos",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Coordinador de Pagos",
+   "no_copy": 1,
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ugdj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_froc",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "column_break_kneu",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-18 02:03:55.975024",
+ "modified": "2024-03-31 23:17:03.061201",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Solicitud de Viaticos",

@@ -6,7 +6,7 @@ frappe.ui.form.on("Configuracion de Solicitudes de Pago", {
     frappe.call({
       method: "tekcom_pagos.tekcom_pagos.utils.get_users_by_role",
       args: {
-        role: 'Revisor de Solicitud de Viaticos'
+        role: 'Revisor de Solicitudes de Pago'
       },
       callback: function(r) {
         if (r.message != undefined) {
@@ -34,7 +34,7 @@ frappe.ui.form.on("Configuracion de Solicitudes de Pago", {
     frappe.call({
       method: "tekcom_pagos.tekcom_pagos.utils.get_users_by_role",
       args: {
-        role: 'Aprobador de Solicitud de Viaticos'
+        role: 'Aprobador de Solicitudes de Pago'
       },
       callback: function(r) {
         if (r.message != undefined) {
