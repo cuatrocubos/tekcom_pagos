@@ -372,7 +372,7 @@
    "label": "Revisor",
    "no_copy": 1,
    "options": "User",
-   "read_only": 1
+   "read_only_depends_on": "eval:(doc.workflow_status!='Solicitado')"
   },
   {
    "fieldname": "aprobador",
@@ -380,7 +380,7 @@
    "label": "Aprobador",
    "no_copy": 1,
    "options": "User",
-   "read_only": 1
+   "read_only_depends_on": "eval:(doc.workflow_status!='Solicitado')"
   },
   {
    "fieldname": "fecha_hora_solicitud",
@@ -415,7 +415,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-31 23:17:03.061201",
+ "modified": "2024-04-01 00:30:18.998549",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Solicitud de Viaticos",

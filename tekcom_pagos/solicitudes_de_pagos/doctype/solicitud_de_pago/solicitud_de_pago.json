@@ -572,7 +572,7 @@
    "label": "Revisor",
    "no_copy": 1,
    "options": "User",
-   "read_only": 1
+   "read_only_depends_on": "eval:(doc.workflow_status!='Solicitado')"
   },
   {
    "fieldname": "aprobador",
@@ -580,15 +580,14 @@
    "label": "Aprobador",
    "no_copy": 1,
    "options": "User",
-   "read_only": 1
+   "read_only_depends_on": "eval:(doc.workflow_status!='Solicitado')"
   },
   {
    "fieldname": "coordinador_pagos",
    "fieldtype": "Link",
    "label": "Coordinador de Pagos",
    "no_copy": 1,
-   "options": "User",
-   "read_only": 1
+   "options": "User"
   },
   {
    "fieldname": "column_break_uria",
@@ -606,7 +605,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-31 23:20:31.150070",
+ "modified": "2024-04-01 00:29:39.398057",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",
