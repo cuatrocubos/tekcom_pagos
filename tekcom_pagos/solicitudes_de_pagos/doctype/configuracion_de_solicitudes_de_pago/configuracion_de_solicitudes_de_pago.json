@@ -13,7 +13,9 @@
   "coordinador_pagos_predeterminado",
   "column_break_sfzu",
   "section_break_dash",
-  "cost_center_predeterminados"
+  "cost_center_predeterminados",
+  "section_break_kpam",
+  "mode_of_payment_predeterminados"
  ],
  "fields": [
   {
@@ -57,12 +59,22 @@
    "fieldtype": "Table",
    "label": "Predeterminados por Centro de Costo",
    "options": "Configuracion de Solicitudes de Pago por Centro de Costo"
+  },
+  {
+   "fieldname": "section_break_kpam",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "mode_of_payment_predeterminados",
+   "fieldtype": "Table",
+   "label": "Modos de Pago Predeterminados",
+   "options": "Modo de Pago de Configuracion de Solicitudes de Pago"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-03-22 09:41:14.501888",
+ "modified": "2024-04-18 13:17:34.307845",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Configuracion de Solicitudes de Pago",

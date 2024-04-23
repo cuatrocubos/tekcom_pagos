@@ -76,7 +76,7 @@ def get_configuracion_pagos(self):
     "aprobador_predeterminado": aprobador_predeterminado,
     "coordinador_pagos_predeterminado": coordinador_pagos_predeterminado
   }
-  
+
 def update_workflow_details(self):
   old_doc = Document.get_doc_before_save(self)
   

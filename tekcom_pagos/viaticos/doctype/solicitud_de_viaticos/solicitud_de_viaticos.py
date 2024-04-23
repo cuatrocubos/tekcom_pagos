@@ -47,42 +47,39 @@ class SolicituddeViaticos(Document):
 def validate_employee_permite_asignar_viaticos(self):
   message = []
   for persona in self.personas:
-    persona.permite_asignar_viaticos_dia_1 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_1, self.name)
-    # print(persona.employee, persona.permite_asignar_viaticos_dia_1, persona.fecha_dia_1)
-
-    persona.permite_asignar_viaticos_dia_2 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_2, self.name)
-    # print(persona.employee, persona.permite_asignar_viaticos_dia_2, persona.fecha_dia_2)
-
-    persona.permite_asignar_viaticos_dia_3 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_3, self.name)
-    # print(persona.employee, persona.permite_asignar_viaticos_dia_3, persona.fecha_dia_3)
-
-    persona.permite_asignar_viaticos_dia_4 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_4, self.name)
-    # print(persona.employee, persona.permite_asignar_viaticos_dia_4, persona.fecha_dia_4)
-
-    persona.permite_asignar_viaticos_dia_5 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_5, self.name)
-    # print(persona.employee, persona.permite_asignar_viaticos_dia_5, persona.fecha_dia_5)
-
-    persona.permite_asignar_viaticos_dia_6 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_6, self.name)
-    # print(persona.employee, persona.permite_asignar_viaticos_dia_6, persona.fecha_dia_6)
-
-    persona.permite_asignar_viaticos_dia_7 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_7, self.name)
-    # print(persona.employee, persona.permite_asignar_viaticos_dia_7, persona.fecha_dia_7)
+    employee_name = frappe.get_cached_value('Employee', persona.employee, 'employee_name')
+    solicitudes_fecha_dia_1 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_1, self.name)
+    persona.permite_asignar_viaticos_dia_1 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_1)
+    solicitudes_fecha_dia_2 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_2, self.name)
+    persona.permite_asignar_viaticos_dia_2 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_2)
+    solicitudes_fecha_dia_3 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_3, self.name)
+    persona.permite_asignar_viaticos_dia_3 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_3)
+    solicitudes_fecha_dia_4 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_4, self.name)
+    persona.permite_asignar_viaticos_dia_4 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_4)
+    solicitudes_fecha_dia_5 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_5, self.name)
+    persona.permite_asignar_viaticos_dia_5 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_5)
+    solicitudes_fecha_dia_6 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_6, self.name)
+    persona.permite_asignar_viaticos_dia_6 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_6)
+    solicitudes_fecha_dia_7 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_7, self.name)
+    persona.permite_asignar_viaticos_dia_7 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_7)
+    
     if persona.permite_asignar_viaticos_dia_1 == 0:
-      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_1))
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}<br>{3}").format(persona.idx, employee_name, persona.fecha_dia_1, solicitudes_fecha_dia_1))
     if persona.permite_asignar_viaticos_dia_2 == 0:
-      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_2))
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}<br>{3}").format(persona.idx, employee_name, persona.fecha_dia_2, solicitudes_fecha_dia_2))
     if persona.permite_asignar_viaticos_dia_3 == 0:
-      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_3))
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}<br>{3}").format(persona.idx, employee_name, persona.fecha_dia_3, solicitudes_fecha_dia_3))
     if persona.permite_asignar_viaticos_dia_4 == 0:
-      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_4))
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}<br>{3}").format(persona.idx, employee_name, persona.fecha_dia_4, solicitudes_fecha_dia_4))
     if persona.permite_asignar_viaticos_dia_5 == 0:
-      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_5))
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}<br>{3}").format(persona.idx, employee_name, persona.fecha_dia_5, solicitudes_fecha_dia_5))
     if persona.permite_asignar_viaticos_dia_6 == 0:
-      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_6))
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}<br>{3}").format(persona.idx, employee_name, persona.fecha_dia_6, solicitudes_fecha_dia_6))
     if persona.permite_asignar_viaticos_dia_7 == 0:
-      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}").format(persona.idx, persona.employee, persona.fecha_dia_7))
+      message.append(_("Fila {0}: Empleado {1} ya tiene viaticos asignados en fecha {2}<br>{3}").format(persona.idx, employee_name, persona.fecha_dia_7, solicitudes_fecha_dia_7))
+  
   if (len(message) > 0):
-    frappe.msgprint(msg=message,title='Alerta de viaticos duplicados',as_list=True)
+    frappe.throw(msg="<br>".join(message),exc=frappe.ValidationError,title='Alerta de viaticos duplicados',as_list=True)
   
 def set_revision(self):
   if (self.workflow_status) == 'Revisado' and self.fecha_hora_revision == None:
@@ -119,7 +116,7 @@ def get_configuracion_viaticos(self):
     "aprobador_predeterminado": aprobador_predeterminado,
     "coordinador_pagos_predeterminado": coordinador_pagos_predeterminado
   }
-  
+
 def update_workflow_details(self):
   old_doc = Document.get_doc_before_save(self)
   
@@ -166,9 +163,7 @@ def set_totales_personas_dia(self):
       presupuesto.monto_aprobado = total_solicitado_alimentacion
     total_anticipo_solicitado = total_anticipo_solicitado + presupuesto.monto_solicitado
   self.total_anticipo_solicitado = total_anticipo_solicitado
-  self.total_anticipo_aprobado = total_anticipo_solicitado
-  
-    
+  self.total_anticipo_aprobado = total_anticipo_solicitado    
     
 @frappe.whitelist()
 def get_asignacion_diaria_alimentacion(employee):
@@ -189,11 +184,11 @@ def validate_permite_asignar_viaticos_dia(employee, fecha, solicitud):
   
   PersonasSolicitudViaticos = frappe.qb.DocType('Personas de Solicitud de Viaticos')
   SolicitudViaticos = frappe.qb.DocType('Solicitud de Viaticos')
-  count_all = Count('*').as_("count")
+  # count_all = Count('*').as_("count")
   query = (frappe.qb.from_(PersonasSolicitudViaticos)
            .left_join(SolicitudViaticos)
            .on(SolicitudViaticos.name == PersonasSolicitudViaticos.parent)
-           .select(count_all)
+           .select(SolicitudViaticos.name)
            .where(PersonasSolicitudViaticos.employee == employee)
            .where(PersonasSolicitudViaticos.parent != solicitud)
            .where(
@@ -205,11 +200,19 @@ def validate_permite_asignar_viaticos_dia(employee, fecha, solicitud):
              | (PersonasSolicitudViaticos.fecha_dia_6 == fecha)
              | (PersonasSolicitudViaticos.fecha_dia_7 == fecha))).run(as_dict=True)
   
-  if query[0].count > 0:
+  reference_links = []
+  if len(query) > 0:
+    for doc_name in query:
+      reference_links.append(f'<a href="/app/solicitud-de-viaticos/{doc_name.name}">{doc_name.name}</a>')
+
+  return ",".join(reference_links)
+
+def get_permite_asignar_viaticos_dia(query):
+  if len(query) > 0:
     return 0
   
   return 1
-    
+      
 @frappe.whitelist()
 def get_users_by_role(role):
   usuarios = []
@@ -223,12 +226,12 @@ def get_cuadrillas_solicitante(company, employee):
   cuadrillas = []
   
   cuadrillas = frappe.db.get_list("Cuadrilla",
-		filters={
-			'company': company,
-			'supervisor': employee
-		},
-		fields=['name']
-	)
+    filters={
+      'company': company,
+      'supervisor': employee
+    },
+    fields=['name']
+  )
   
   return cuadrillas
 
@@ -255,23 +258,23 @@ def get_presupuesto_disponible(company, fecha, cost_center):
   ).as_dict()
   
   company_wise_presupuesto_disponible = frappe.get_all(
-		"Solicitud de Viaticos",
-  	filters={
-			"docstatus": 1,
-			"company": company,
-			"cost_center": cost_center,
-			"fecha_solicitud": (
-				"between",
-				[current_fiscal_year.year_start_date, current_fiscal_year.year_end_date],
-			)
-		},
-   	group_by="company",
+    "Solicitud de Viaticos",
+    filters={
+      "docstatus": 1,
+      "company": company,
+      "cost_center": cost_center,
+      "fecha_solicitud": (
+        "between",
+        [current_fiscal_year.year_start_date, current_fiscal_year.year_end_date],
+      )
+    },
+     group_by="company",
     fields=[
-			"company",
-   		"sum(total_anticipo_solicitado) as total_anticipo_solicitado",
-			"sum(total_anticipo_aprobado) as total_anticipo_aprobado",
-		]
-	)
+      "company",
+       "sum(total_anticipo_solicitado) as total_anticipo_solicitado",
+      "sum(total_anticipo_aprobado) as total_anticipo_aprobado",
+    ]
+  )
   
   return presupuesto_de_centro_costos
 

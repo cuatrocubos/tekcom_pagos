@@ -147,7 +147,7 @@ permission_query_conditions = {
 # ------------------------------
 #
 # override_whitelisted_methods = {
-#	"frappe.desk.doctype.event.event.get_events": "tekcom_pagos.event.get_events"
+# 	"erpnext.erpnext.accounts.doctype.payment_request.payment_request.make_payment_request": "tekcom_pagos.event.get_events"
 # }
 #
 # each overriding function accepts a `data` argument;

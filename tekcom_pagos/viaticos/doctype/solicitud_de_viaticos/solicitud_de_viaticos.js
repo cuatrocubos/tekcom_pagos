@@ -16,6 +16,105 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		frm.refresh_fields()
 	},
 
+	get_mode_of_payment_predeterminado(frm) {
+		frappe.call({
+			method: "tekcom_pagos.tekcom_pagos.utils.get_mode_of_payment_predeterminado",
+			args: {
+				"company": frm.doc.company,
+				"doc": "Configuracion de Viaticos"
+			},
+			callback: function(res) {
+				if (res && !res.exc) {
+					if (res.message) {	
+						return res.message.mode_of_payment_predeterminado
+					} else {
+						return ""
+					}
+				}
+			}
+		})			
+	},
+
+	async before_workflow_action(frm) {
+		let mode_of_payment_predeterminado = frm.events.get_mode_of_payment_predeterminado(frm)
+		return await new Promise((resolve, reject) => {
+			if (frm.doc.workflow_status == 'Approved') {
+					let fields = [
+					{
+						label: 'Mode of Payment',
+						fieldtype: 'Link',
+						reqd: true,
+						fieldname: 'mode_of_payment_on_pagado',
+						options: 'Mode of Payment',
+						get_query: () => ({
+							filters: {
+								company: frm.doc.company
+							},
+						}),
+						// selected_value: mode_of_payment_predeterminado,
+						// selected_value: frm.events.get_mode_of_payment_predeterminado(frm),
+					},
+					{
+						label: 'Cheque/Reference Date',
+						fieldtype: 'Date',
+						reqd: true,
+						fieldname: 'reference_date_on_pagado',
+						default: frappe.datetime.nowdate()
+					},
+					{
+						label: 'Cheque/Reference No',
+						fieldtype: 'Data',
+						reqd: true,
+						fieldname: 'reference_no_on_pagado'
+					},
+				]
+				frappe.dom.unfreeze()
+					
+				frappe.prompt(fields, (values) => {
+					// action to take
+					// this.set_value('mode_of_payment', mode_of_payment_predeterminado)
+					frappe.call({
+						method: "tekcom_pagos.tekcom_pagos.utils.add_payment_details",
+						args: {
+							doctype: frm.doc.doctype,
+							doc: frm.doc.name,
+							mode_of_payment: values.mode_of_payment_on_pagado,
+							reference_date: values.reference_date_on_pagado,
+							reference_no: values.reference_no_on_pagado
+						},
+						callback: function(res) {
+							if (res && !res.exc) {
+								frm.reload_doc()
+								resolve(values)
+							} else {
+								reject()
+							}
+						}
+					})
+				},
+				'Detalles de Pago',
+				'Aplicar Pago'
+				)
+			} else {
+				resolve()
+			}
+		})
+
+		// await promise.catch(() => frappe.throw())
+	},
+
+	after_workflow_action(frm) {
+		prev_route = frappe.get_prev_route()
+		if (prev_route == 'aprobaciones-y-pagos') {
+			frappe.set_route('aprobaciones-y-pagos')
+		} else {
+			frappe.set_route(prev_route)
+		}
+		// prev_doctype = frappe.prev_route[1]
+		// prev_docname = frappe.prev_route[2]
+		// prev_doc = frappe.get_doc(prev_doctype, prev_docname)
+ 	},
+
 	validate(frm) {
 		if (frm.doc.workflow_status == 'Draft' || frm.doc.workflow_status == 'Rejected') {
 			frm.set_value("revisado_por", null)

@@ -12,7 +12,9 @@
   "coordinador_pagos_predeterminado",
   "column_break_sfzu",
   "section_break_dash",
-  "cost_center_predeterminados"
+  "cost_center_predeterminados",
+  "section_break_lbld",
+  "mode_of_payment_predeterminados"
  ],
  "fields": [
   {
@@ -56,12 +58,22 @@
    "fieldtype": "Table",
    "label": "Predeterminados por Centro de Costo",
    "options": "Configuracion Viaticos por Centro de Costo"
+  },
+  {
+   "fieldname": "section_break_lbld",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "mode_of_payment_predeterminados",
+   "fieldtype": "Table",
+   "label": "Modos de Pago Predeterminados",
+   "options": "Modo de Pago de Configuracion de Solicitudes de Viaticos"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-03-18 13:37:05.297614",
+ "modified": "2024-04-23 00:31:20.640082",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Configuracion de Viaticos",

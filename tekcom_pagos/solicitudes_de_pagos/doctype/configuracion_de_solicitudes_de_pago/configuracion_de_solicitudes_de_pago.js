@@ -2,7 +2,35 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Configuracion de Solicitudes de Pago", {
+  // validate_company_mop(frm, cdt, cdn) {
+  //   var row = locals[cdt, cdn]
+	// 	if (!row.company) {
+	// 		frappe.throw({
+	// 			message:__("Please select a Company first."),
+	// 			title:__("Mandatory")
+	// 		})
+	// 	}
+	// },
+
 	setup(frm) {
+    frm.set_query("mode_of_payment", "mode_of_payment_predeterminados", function(doc, cdt, cdn) {
+      var jvd = frappe.get_doc(cdt, cdn)
+
+      // frm.events.validate_company_mop(doc, cdt, cdn)
+      if (!jvd.company) {
+        frappe.throw({
+          message:__("Please select a Company first."),
+          title:__("Mandatory")
+        })
+      }
+      
+      return {
+        filters: {
+          company: jvd.company
+        }
+      }
+    })
+
     frappe.call({
       method: "tekcom_pagos.tekcom_pagos.utils.get_users_by_role",
       args: {
