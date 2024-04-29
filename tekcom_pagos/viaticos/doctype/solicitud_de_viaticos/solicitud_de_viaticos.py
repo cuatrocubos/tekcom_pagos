@@ -208,6 +208,8 @@ def validate_permite_asignar_viaticos_dia(employee, fecha, solicitud):
   return ",".join(reference_links)
 
 def get_permite_asignar_viaticos_dia(query):
+  if isinstance(query, int):
+    return 1
   if len(query) > 0:
     return 0
   
