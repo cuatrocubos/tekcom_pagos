@@ -36,7 +36,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 	async before_workflow_action(frm) {
 		let mode_of_payment_predeterminado = frm.events.get_mode_of_payment_predeterminado(frm)
 		return await new Promise((resolve, reject) => {
-			if (frm.doc.workflow_status == 'Approved') {
+			if (frm.doc.workflow_status == 'Approved' && frm.selected_workflow_action == 'Pagar') {
 					let fields = [
 					{
 						label: 'Mode of Payment',
