@@ -9,6 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "company",
+  "abbr",
   "column_break_8kxc3",
   "naming_series",
   "detalles_section",
@@ -23,10 +24,11 @@
   "cost_center",
   "solicitante_section",
   "solicitante",
+  "nombre_solicitante",
   "cuadrilla",
   "column_break_qblyq",
-  "nombre_solicitante",
   "depositar_a",
+  "nombre_depositar_a",
   "bank",
   "depositar_a_cuenta",
   "section_break_usxgk",
@@ -134,7 +136,8 @@
   {
    "fieldname": "lugar_viaje",
    "fieldtype": "Data",
-   "label": "Lugar"
+   "label": "Lugar",
+   "reqd": 1
   },
   {
    "fieldname": "totales_section",
@@ -172,7 +175,8 @@
    "fieldtype": "Long Text",
    "label": "Remarks",
    "max_height": "75px",
-   "no_copy": 1
+   "no_copy": 1,
+   "reqd": 1
   },
   {
    "fieldname": "status",
@@ -201,9 +205,10 @@
   },
   {
    "depends_on": "solicitante",
+   "fetch_from": "solicitante.employee_name",
+   "fetch_if_empty": 1,
    "fieldname": "nombre_solicitante",
-   "fieldtype": "Small Text",
-   "hidden": 1,
+   "fieldtype": "Data",
    "in_standard_filter": 1,
    "label": "Nombre Solicitante",
    "read_only": 1
@@ -410,12 +415,30 @@
   {
    "fieldname": "column_break_kneu",
    "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "company.abbr",
+   "fetch_if_empty": 1,
+   "fieldname": "abbr",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "abbr"
+  },
+  {
+   "depends_on": "depositar_a",
+   "fetch_from": "depositar_a.employee_name",
+   "fetch_if_empty": 1,
+   "fieldname": "nombre_depositar_a",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Nombre Depositar A",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-01 00:30:18.998549",
+ "modified": "2024-06-22 20:24:25.120359",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Solicitud de Viaticos",

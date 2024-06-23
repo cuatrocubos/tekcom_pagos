@@ -127,11 +127,11 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 	},
 
 	setup(frm) {
-		if (frm.doc.docstatus == 0) {
-			if (!frm.doc.fecha_solicitud) {
-				frm.set_value("fecha_solicitud", frappe.datetime.nowdate())
-			}
-		}
+		// if (frm.doc.docstatus == 0) {
+		// 	if (!frm.doc.fecha_solicitud) {
+		// 		frm.set_value("fecha_solicitud", frappe.datetime.nowdate())
+		// 	}
+		// }
 
 		if (frm.doc.solicitante == "" || frm.doc.solicitante == null) {
 			frappe.call({
@@ -366,6 +366,11 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 	},
 
 	refresh(frm) {
+		if (frm.doc.docstatus==0) {
+			if (!frm.doc.fecha_solicitud) {
+				frm.set_value('fecha_solicitud', frappe.datetime.nowdate())
+			}
+		}
 		if (frm.doc.workflow_status == 'Pagado' || frm.doc.workflow_status == 'Contabilizado') {
 			frm.add_custom_button(__('Liquidacion de Viaticos'), () => {
 				frm.events.make_liquidacion_viaticos()
@@ -402,6 +407,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 
 		// cur_frm.set_df_property("conversion_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
 		// cur_frm.set_df_property
+		frm.set_df_property("fecha_solicitud", 'read_only', 1)
 
 		frm.refresh_fields()
 	},

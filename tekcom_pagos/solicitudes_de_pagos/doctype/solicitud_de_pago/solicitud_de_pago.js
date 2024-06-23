@@ -124,11 +124,11 @@ frappe.ui.form.on('Solicitud de Pago', {
 	},
 
 	setup: function(frm) {
-		if (frm.doc.docstatus == 0) {
-			if (!frm.doc.fecha_solicitud) {
-				frm.set_value("fecha_solicitud", frappe.datetime.nowdate())
-			}
-		}
+		// frm.set_value('fecha_solicitud', frappe.datetime.nowdate())
+		// if (frm.doc.docstatus==0 && frm.doc.status == 'Draft') {
+		// 	if (!frm.doc.fecha_solicitud) {
+		// 	}
+		// }
 
 		if (frm.doc.solicitante == "" || frm.doc.solicitante == null) {
 			frappe.call({
@@ -330,6 +330,11 @@ frappe.ui.form.on('Solicitud de Pago', {
 
 	refresh: function(frm) {
 		// erpnext.hide_company();
+		if (frm.doc.docstatus==0) {
+			if (!frm.doc.fecha_solicitud) {
+				frm.set_value('fecha_solicitud', frappe.datetime.nowdate())
+			}
+		}
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
 		// frm.events.show_general_ledger(frm);
