@@ -9,6 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "company",
+  "abbr",
   "column_break_wtwdj",
   "naming_series",
   "detalles_section_break",
@@ -599,12 +600,19 @@
   {
    "fieldname": "column_break_iqrz",
    "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "company.abbr",
+   "fieldname": "abbr",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "abbr"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-04-18 08:48:14.461844",
+ "modified": "2024-07-18 09:39:16.423607",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",

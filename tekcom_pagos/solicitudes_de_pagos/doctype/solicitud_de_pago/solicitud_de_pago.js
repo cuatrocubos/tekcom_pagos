@@ -258,6 +258,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 					query: "erpnext.accounts.doctype.journal_entry.journal_entry.get_against_jv",
 					filters: {
 						// account: jvd.account,
+						// company: doc.company,
 						party: doc.party
 					}
 				};
