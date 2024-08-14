@@ -1,6 +1,7 @@
 // Copyright (c) 2023, Cuatrocubos Soluciones and contributors
 // For license information, please see license.txt
-{% include "erpnext/public/js/controllers/accounts.js" %}
+
+frappe.provide("tekcom_pagos.solicitud_de_pago")
 frappe.provide("erpnext.accounts.dimensions");
 
 frappe.ui.form.on('Solicitud de Pago', {
@@ -327,6 +328,8 @@ frappe.ui.form.on('Solicitud de Pago', {
 				});
 			}
 		})
+
+		frm.events.refresh(frm)
 	},
 
 	refresh: function(frm) {
@@ -336,6 +339,23 @@ frappe.ui.form.on('Solicitud de Pago', {
 				frm.set_value('fecha_solicitud', frappe.datetime.nowdate())
 			}
 		}
+		if (frm.doc.company && frm.doc.abbr == null) {
+			frm.trigger('company')
+		}
+		if (frm.doc.party_type && frm.doc.party) {
+			if (frm.doc.party_name == null) {
+				frm.trigger('party')
+			}
+		}
+
+		// if (frm.doc.workflow_status == 'Pagado') {
+		// 	frm.add_custom_button(
+		// 		__("Payment"),
+		// 		() => frm.events.make_payment_entry(doc),
+		// 		__("Create")
+		// 	);
+		// }
+
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
 		// frm.events.show_general_ledger(frm);
@@ -689,3 +709,25 @@ frappe.ui.form.on('Comprobante de Solicitud de Pago', {
 		frm.events.set_monto_solicitado(frm)
 	}
 })
+
+tekcom_pagos.solicitud_de_pago.SolicituddePagoController = class SolicituddePagoController extends erpnext.TransactionController{
+	setup() {
+		this.frm.custom_make_buttons = {
+			"Payment Entry": "Payment"
+		}
+	}
+
+	onload() {}
+
+	refresh(doc) {
+		if (doc.workflow_status == 'Pagado') {
+			this.frm.add_custom_button(
+				__("Payment"),
+				() => this.make_payment_entry(doc),
+				__("Create")
+			);
+		}
+	}
+}
+
+extend_cscript(cur_frm.cscript, new tekcom_pagos.solicitud_de_pago.SolicituddePagoController({ frm: cur_frm }))

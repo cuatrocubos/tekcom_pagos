@@ -340,12 +340,13 @@
    "read_only": 1
   },
   {
+   "default": "Sin Comprobantes",
    "description": "Sin Comprobantes = No se adjuntan documentos con la solicitud || Con Copias = Solo se incluye copias con la solicitud || Documentaci\u00f3n Completa = Se incluye documentaci\u00f3n original",
    "fieldname": "documentos_adjuntos",
    "fieldtype": "Select",
    "label": "Documentos Adjuntos",
    "mandatory_depends_on": "eval:(doc.company && doc.workflow_status == \"Pagado\")",
-   "options": "\nSin Comprobantes\nCon Copias\nDocumentaci\u00f3n Completa"
+   "options": "Sin Comprobantes\nCon Copias\nDocumentaci\u00f3n Completa"
   },
   {
    "fieldname": "fecha_hora_revision",
@@ -438,7 +439,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-22 20:24:25.120359",
+ "modified": "2024-08-07 21:21:10.767289",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Solicitud de Viaticos",

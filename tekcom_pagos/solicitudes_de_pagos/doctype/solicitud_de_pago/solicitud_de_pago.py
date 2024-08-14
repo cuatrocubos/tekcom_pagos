@@ -8,12 +8,15 @@ from frappe.model.document import Document
 
 import erpnext
 from erpnext.accounts.doctype.bank_account.bank_account import (
-	get_bank_account_details,
- 	get_party_bank_account
+  get_bank_account_details,
+   get_party_bank_account,
 )
 from erpnext.accounts.party import get_party_account
 from erpnext.accounts.utils import get_account_currency, get_balance_on, get_outstanding_invoices
 from erpnext.setup.utils import get_exchange_rate
+from erpnext.accounts.doctype.journal_entry.journal_entry import (
+  get_default_bank_cash_account,
+)
 
 import json
 from functools import reduce
@@ -166,15 +169,15 @@ def get_party_details(company, party_type, party, date, cost_center=None):
     bank = frappe.db.get_value(party_type, party, "bank_name")
     
   return {
-		"party_account": party_account,
-		"party_name": party_name,
-		"party_account_currency": account_currency,
-		"party_balance": party_balance,
-		"account_balance": account_balance,
-		"bank_account": bank_account,
-		"bank": bank,
+    "party_account": party_account,
+    "party_name": party_name,
+    "party_account_currency": account_currency,
+    "party_balance": party_balance,
+    "account_balance": account_balance,
+    "bank_account": bank_account,
+    "bank": bank,
     "party_tax_id": party_tax_id
-	}
+  }
   
 @frappe.whitelist()
 def get_company_defaults(company):
@@ -212,8 +215,8 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
     }
   )
   
-@frappe.whitelist()
-def get_bank_account_details(bank_account):
-	return frappe.db.get_value(
-		"Bank Account", bank_account, ["account", "bank", "bank_account_no", "account_type"], as_dict=1
-	)
+# @frappe.whitelist()
+# def get_bank_account_details(bank_account):
+#   return frappe.db.get_value(
+#     "Bank Account", bank_account, ["account", "bank", "bank_account_no", "account_type"], as_dict=1
+#   )
