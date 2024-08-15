@@ -1,7 +1,6 @@
 // Copyright (c) 2023, Cuatrocubos Soluciones and contributors
 // For license information, please see license.txt
 
-frappe.provide("tekcom_pagos.solicitud_de_pago")
 frappe.provide("erpnext.accounts.dimensions");
 
 frappe.ui.form.on('Solicitud de Pago', {
@@ -130,6 +129,10 @@ frappe.ui.form.on('Solicitud de Pago', {
 		// 	if (!frm.doc.fecha_solicitud) {
 		// 	}
 		// }
+
+		frm.custom_make_buttons = {
+			"Payment Entry": "Payment"
+		}
 
 		if (frm.doc.solicitante == "" || frm.doc.solicitante == null) {
 			frappe.call({
@@ -348,6 +351,14 @@ frappe.ui.form.on('Solicitud de Pago', {
 			}
 		}
 
+		if (frm.doc.workflow_status == 'Pagado') {
+			frm.add_custom_button(
+				__("Payment"),
+				() => frm.events.make_payment_entry(frm),
+				__("Create")
+			);
+		}
+
 		// if (frm.doc.workflow_status == 'Pagado') {
 		// 	frm.add_custom_button(
 		// 		__("Payment"),
@@ -403,7 +414,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 	hide_unhide_fields: function(frm) {
 		var company_currency = frm.doc.company ? frappe.get_doc(":Company", frm.doc.company).default_currency : "";
 
-		frm.toggle_display("exchange_rate", (frm.doc.currency != company_currency));
+		frm.toggle_display("conversion_rate", (frm.doc.currency != company_currency));
 		frm.toggle_display("monto_solicitado_base", (frm.doc.currency != company_currency));
 
 		// frm.toggle_display(["base_total_allocated_amount"],(frm.doc.monto_solicitado && frm.doc.base_total_allocated_amount && (frm.doc.currency != company_currency)))
@@ -420,7 +431,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 
 		frm.set_df_property("monto_solicitado", "options", "currency");
 
-		frm.set_df_property("exchange_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
+		frm.set_df_property("conversion_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
 
 		frm.set_currency_labels(["total_amount", "outstanding_amount","allocated_amount"], frm.doc.currency, "references")
 
@@ -543,7 +554,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 									}
 								}
 							},
-							() => frm.events.set_current_exchange_rate(frm, "exchange_rate", frm.doc.currency, company_currency)
+							() => frm.events.set_current_conversion_rate(frm, "conversion_rate", frm.doc.currency, company_currency)
 						]);
 					}
 				}
@@ -557,7 +568,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 		frm.events.set_dynamic_labels(frm);
 		let company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency;
 		if (frm.doc.currency == company_currency) {
-			frm.set_value("exchange_rate", 1);
+			frm.set_value("conversion_rate", 1);
 		} else {
 			frappe.call({
 				method: "erpnext.setup.utils.get_exchange_rate",
@@ -567,14 +578,14 @@ frappe.ui.form.on('Solicitud de Pago', {
 					transaction_date: frm.doc.fecha_solicitud
 				},
 				callback: function(r, rt) {
-					frm.set_value("exchange_rate", r.message)
+					frm.set_value("conversion_rate", r.message)
 				}
 			})
 		}
 		frm.events.hide_unhide_fields(frm);
 	},
 
-	set_current_exchange_rate: function(frm, exchange_rate_field, from_currency, to_currency) {
+	set_current_conversion_rate: function(frm, conversion_rate_field, from_currency, to_currency) {
 		frappe.call({
 			method: "erpnext.setup.utils.get_exchange_rate",
 			args: {
@@ -583,8 +594,8 @@ frappe.ui.form.on('Solicitud de Pago', {
 				to_currency: to_currency
 			},
 			callback: function(r, rt) {
-				const ex_rate = flt(r.message, frm.get_field(exchange_rate_field).get_precision());
-				frm.set_value(exchange_rate_field, ex_rate);
+				const ex_rate = flt(r.message, frm.get_field(conversion_rate_field).get_precision());
+				frm.set_value(conversion_rate_field, ex_rate);
 			}
 		})
 	},
@@ -593,15 +604,15 @@ frappe.ui.form.on('Solicitud de Pago', {
 		frm.events.currency(frm);
 	},
 
-	exchange_rate: function(frm) {
+	conversion_rate: function(frm) {
 		if (frm.doc.monto_solicitado) {
-			frm.set_value("monto_solicitado_base", flt(frm.doc.monto_solicitado) * flt(frm.doc.exchange_rate));
-			frm.set_df_property("exchange_rate", "read_only", erpnext.stale_rate_allowed() ? 0 : 1);
+			frm.set_value("monto_solicitado_base", flt(frm.doc.monto_solicitado) * flt(frm.doc.conversion_rate));
+			frm.set_df_property("conversion_rate", "read_only", erpnext.stale_rate_allowed() ? 0 : 1);
 		}
 	},
 
 	monto_solicitado: function(frm) {
-		frm.set_value("monto_solicitado_base", flt(frm.doc.monto_solicitado) * flt(frm.doc.exchange_rate));
+		frm.set_value("monto_solicitado_base", flt(frm.doc.monto_solicitado) * flt(frm.doc.conversion_rate));
 		frm.events.hide_unhide_fields(frm);
 	},
 
@@ -630,7 +641,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 		$.each(frm.doc.references || [], function(i, row) {
 			if (row.allocated_amount) {
 				monto_solicitado += flt(row.allocated_amount)
-				monto_solicitado_base += flt(flt(row.allocated_amount) * flt(frm.exchange_rate), precision("monto_solicitado_base"))
+				monto_solicitado_base += flt(flt(row.allocated_amount) * flt(frm.conversion_rate), precision("monto_solicitado_base"))
 			}
 		})
 		
@@ -641,11 +652,24 @@ frappe.ui.form.on('Solicitud de Pago', {
 		// frm.refresh_fields()
 	},
 
+	make_payment_entry(frm) {
+		return frappe.call({
+			method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.make_payment_entry",
+			args: {
+				"docname": frm.doc.name
+			},
+			callback: function(r) {
+				var doclist = frappe.model.sync(r.message);
+				frappe.set_route("Form", doclist[0].doctype, doclist[0].name)
+			}
+		})
+	},
+
 	// set_unallocated_amount(frm) {
 	// 	var unallocated_amount = 0
 		
 	// 	if (frm.doc.party) {
-	// 		unallocated_amount = (frm.doc.monto_solicitado_base - frm.doc.base_total_allocated_amount) / frm.doc.exchange_rate
+	// 		unallocated_amount = (frm.doc.monto_solicitado_base - frm.doc.base_total_allocated_amount) / frm.doc.conversion_rate
 	// 	}
 
 	// 	frm.set_value("unallocated_amount", unallocated_amount)
@@ -654,7 +678,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 
 	// set_difference_amount(frm) {
 	// 	var difference_amount = 0
-	// 	var base_unallocated_amount = flt(frm.doc.unallocated_amount) * frm.doc.exchange_rate
+	// 	var base_unallocated_amount = flt(frm.doc.unallocated_amount) * frm.doc.conversion_rate
 
 	// 	var base_party_amount = flt(frm.doc.base_total_allocated_amount) + base_unallocated_amount
 
@@ -709,25 +733,3 @@ frappe.ui.form.on('Comprobante de Solicitud de Pago', {
 		frm.events.set_monto_solicitado(frm)
 	}
 })
-
-tekcom_pagos.solicitud_de_pago.SolicituddePagoController = class SolicituddePagoController extends erpnext.TransactionController{
-	setup() {
-		this.frm.custom_make_buttons = {
-			"Payment Entry": "Payment"
-		}
-	}
-
-	onload() {}
-
-	refresh(doc) {
-		if (doc.workflow_status == 'Pagado') {
-			this.frm.add_custom_button(
-				__("Payment"),
-				() => this.make_payment_entry(doc),
-				__("Create")
-			);
-		}
-	}
-}
-
-extend_cscript(cur_frm.cscript, new tekcom_pagos.solicitud_de_pago.SolicituddePagoController({ frm: cur_frm }))

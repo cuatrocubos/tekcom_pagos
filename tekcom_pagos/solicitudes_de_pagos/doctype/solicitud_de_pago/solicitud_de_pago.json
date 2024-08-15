@@ -29,7 +29,7 @@
   "divisa_section",
   "currency",
   "column_break_z1fii",
-  "exchange_rate",
+  "conversion_rate",
   "beneficiario_section_break",
   "party_type",
   "party",
@@ -346,12 +346,6 @@
    "options": "Comprobante de Solicitud de Pago"
   },
   {
-   "fieldname": "exchange_rate",
-   "fieldtype": "Float",
-   "label": "Exchange Rate",
-   "precision": "9"
-  },
-  {
    "bold": 1,
    "depends_on": "eval:(doc.monto_pagar && doc.references)",
    "fieldname": "total_allocated_amount",
@@ -607,12 +601,18 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "abbr"
+  },
+  {
+   "fieldname": "conversion_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "precision": "9"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-18 09:39:16.423607",
+ "modified": "2024-08-14 20:29:20.761100",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",
