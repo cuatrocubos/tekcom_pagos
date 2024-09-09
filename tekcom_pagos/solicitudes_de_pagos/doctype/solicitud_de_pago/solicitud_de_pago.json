@@ -84,7 +84,8 @@
   "coordinador_pagos",
   "column_break_uria",
   "revisado_por",
-  "aprobado_por"
+  "aprobado_por",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -607,12 +608,18 @@
    "fieldtype": "Float",
    "label": "Exchange Rate",
    "precision": "9"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-14 20:29:20.761100",
+ "modified": "2024-08-15 08:47:35.266288",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",

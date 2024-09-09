@@ -54,7 +54,7 @@ class SolicituddePago(Document):
   
   def validate(self):
     validate_active_employee(self.solicitante)
-    self.update_workflow_details(self)
+    self.update_workflow_details()
 
   def get_constancia_date(constancia):
     return constancia['fecha_vencimiento']
@@ -86,7 +86,7 @@ class SolicituddePago(Document):
   def update_workflow_details(self):
     old_doc = Document.get_doc_before_save(self)
     
-    configuracion_pagos = self.get_configuracion_pagos(self)
+    configuracion_pagos = self.get_configuracion_pagos()
     
     if self.workflow_status == 'Draft':
       self.revisor = configuracion_pagos["revisor_predeterminado"]
@@ -122,70 +122,75 @@ class SolicituddePago(Document):
     # create payment entry
     frappe.flags.ignore_account_permissions = True
     
-    ref_docs = self.references
+    payment_docs = []
     
     # if self.party_type == "Employee":
     #   pass
     # if self.party_type == "Supplier":
     
-    for reference in self.references:
-      ref_doc = frappe.get_doc(reference.reference_doctype, reference.reference_name)
-      
-      if reference.reference_doctype in ["Purchase Invoice", "Purchase Order"]:
-        party_account = party_account = get_party_account("Supplier", ref_doc.supplier, ref_doc.company)
+    if self.party_type == "Employee" and len(self.references) == 0:      
+      pass
+    else:
+      for reference in self.references:
+        ref_doc = frappe.get_doc(reference.reference_doctype, reference.reference_name)
         
-      party_account_currency = ref_doc.get("party_account_currency") or get_account_currency(party_account)
-      
-      bank_account = get_bank_cash_account(self.mode_of_payment, self.company)
-      bank_amount = reference.allocated_amount
-      if party_account_currency == ref_doc.company_currency and party_account_currency != ref_doc.currency:
-        party_amount = ref_doc.get("base_rounded_total") or ref_doc.get("base_grand_total")
-      else:
-        party_amount = reference.allocated_amount
+        if reference.reference_doctype in ["Purchase Invoice", "Purchase Order"]:
+          party_account = party_account = get_party_account("Supplier", ref_doc.supplier, ref_doc.company)
+          
+        party_account_currency = ref_doc.get("party_account_currency") or get_account_currency(party_account)
         
-      payment_entry = get_payment_entry(
-        reference.reference_doctype,
-        reference.reference_name,
-        party_amount=party_amount,
-        bank_account=bank_account,
-        bank_amount=bank_amount,
-        party_type = "Supplier",
-        payment_type = "Pay",
-        reference_date=self.reference_date
-      )
-      
-      payment_entry.update(
-        {
-          "mode_of_payment": self.mode_of_payment,
-          "reference_no": self.reference_no,
-          "reference_date": self.reference_date,
-          "remarks": "Entrada de Pago via Solicitud de Pago {}".format(
-            self.name
-          )
-        }
-      )
-      
-      payment_entry.update(
-        {
-          "cost_center": ref_doc.get("cost_center"),
-          "project": self.get("project")
-        }
-      )
-      
-      if party_account_currency == ref_doc.company_currency and party_account_currency != ref_doc.currency:
-        amount = payment_entry.base_paid_amount
-      else:
-        amount = reference.allocated_amount
+        bank_account = get_bank_cash_account(self.mode_of_payment, self.company)
+        bank_amount = reference.allocated_amount
+        if party_account_currency == ref_doc.company_currency and party_account_currency != ref_doc.currency:
+          party_amount = ref_doc.get("base_rounded_total") or ref_doc.get("base_grand_total")
+        else:
+          party_amount = reference.allocated_amount
+          
+        payment_entry = get_payment_entry(
+          reference.reference_doctype,
+          reference.reference_name,
+          party_amount=party_amount,
+          bank_account=bank_account,
+          bank_amount=bank_amount,
+          party_type = "Supplier",
+          payment_type = "Pay",
+          reference_date=self.reference_date
+        )
         
-      payment_entry.received_amount = amount
-      # esto aplica el monto solicitado a la primera fila de referencias pagadas
-      payment_entry.get("references")[0].allocated_amount = amount
-      
-      if submit:
-        payment_entry.insert(ignore_permissions=True)
-        payment_entry.submit()
+        payment_entry.update(
+          {
+            "mode_of_payment": self.mode_of_payment,
+            "reference_no": self.reference_no,
+            "reference_date": self.reference_date,
+            "remarks": "Entrada de Pago via Solicitud de Pago {}".format(
+              self.name
+            ),
+            "custom_solicitud_de_pago": self.name
+          }
+        )
         
-      return payment_entry
+        payment_entry.update(
+          {
+            "cost_center": ref_doc.get("cost_center"),
+            "project": self.get("project")
+          }
+        )
+        
+        if party_account_currency == ref_doc.company_currency and party_account_currency != ref_doc.currency:
+          amount = payment_entry.base_paid_amount
+        else:
+          amount = reference.allocated_amount
+          
+        payment_entry.received_amount = amount
+        # esto aplica el monto solicitado a la primera fila de referencias pagadas
+        payment_entry.get("references")[0].allocated_amount = amount
+        
+        if submit:
+          payment_entry.insert(ignore_permissions=True)
+          payment_entry.submit()
+          payment_docs.append(get_link_to_form(payment_entry.doctype, payment_entry.name))
+      
+    return payment_docs
     
 @frappe.whitelist()
 def get_bank_cash_account(mode_of_payment, company):
@@ -308,7 +313,7 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
 @frappe.whitelist()
 def make_payment_entry(docname):
   doc = frappe.get_doc("Solicitud de Pago", docname)
-  return doc.create_payment_entry(submit=True).as_dict()
+  return doc.create_payment_entry(submit=True)
 # @frappe.whitelist()
 # def get_bank_account_details(bank_account):
 #   return frappe.db.get_value(

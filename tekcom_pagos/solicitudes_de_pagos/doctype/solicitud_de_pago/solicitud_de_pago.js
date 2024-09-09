@@ -241,14 +241,16 @@ frappe.ui.form.on('Solicitud de Pago', {
 		})
 
 		frm.set_query("reference_doctype", "references", function() {
-			if (frm.doc.party_type == "Supplier") {
-				var doctypes = ["Purchase Order", "Purchase Invoice", "Gastos Varios", "Journal Entry"]
-			} else {
-				var doctypes = ["Gastos Varios", "Journal Entry"]
-			}
+			// if (frm.doc.party_type == "Supplier") {
+				var doctypes = ["Purchase Order", "Purchase Invoice", "Gastos Varios"]
+			// } else {
+				// var doctypes = ["Gastos Varios"]
+			// }
 
 			return {
-				filters: { "name": ["in", doctypes]}
+				filters: { 
+					"name": ["in", doctypes] 
+				}
 			}
 		})
 
@@ -256,17 +258,17 @@ frappe.ui.form.on('Solicitud de Pago', {
 			var jvd = frappe.get_doc(cdt, cdn);
 
 			// journal entry
-			if(jvd.reference_doctype==="Journal Entry") {
-				// frappe.model.validate_missing(jvd, "account");
-				return {
-					query: "erpnext.accounts.doctype.journal_entry.journal_entry.get_against_jv",
-					filters: {
-						// account: jvd.account,
-						// company: doc.company,
-						party: doc.party
-					}
-				};
-			}
+			// if(jvd.reference_doctype==="Journal Entry") {
+			// 	// frappe.model.validate_missing(jvd, "account");
+			// 	return {
+			// 		query: "erpnext.accounts.doctype.journal_entry.journal_entry.get_against_jv",
+			// 		filters: {
+			// 			// account: jvd.account,
+			// 			// company: doc.company,
+			// 			party: doc.party
+			// 		}
+			// 	};
+			// }
 
 			var out = {
 				filters: [
@@ -274,39 +276,27 @@ frappe.ui.form.on('Solicitud de Pago', {
 				]
 			};
 
-			if(in_list(["Sales Invoice", "Purchase Invoice"], jvd.reference_doctype)) {
-				out.filters.push([jvd.reference_doctype, "outstanding_amount", "!=", 0]);
-				// Filter by cost center
-				// if(doc.cost_center) {
-				// 	out.filters.push([jvd.reference_doctype, "cost_center", "in", ["", doc.cost_center]]);
-				// }
-				// account filter
-				// frappe.model.validate_missing(jvd, "account");
-				// var party_account_field = jvd.reference_doctype==="Sales Invoice" ? "debit_to": "credit_to";
-				// out.filters.push([jvd.reference_doctype, party_account_field, "=", jvd.account]);
-
-			}
-
 			if(in_list(["Sales Order", "Purchase Order"], jvd.reference_doctype)) {
 				// party_type and party mandatory
 				// frappe.model.validate_missing(jvd, "party_type");
 				// frappe.model.validate_missing(jvd, "party");
 
 				out.filters.push([jvd.reference_doctype, "per_billed", "<", 100]);
+				out.filters.push([jvd.reference_doctype, "company", "=", doc.company]);
 			}
 
-			if(doc.party_type && doc.party) {
-				var party_field = "";
-				if(jvd.reference_doctype.indexOf("Sales")===0) {
-					var party_field = "customer";
-				} else if (jvd.reference_doctype.indexOf("Purchase")===0) {
-					var party_field = "supplier";
-				}
+			// if(doc.party_type && doc.party) {
+			// 	var party_field = "";
+			// 	if(jvd.reference_doctype.indexOf("Sales")===0) {
+			// 		var party_field = "customer";
+			// 	} else if (jvd.reference_doctype.indexOf("Purchase")===0) {
+			// 		var party_field = "supplier";
+			// 	}
 
-				if (party_field) {
-					out.filters.push([jvd.reference_doctype, party_field, "=", doc.party]);
-				}
-			}
+			// 	if (party_field) {
+			// 		out.filters.push([jvd.reference_doctype, party_field, "=", doc.party]);
+			// 	}
+			// }
 
 			return out;
 		});
@@ -659,8 +649,15 @@ frappe.ui.form.on('Solicitud de Pago', {
 				"docname": frm.doc.name
 			},
 			callback: function(r) {
-				var doclist = frappe.model.sync(r.message);
-				frappe.set_route("Form", doclist[0].doctype, doclist[0].name)
+				if (r.message) {
+					const doclist = r.message;
+					if (doclist.length > 0) {
+						frappe.msgprint(__("{0} Entradas de pago creadas", [r.message.length]))
+					} else {
+						frappe.msgprint(__("No se crearon entradas de pago"), )
+					}
+				}
+				// frappe.set_route("Form", doclist[0].doctype, doclist[0].name)
 			}
 		})
 	},
