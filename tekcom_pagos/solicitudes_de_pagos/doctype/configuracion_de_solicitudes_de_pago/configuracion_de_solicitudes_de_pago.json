@@ -11,6 +11,7 @@
   "revisor_predeterminado",
   "aprobador_predeterminado",
   "coordinador_pagos_predeterminado",
+  "encargado_compras",
   "column_break_sfzu",
   "section_break_dash",
   "cost_center_predeterminados",
@@ -69,12 +70,18 @@
    "fieldtype": "Table",
    "label": "Modos de Pago Predeterminados",
    "options": "Modo de Pago de Configuracion de Solicitudes de Pago"
+  },
+  {
+   "fieldname": "encargado_compras",
+   "fieldtype": "Link",
+   "label": "Encargado de Compras",
+   "options": "User"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-04-18 13:17:34.307845",
+ "modified": "2024-10-29 15:05:15.476673",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Configuracion de Solicitudes de Pago",

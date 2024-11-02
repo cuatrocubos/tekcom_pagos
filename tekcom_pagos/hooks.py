@@ -116,6 +116,11 @@ permission_query_conditions = {
 #		"on_trash": "method"
 #	}
 # }
+doc_events = {
+  "Purchase Order": {
+    "before_validate": "tekcom_pagos.events.purchase_order_events.before_validate_event"
+  }
+}
 
 # Scheduled Tasks
 # ---------------
