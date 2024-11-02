@@ -11,6 +11,7 @@ def get_configuracion_pagos(doc):
   configuracion_centro_costos = configuracion_pagos.cost_center_predeterminados
   
   aprobador_predeterminado = configuracion_pagos.aprobador_predeterminado
+  encargado_compras = configuracion_pagos.encargado_compras
   if len(configuracion_centro_costos) > 0:
     cc_predeterminado = next((ele for ele in configuracion_centro_costos if ele.cost_center == doc.cost_center), None)
 
@@ -19,7 +20,8 @@ def get_configuracion_pagos(doc):
         aprobador_predeterminado = cc_predeterminado.aprobador_predeterminado
         
   return {
-    "aprobador_predeterminado": aprobador_predeterminado
+    "aprobador_predeterminado": aprobador_predeterminado,
+    "encargado_compras": encargado_compras
   }
 
 def update_workflow_details(doc, user=None):
