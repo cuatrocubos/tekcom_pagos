@@ -211,3 +211,5 @@ doc_events = {
 # auth_hooks = [
 #	"tekcom_pagos.auth.validate"
 # ]
+
+after_migrate = [{"tekcom_pagos.migrate.update_solicitante_aprobador_orden_compra.update_purchase_order_workflow_details"}]

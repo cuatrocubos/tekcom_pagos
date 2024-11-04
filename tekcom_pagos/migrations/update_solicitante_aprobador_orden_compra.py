@@ -6,7 +6,10 @@ from tekcom_pagos.events.purchase_order_events import (
   update_workflow_details
 )
 
-def execute():
+def update_purchase_order_workflow_details():
+  frappe.reload_doc('buying', 'doctype', 'purchase_order')
+  frappe.reload_doc('Tekcom Pagos', 'doctype', 'Configuracion de Solicitudes de Pago')
+  
   purchase_orders = frappe.db.get_all("Purchase Order")
   
   for purchase_order in purchase_orders:
@@ -32,7 +35,7 @@ def execute():
       
       aprobador_details = frappe.get_all('Comment', filters={'comment_type': 'Workflow','content':'Aprobado','reference_doctype':'Purchase Order','reference_name':purchase_order.name}, fields=['creation','comment_email'], order_by='creation desc')
       
-      if purchase_order.docstatus == 1 and len(aprobador_details) > 0:
+      if len(aprobador_details) > 0:
         aprobacion = aprobador_details[0]
         aprobador_email = aprobacion.comment_email
         fecha_aprobacion = aprobacion.creation
