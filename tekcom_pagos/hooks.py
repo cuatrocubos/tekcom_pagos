@@ -212,4 +212,4 @@ doc_events = {
 #	"tekcom_pagos.auth.validate"
 # ]
 
-after_migrate = [{"tekcom_pagos.migrate.update_solicitante_aprobador_orden_compra.update_purchase_order_workflow_details"}]
+after_migrate = "tekcom_pagos.migrations.after_migrate.execute"
