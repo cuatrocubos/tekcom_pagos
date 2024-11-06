@@ -11,7 +11,7 @@ def execute():
 
 def update_purchase_order_workflow_details():
   frappe.reload_doc('buying', 'doctype', 'purchase_order')
-  # frappe.reload_doc('Tekcom Pagos', 'doctype', 'Configuracion de Solicitudes de Pago')
+  frappe.reload_doc('Solicitudes de Pagos', 'doctype', 'Configuracion de Solicitudes de Pago')
   
   purchase_orders = frappe.db.get_all("Purchase Order")
   
