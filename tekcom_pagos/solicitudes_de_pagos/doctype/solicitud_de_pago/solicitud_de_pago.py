@@ -154,7 +154,9 @@ class SolicituddePago(Document):
           bank_amount=bank_amount,
           party_type = "Supplier",
           payment_type = "Pay",
-          reference_date=self.reference_date
+          reference_date=self.reference_date,
+          custom_solicitud_de_pago=self.name,
+          custom_referencia_de_solicitud_pago=reference.name
         )
         
         payment_entry.update(

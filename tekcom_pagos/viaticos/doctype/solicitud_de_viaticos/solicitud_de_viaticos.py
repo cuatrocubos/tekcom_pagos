@@ -164,6 +164,21 @@ def set_totales_personas_dia(self):
     total_anticipo_solicitado = total_anticipo_solicitado + presupuesto.monto_solicitado
   self.total_anticipo_solicitado = total_anticipo_solicitado
   self.total_anticipo_aprobado = total_anticipo_solicitado    
+  
+def create_employee_advance(self, submit=False):
+  frappe.flags.ignore_account_permissions = True
+  
+  employee_advance = frappe.new_doc("Employee Advance")
+  employee_advance.company = self.company
+  employee_advance.posting_date = self.posting_date
+  employee_advance.employee = self.solicitante
+  employee_advance.purpose = self.remarks
+  employee_advance.advance_amount = self.total_aprobado
+  employee_advance.advance_account = ''
+  employee_advance.mode_of_payment = ''
+  employee_advance.repay_unclaimed_amount_from_salary = True
+  employee_advance.status = ''
+  
     
 @frappe.whitelist()
 def get_asignacion_diaria_alimentacion(employee):
@@ -299,3 +314,8 @@ def make_liquidacion_viaticos(source_name, target_doc=None):
   )
   
   return doc
+
+@frappe.whitelist()
+def make_employee_advance(docname):
+  doc = frappe.get_doc("Solicitud de Viaticos", docname)
+  return doc.create_employee_advance(submit=True)
