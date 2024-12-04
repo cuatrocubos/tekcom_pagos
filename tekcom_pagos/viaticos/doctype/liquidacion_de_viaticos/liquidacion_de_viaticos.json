@@ -12,7 +12,7 @@
   "column_break_4osdx",
   "naming_series",
   "detalles_section",
-  "solicitud_viaticos",
+  "solicitud_de_viaticos",
   "fecha_salida_solicitud",
   "fecha_retorno_solicitud",
   "column_break_fevnj",
@@ -68,14 +68,6 @@
    "fieldname": "detalles_section",
    "fieldtype": "Section Break",
    "label": "Detalles"
-  },
-  {
-   "fieldname": "solicitud_viaticos",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Solicitud de Viaticos",
-   "options": "Solicitud de Viaticos",
-   "reqd": 1
   },
   {
    "fieldname": "column_break_fevnj",
@@ -255,12 +247,20 @@
    "fieldtype": "Data",
    "label": "Lugar",
    "options": "solicitud_viaticos.lugar"
+  },
+  {
+   "fieldname": "solicitud_de_viaticos",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Solicitud de Viaticos",
+   "options": "Solicitud de Viaticos",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-11-06 09:44:34.266538",
+ "modified": "2024-12-03 17:17:26.325094",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Liquidacion de Viaticos",

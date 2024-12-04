@@ -287,6 +287,36 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		}
 	},
 
+	currecy(frm) {
+		if (!frm.doc.currency || !frm.doc.company) return;
+
+		frm.events.set_dynamic_labels(frm)
+		let company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency
+		if (frm.doc.currency == company_currency) {
+			frm.set_value("exchange_rate", 1)
+		} else {
+			frappe.call({
+				method: "erpnext.setup.utils.get_exchange_rate",
+				args: {
+					from_currency: frm.doc.currency,
+					to_currency: company_currency,
+					transaction_date: frm.doc.fecha_solicitud
+				},
+				callback(r, rt) {
+					frm.set_value("exchange_rate", r.message)
+				}
+			})
+		}
+		frm.events.hide_unhide_fields(frm)
+	},
+
+	exchange_rate(frm) {
+		if (frm.doc.total_anticipo_solicitado) {
+			frm.events.set_totales()
+			frm.set_df_property("exchange_rate", "read_onlu", erpnext.stale_rate_allowed() ? 0 : 1)
+		}
+	},
+
 	solicitante(frm) {
 		frm.events.validate_company(frm)
 		if (frm.doc.solicitante) {
@@ -376,6 +406,35 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				frm.events.make_liquidacion_viaticos()
 			})
 		}
+		if (frm.doc.workflow_status == 'Pagado') {
+			frm.add_custom_button(
+				__("Payment"),
+				() => frm.events.make_payment_entry(frm),
+				__("Create")
+			);
+		}
+		frm.events.hide_unhide_fields(frm);
+		frm.events.set_dynamic_labels(frm);
+	},
+
+	make_payment_entry(frm) {
+		return frappe.call({
+			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.make_payment_entry",
+			args: {
+				"docname": frm.doc.name
+			},
+			callback: function(r) {
+				if (r.message) {
+					const doclist = r.message;
+					if (doclist.length > 0) {
+						frappe.msgprint(__("{0} Entradas de pago creadas", [r.message.length]))
+					} else {
+						frappe.msgprint(__("No se crearon entradas de pago"), )
+					}
+				}
+				// frappe.set_route("Form", doclist[0].doctype, doclist[0].name)
+			}
+		})
 	},
 
 	make_liquidacion_viaticos() {
@@ -386,10 +445,11 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 	},
 
 	hide_unhide_fields(frm) {
-		// var company_currency = frm.doc.company ? frappe.get_doc(":Company", frm.doc.company).default_currency : "";
+		var company_currency = frm.doc.company ? frappe.get_doc(":Company", frm.doc.company).default_currency : "";
 
-		// frm.toggle_display("conversion_rate", (frm.doc.currency != company_currency));
-		// frm.toggle_display("monto_pagar_base", (frm.doc.currency != company_currency));
+		frm.toggle_display("exchange_rate", (frm.doc.currency != company_currency));
+		frm.toggle_display(["total_anticipo_solicitado_base","total_anticipo_aprobado_base"], (frm.doc.currency != company_currency));
+		frm.toggle_display(["monto_solicitado_base","monto_aprobado_base"], (frm.doc.currency != company_currency), "presupuesto");
 		// var df = frappe.meta.get_docfield("Personas Solicitud de Viaticos", "asignacion_alimentacion", frm.doc.name)
 		// df.read_only = 
 
@@ -397,9 +457,14 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 	},
 
 	set_dynamic_labels(frm) {
-		// var company_currency = frm.doc.company? frappe.get_doc(":Company", frm.doc.company).default_currency: "";
+		var company_currency = frm.doc.company? frappe.get_doc(":Company", frm.doc.company).default_currency: "";
 
-		// frm.set_currency_labels(["monto_pagar_base"], company_currency);
+		frm.set_currency_labels(["total_anticipo_solicitado_base", "total_anticipo_aprobado_base"], company_currency);
+		frm.set_currency_labels(["total_anticipo_solicitado", "total_anticipo_aprobado"], frm.doc.currency);
+		frm.set_currency_labels(["monto_solicitado_base", "monto_aprobado_base"], frm.doc.currency, "presupuesto");
+		frm.set_currency_labels(["monto_solicitado", "monto_aprobado"], company_currency, "presupuesto");
+		
+		frm.set_df_property("exchange_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
 		
 		// frm.set_currency_labels(["monto_pagar"], frm.doc.currency)
 
@@ -463,6 +528,9 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 
 		frm.set_value("total_anticipo_solicitado", total_anticipo_solicitado)
 		frm.set_value("total_anticipo_aprobado", total_anticipo_aprobado)
+		frm.set_value("total_anticipo_solicitado_base", ftl(frm.doc.total_anticipo_solicitado) * ftl(frm.doc.exchange_rate()))
+		frm.set_value("total_anticipo_aprobado_base", ftl(frm.doc.total_anticipo_aprobado) * ftl(frm.doc.exchange_rate()))
+
 
 		// frm.refresh_fields()
 	},
@@ -642,7 +710,6 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		}
 		// tiempos_dia_ultimo = hora_retorno >= 17 ? 3 : hora_retorno > 12 ? 2 : 1
 		frappe.model.set_value(cdt, cdn, "tiempos_dia_1", tiempos_dia_1)
-		console.log('dias_viaje', row.dias_viaje, row)
 		switch (row.dias_viaje) {
 			case 1:
 				frappe.model.set_value(cdt, cdn, "dia_viaje_1", flt(tiempos_dia_1) * flt(row.asignacion_alimentacion))
@@ -882,14 +949,6 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		var dia_5 = row.dia_viaje_5
 		var dia_6 = row.dia_viaje_6
 		var dia_7 = row.dia_viaje_7
-		console.log('row', row)
-		console.log('flt(row.dia_viaje_1) ',flt(dia_1) )
-		console.log('flt(dia_2) ',flt(dia_2) )
-		console.log('flt(dia_3) ',flt(dia_3) )
-		console.log('flt(dia_4) ',flt(dia_4) )
-		console.log('flt(dia_5) ',flt(dia_5) )
-		console.log('flt(dia_6) ',flt(dia_6) )
-		console.log('flt(dia_7)',flt(dia_7))
 		let total = flt(dia_1) 
 			+ flt(dia_2) 
 			+ flt(dia_3) 
@@ -897,7 +956,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			+ flt(dia_5) 
 			+ flt(dia_6) 
 			+ flt(dia_7)
-		console.log('total',total)
+		frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 		frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 		// frm.refresh_fields()
 	}

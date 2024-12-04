@@ -22,6 +22,10 @@
   "project",
   "column_break_akxli",
   "cost_center",
+  "divisa_section",
+  "currency",
+  "column_break_hfkj",
+  "exchange_rate",
   "solicitante_section",
   "solicitante",
   "nombre_solicitante",
@@ -37,8 +41,10 @@
   "presupuesto",
   "totales_section",
   "total_anticipo_solicitado",
-  "column_break_3qmp3",
   "total_anticipo_aprobado",
+  "column_break_3qmp3",
+  "total_anticipo_solicitado_base",
+  "total_anticipo_aprobado_base",
   "transaction_id_section",
   "mode_of_payment",
   "column_break_mjann",
@@ -62,7 +68,8 @@
   "coordinador_pagos",
   "column_break_cnwo",
   "revisado_por",
-  "aprobado_por"
+  "aprobado_por",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -150,6 +157,7 @@
    "in_list_view": 1,
    "label": "Total Anticipo Solicitado",
    "non_negative": 1,
+   "options": "currency",
    "read_only": 1,
    "reqd": 1
   },
@@ -162,6 +170,7 @@
    "fieldtype": "Currency",
    "label": "Total Anticipo Aprobado",
    "non_negative": 1,
+   "options": "currency",
    "read_only": 1,
    "reqd": 1
   },
@@ -434,12 +443,60 @@
    "in_standard_filter": 1,
    "label": "Nombre Depositar A",
    "read_only": 1
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "divisa_section",
+   "fieldtype": "Section Break",
+   "label": "Currency",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_hfkj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "precision": "9"
+  },
+  {
+   "fieldname": "total_anticipo_solicitado_base",
+   "fieldtype": "Currency",
+   "label": "Total Anticipo Solicitado (Moneda Compa\u00f1\u00eda)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_anticipo_aprobado_base",
+   "fieldtype": "Currency",
+   "label": "Total Anticipo Aprobado (Moneda Compa\u00f1\u00eda)",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1,
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-08-07 21:21:10.767289",
+ "modified": "2024-12-04 10:37:08.404184",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Solicitud de Viaticos",
