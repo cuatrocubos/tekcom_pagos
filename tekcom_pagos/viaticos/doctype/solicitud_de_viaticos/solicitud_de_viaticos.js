@@ -406,13 +406,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				frm.events.make_liquidacion_viaticos()
 			})
 		}
-		if (frm.doc.workflow_status == 'Pagado') {
-			frm.add_custom_button(
-				__("Payment"),
-				() => frm.events.make_payment_entry(frm),
-				__("Create")
-			);
-		}
+
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
 	},

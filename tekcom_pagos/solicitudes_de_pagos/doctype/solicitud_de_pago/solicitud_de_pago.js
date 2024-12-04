@@ -341,14 +341,6 @@ frappe.ui.form.on('Solicitud de Pago', {
 			}
 		}
 
-		if (frm.doc.workflow_status == 'Pagado') {
-			frm.add_custom_button(
-				__("Payment"),
-				() => frm.events.make_payment_entry(frm),
-				__("Create")
-			);
-		}
-
 		// if (frm.doc.workflow_status == 'Pagado') {
 		// 	frm.add_custom_button(
 		// 		__("Payment"),
