@@ -149,7 +149,7 @@ class SolicituddePago(Document):
 			employee_advance.outstanding_amount = party_amount
 			employee_advance.purpose = self.descripcion
 			employee_advance.currency = self.currency
-			employee_advance.exchange_rate = self.exchange_rate
+			employee_advance.exchange_rate = self.conversion_rate
 			# employee_advance.advance_account = self.party_account
 			employee_advance.mode_of_payment = self.mode_of_payment
 			employee_advance.repay_unclaimed_amount_from_salary = 0
