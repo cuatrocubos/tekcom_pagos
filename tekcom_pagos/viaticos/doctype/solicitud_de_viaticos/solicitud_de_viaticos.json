@@ -9,9 +9,9 @@
  "engine": "InnoDB",
  "field_order": [
   "company",
-  "abbr",
   "column_break_8kxc3",
   "naming_series",
+  "abbr",
   "detalles_section",
   "fecha_solicitud",
   "lugar_viaje",
@@ -427,14 +427,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "fetch_from": "company.abbr",
-   "fetch_if_empty": 1,
-   "fieldname": "abbr",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "abbr"
-  },
-  {
    "depends_on": "depositar_a",
    "fetch_from": "depositar_a.employee_name",
    "fetch_if_empty": 1,
@@ -491,12 +483,23 @@
    "print_hide": 1,
    "read_only": 1,
    "reqd": 1
+  },
+  {
+   "fetch_from": "company.abbr",
+   "fetch_if_empty": 1,
+   "fieldname": "abbr",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "abbr",
+   "print_hide": 1,
+   "read_only": 1,
+   "report_hide": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-04 10:37:08.404184",
+ "modified": "2024-12-11 23:56:22.585900",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Solicitud de Viaticos",
