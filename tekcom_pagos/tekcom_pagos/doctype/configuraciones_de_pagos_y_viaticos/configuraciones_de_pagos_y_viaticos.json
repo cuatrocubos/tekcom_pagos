@@ -1,0 +1,55 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-01-19 10:45:35.212611",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "predeterminados_de_pagos_y_viaticos",
+  "predeterminados_centro_costos",
+  "contabilidad"
+ ],
+ "fields": [
+  {
+   "fieldname": "predeterminados_de_pagos_y_viaticos",
+   "fieldtype": "Table",
+   "label": "Predeterminados de Pagos y Viaticos",
+   "options": "Predeterminados Pagos y Viaticos"
+  },
+  {
+   "fieldname": "predeterminados_centro_costos",
+   "fieldtype": "Table",
+   "label": "Predeterminados de Pagos y Viaticos por Centro de Costo",
+   "options": "Predeterminados Pagos y Viaticos por Centro de Costo"
+  },
+  {
+   "fieldname": "contabilidad",
+   "fieldtype": "Table",
+   "label": "Contabilidad",
+   "options": "Cuentas por Cobrar y Pagar de Pagos y Viaticos"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-01-19 22:48:55.477654",
+ "modified_by": "Administrator",
+ "module": "Tekcom Pagos",
+ "name": "Configuraciones de Pagos y Viaticos",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

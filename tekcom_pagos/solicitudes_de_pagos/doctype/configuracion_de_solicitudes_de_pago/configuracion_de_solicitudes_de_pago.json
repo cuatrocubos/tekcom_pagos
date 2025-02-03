@@ -8,14 +8,11 @@
  "field_order": [
   "predeterminados_tab",
   "revisi\u00f3n_y_aprobaci\u00f3n_section",
-  "revisor_predeterminado",
-  "aprobador_predeterminado",
-  "coordinador_pagos_predeterminado",
-  "encargado_compras",
-  "column_break_sfzu",
+  "configuracion_pagos_por_company",
   "section_break_dash",
   "cost_center_predeterminados",
-  "section_break_kpam",
+  "cuentas_tab",
+  "mapa_company_customer",
   "mode_of_payment_predeterminados"
  ],
  "fields": [
@@ -30,28 +27,6 @@
    "label": "Revisi\u00f3n y Aprobaci\u00f3n"
   },
   {
-   "fieldname": "revisor_predeterminado",
-   "fieldtype": "Link",
-   "label": "Revisor Predeterminado",
-   "options": "User"
-  },
-  {
-   "fieldname": "aprobador_predeterminado",
-   "fieldtype": "Link",
-   "label": "Aprobador Predeterminado",
-   "options": "User"
-  },
-  {
-   "fieldname": "coordinador_pagos_predeterminado",
-   "fieldtype": "Link",
-   "label": "Coordinador de Pagos Predeterminado",
-   "options": "User"
-  },
-  {
-   "fieldname": "column_break_sfzu",
-   "fieldtype": "Column Break"
-  },
-  {
    "fieldname": "section_break_dash",
    "fieldtype": "Section Break"
   },
@@ -62,26 +37,34 @@
    "options": "Configuracion de Solicitudes de Pago por Centro de Costo"
   },
   {
-   "fieldname": "section_break_kpam",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "mode_of_payment_predeterminados",
    "fieldtype": "Table",
    "label": "Modos de Pago Predeterminados",
    "options": "Modo de Pago de Configuracion de Solicitudes de Pago"
   },
   {
-   "fieldname": "encargado_compras",
-   "fieldtype": "Link",
-   "label": "Encargado de Compras",
-   "options": "User"
+   "fieldname": "cuentas_tab",
+   "fieldtype": "Tab Break",
+   "label": "Cuentas"
+  },
+  {
+   "fieldname": "mapa_company_customer",
+   "fieldtype": "Table",
+   "label": "Asociaci\u00f3n Compa\u00f1\u00eda Cliente",
+   "options": "Mapa Company Customer"
+  },
+  {
+   "fieldname": "configuracion_pagos_por_company",
+   "fieldtype": "Table",
+   "label": "Predeterminados por Compa\u00f1\u00eda",
+   "options": "Configuracion Pagos y Viaticos por Company",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-29 15:05:15.476673",
+ "modified": "2025-01-17 13:24:26.222584",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Configuracion de Solicitudes de Pago",

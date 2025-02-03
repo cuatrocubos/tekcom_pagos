@@ -54,11 +54,11 @@
   "remarks",
   "documentos_adjuntos",
   "status",
-  "workflow_status",
   "amended_from",
   "flujo_de_trabajo_tab",
   "section_break_froc",
   "fecha_hora_solicitud",
+  "workflow_status",
   "column_break_kneu",
   "fecha_hora_revision",
   "fecha_hora_aprobacion",
@@ -267,7 +267,7 @@
    "hidden": 1,
    "label": "Workflow Status",
    "no_copy": 1,
-   "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nContabilizado\nRejected"
+   "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nEntregado a Contabilidad\nContabilizado\nRejected"
   },
   {
    "fieldname": "naming_series",
@@ -499,7 +499,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-11 23:56:22.585900",
+ "modified": "2024-12-17 18:52:59.331044",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Solicitud de Viaticos",

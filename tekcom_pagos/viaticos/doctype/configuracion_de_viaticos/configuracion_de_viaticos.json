@@ -6,15 +6,14 @@
  "engine": "InnoDB",
  "field_order": [
   "predeterminados_tab",
-  "revisi\u00f3n_y_aprobaci\u00f3n_section",
-  "revisor_predeterminado",
-  "aprobador_predeterminado",
-  "coordinador_pagos_predeterminado",
-  "column_break_sfzu",
+  "section_break_gmkd",
+  "configuracion_viaticos_por_company",
   "section_break_dash",
   "cost_center_predeterminados",
-  "section_break_lbld",
-  "mode_of_payment_predeterminados"
+  "cuentas_tab",
+  "cuentas_contables",
+  "mode_of_payment_predeterminados",
+  "asociacion_cliente_tabla"
  ],
  "fields": [
   {
@@ -23,35 +22,9 @@
    "label": "Predeterminados"
   },
   {
-   "fieldname": "revisi\u00f3n_y_aprobaci\u00f3n_section",
-   "fieldtype": "Section Break",
-   "label": "Revisi\u00f3n y Aprobaci\u00f3n"
-  },
-  {
-   "fieldname": "revisor_predeterminado",
-   "fieldtype": "Link",
-   "label": "Revisor Predeterminado",
-   "options": "User"
-  },
-  {
-   "fieldname": "aprobador_predeterminado",
-   "fieldtype": "Link",
-   "label": "Aprobador Predeterminado",
-   "options": "User"
-  },
-  {
-   "fieldname": "column_break_sfzu",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "coordinador_pagos_predeterminado",
-   "fieldtype": "Link",
-   "label": "Coordinador de Pagos Predeterminado",
-   "options": "User"
-  },
-  {
    "fieldname": "section_break_dash",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Cost Center"
   },
   {
    "fieldname": "cost_center_predeterminados",
@@ -60,20 +33,43 @@
    "options": "Configuracion Viaticos por Centro de Costo"
   },
   {
-   "fieldname": "section_break_lbld",
-   "fieldtype": "Section Break"
-  },
-  {
    "fieldname": "mode_of_payment_predeterminados",
    "fieldtype": "Table",
    "label": "Modos de Pago Predeterminados",
    "options": "Modo de Pago de Configuracion de Solicitudes de Viaticos"
+  },
+  {
+   "fieldname": "section_break_gmkd",
+   "fieldtype": "Section Break",
+   "label": "Revisores y Aprobadores"
+  },
+  {
+   "fieldname": "configuracion_viaticos_por_company",
+   "fieldtype": "Table",
+   "options": "Configuracion Pagos y Viaticos por Company"
+  },
+  {
+   "fieldname": "cuentas_contables",
+   "fieldtype": "Table",
+   "label": "Cuentas Contables",
+   "options": "Configuracion Viaticos Cuentas Contables"
+  },
+  {
+   "fieldname": "cuentas_tab",
+   "fieldtype": "Tab Break",
+   "label": "Cuentas"
+  },
+  {
+   "fieldname": "asociacion_cliente_tabla",
+   "fieldtype": "Table",
+   "label": "Asociaci\u00f3n Clientes",
+   "options": "Mapa Company Customer"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-04-23 00:31:20.640082",
+ "modified": "2025-01-19 10:42:44.554501",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Configuracion de Viaticos",

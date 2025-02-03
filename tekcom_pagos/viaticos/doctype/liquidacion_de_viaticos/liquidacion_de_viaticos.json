@@ -1,22 +1,23 @@
 {
  "actions": [],
- "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2023-07-10 09:42:28.507621",
  "default_view": "List",
  "doctype": "DocType",
+ "documentation": "https://docs.tekcomca.com/viaticos/liquidacion-de-viaticos",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "details_tab",
   "company",
   "column_break_4osdx",
   "naming_series",
+  "abbr",
   "detalles_section",
   "solicitud_de_viaticos",
   "fecha_salida_solicitud",
   "fecha_retorno_solicitud",
   "column_break_fevnj",
-  "amended_from",
   "fecha_liquidacion",
   "fecha_salida",
   "fecha_retorno",
@@ -25,23 +26,51 @@
   "project",
   "column_break_hprpf",
   "cost_center",
+  "currency_section_break",
+  "currency",
+  "column_break_inmh",
+  "exchange_rate",
   "solicitante_section",
   "solicitante",
-  "mode_of_payment",
-  "bank_account",
+  "nombre_solicitante",
+  "column_break_dksg",
   "detalle_liquidacion_section",
   "detalle_liquidacion",
+  "presupuesto_viaticos_section",
+  "presupuesto_viaticos",
   "totales_section",
-  "total_solicitado",
   "column_break_6n6kk",
+  "total_solicitado",
+  "total_impuestos",
   "total_ejecutado",
-  "column_break_bfu1x",
-  "total_diferencia",
+  "total_reembolso",
+  "column_break_eaah",
+  "total_solicitado_base",
+  "total_impuestos_base",
+  "total_ejecutado_base",
+  "total_reembolso_base",
+  "detalle_reembolso_section",
+  "mode_of_payment",
+  "column_break_qivu",
+  "reference_no",
+  "reference_date",
   "more_information_section",
+  "remarks",
   "status",
+  "amended_from",
+  "flujo_de_trabajo_tab",
+  "fecha_hora_solicitud",
   "workflow_status",
-  "custom_remarks",
-  "remarks"
+  "column_break_plgx",
+  "fecha_hora_revision",
+  "fecha_hora_aprobacion",
+  "section_break_qmof",
+  "revisor",
+  "aprobador",
+  "column_break_guda",
+  "revisado_por",
+  "aprobado_por",
+  "connections_tab"
  ],
  "fields": [
   {
@@ -59,7 +88,6 @@
   {
    "fieldname": "naming_series",
    "fieldtype": "Select",
-   "in_list_view": 1,
    "label": "Naming Series",
    "options": "L-GA-FO-001-.YYYY.-",
    "reqd": 1
@@ -90,22 +118,18 @@
    "read_only": 1
   },
   {
-   "depends_on": "eval:doc.solicitud_viaticos",
    "fetch_from": "solicitud_viaticos.fecha_salida",
    "fieldname": "fecha_salida_solicitud",
    "fieldtype": "Datetime",
-   "label": "Fecha de Salida de  Solicitud",
-   "options": "solicitud_viaticos.fecha_salida",
+   "label": "Fecha de Salida de Solicitud",
    "read_only": 1,
    "reqd": 1
   },
   {
-   "depends_on": "eval:doc.solicitud_viaticos",
    "fetch_from": "solicitud_viaticos.fecha_retorno",
    "fieldname": "fecha_retorno_solicitud",
    "fieldtype": "Datetime",
    "label": "Fecha de Retorno de Solicitud",
-   "options": "solicitud_viaticos.fecha_retorno",
    "read_only": 1,
    "reqd": 1
   },
@@ -151,22 +175,10 @@
   {
    "fieldname": "solicitante",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Solicitante",
-   "options": "Employee"
-  },
-  {
-   "fieldname": "mode_of_payment",
-   "fieldtype": "Link",
-   "label": "Mode of Payment",
-   "no_copy": 1,
-   "options": "Mode of Payment"
-  },
-  {
-   "fieldname": "bank_account",
-   "fieldtype": "Link",
-   "label": "Bank Account",
-   "no_copy": 1,
-   "options": "Bank Account"
+   "options": "Employee",
+   "reqd": 1
   },
   {
    "fieldname": "detalle_liquidacion_section",
@@ -181,17 +193,16 @@
   {
    "fieldname": "total_solicitado",
    "fieldtype": "Currency",
-   "label": "Total Solicitado"
+   "label": "Total Solicitado",
+   "options": "currency",
+   "read_only": 1
   },
   {
    "fieldname": "total_ejecutado",
    "fieldtype": "Currency",
-   "label": "Total Ejecutado"
-  },
-  {
-   "fieldname": "total_diferencia",
-   "fieldtype": "Currency",
-   "label": "Diferencia"
+   "label": "Total Ejecutado",
+   "options": "currency",
+   "read_only": 1
   },
   {
    "fieldname": "more_information_section",
@@ -201,29 +212,30 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "hidden": 1,
+   "in_standard_filter": 1,
    "label": "Status",
+   "length": 30,
    "no_copy": 1,
-   "options": "\nDraft\nSubmitted\nCancelled"
+   "options": "\nDraft\nSubmitted\nCancelled",
+   "print_hide": 1,
+   "read_only": 1
   },
   {
    "fieldname": "workflow_status",
    "fieldtype": "Select",
+   "hidden": 1,
+   "in_standard_filter": 1,
    "label": "Workflow Status",
    "no_copy": 1,
-   "options": "\nBorrador\nPor Revisar\nPor Aprobar\nPor Pagar\nPagado\nCancelado\nRechazado"
+   "options": "\nDraft\nEn Revisi\u00f3n\nRevisado\nApproved\nRejected\nEntregado a Talento Humano",
+   "print_hide": 1,
+   "read_only": 1
   },
   {
-   "default": "0",
-   "fieldname": "custom_remarks",
-   "fieldtype": "Check",
-   "label": "Custom Remarks"
-  },
-  {
-   "depends_on": "custom_remarks",
    "fieldname": "remarks",
-   "fieldtype": "Long Text",
-   "label": "Remarks",
-   "mandatory_depends_on": "custom_remarks"
+   "fieldtype": "Small Text",
+   "label": "Remarks"
   },
   {
    "fieldname": "detalle_liquidacion",
@@ -236,17 +248,11 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "column_break_bfu1x",
-   "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval:doc.solicitud_viaticos",
+   "depends_on": "eval:doc.solicitud_de_viaticos",
    "fetch_from": "solicitud_viaticos.lugar_viaje",
-   "fetch_if_empty": 1,
    "fieldname": "lugar_viaje",
    "fieldtype": "Data",
-   "label": "Lugar",
-   "options": "solicitud_viaticos.lugar"
+   "label": "Lugar"
   },
   {
    "fieldname": "solicitud_de_viaticos",
@@ -255,12 +261,228 @@
    "label": "Solicitud de Viaticos",
    "options": "Solicitud de Viaticos",
    "reqd": 1
+  },
+  {
+   "fieldname": "flujo_de_trabajo_tab",
+   "fieldtype": "Tab Break",
+   "label": "Flujo de Trabajo"
+  },
+  {
+   "fieldname": "details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Detalles"
+  },
+  {
+   "fieldname": "connections_tab",
+   "fieldtype": "Tab Break",
+   "label": "Connections",
+   "show_dashboard": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "currency_section_break",
+   "fieldtype": "Section Break",
+   "label": "Currency",
+   "print_hide": 1
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_inmh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "exchange_rate",
+   "fieldtype": "Float",
+   "label": "Exchange Rate",
+   "precision": "9"
+  },
+  {
+   "fieldname": "column_break_dksg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "solicitante",
+   "fetch_from": "solicitante.employee_name",
+   "fetch_if_empty": 1,
+   "fieldname": "nombre_solicitante",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Nombre Solicitante",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "company.abbr",
+   "fieldname": "abbr",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "abbr",
+   "print_hide": 1,
+   "read_only": 1,
+   "report_hide": 1
+  },
+  {
+   "fieldname": "total_solicitado_base",
+   "fieldtype": "Currency",
+   "label": "Total Solicitado",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_ejecutado_base",
+   "fieldtype": "Currency",
+   "label": "Total Ejecutado",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "presupuesto_viaticos_section",
+   "fieldtype": "Section Break",
+   "label": "Presupuesto de Vi\u00e1ticos"
+  },
+  {
+   "fieldname": "column_break_eaah",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_reembolso",
+   "fieldtype": "Currency",
+   "label": "Total Reembolso",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_reembolso_base",
+   "fieldtype": "Currency",
+   "label": "Total Reembolso",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "presupuesto_viaticos",
+   "fieldtype": "Table",
+   "options": "Presupuesto de Liquidacion de Viaticos",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fecha_hora_solicitud",
+   "fieldtype": "Datetime",
+   "label": "Fecha y Hora de Solicitud",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_plgx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fecha_hora_revision",
+   "fieldtype": "Datetime",
+   "label": "Fecha y Hora de Revisi\u00f3n",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "fecha_hora_aprobacion",
+   "fieldtype": "Datetime",
+   "label": "Fecha y Hora de Aprobaci\u00f3n",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_qmof",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "revisor",
+   "fieldtype": "Link",
+   "label": "Revisor",
+   "no_copy": 1,
+   "options": "User",
+   "read_only_depends_on": "eval:(doc.workflow_status!='Solicitado')"
+  },
+  {
+   "fieldname": "column_break_guda",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "aprobador",
+   "fieldtype": "Link",
+   "label": "Aprobador",
+   "no_copy": 1,
+   "options": "User",
+   "read_only_depends_on": "eval:(doc.workflow_status!='Solicitado')"
+  },
+  {
+   "fieldname": "revisado_por",
+   "fieldtype": "Link",
+   "label": "Revisado Por",
+   "no_copy": 1,
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "aprobado_por",
+   "fieldtype": "Link",
+   "label": "Aprobado Por",
+   "no_copy": 1,
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_impuestos",
+   "fieldtype": "Currency",
+   "label": "Total Impuestos",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_impuestos_base",
+   "fieldtype": "Currency",
+   "label": "Total Impuestos",
+   "no_copy": 1,
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "detalle_reembolso_section",
+   "fieldtype": "Section Break",
+   "label": "Detalle de Reembolso"
+  },
+  {
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode of Payment",
+   "options": "Mode of Payment",
+   "read_only_depends_on": "eval:doc.total_reembolso<0"
+  },
+  {
+   "fieldname": "column_break_qivu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_no",
+   "fieldtype": "Data",
+   "label": "Reference No.",
+   "read_only_depends_on": "eval:doc.total_reembolso<0"
+  },
+  {
+   "fieldname": "reference_date",
+   "fieldtype": "Date",
+   "label": "Reference Date",
+   "read_only_depends_on": "eval:doc.total_reembolso<0"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-03 17:17:26.325094",
+ "modified": "2024-12-24 12:12:36.762395",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Liquidacion de Viaticos",
@@ -283,5 +505,6 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
+ "title_field": "solicitante",
  "track_changes": 1
 }

@@ -1,0 +1,145 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-01-19 12:03:36.799331",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "predeterminados_por_compa\u00f1\u00eda_section",
+  "company",
+  "column_break_wxvm",
+  "cost_center",
+  "solicitudes_de_pago_section",
+  "revisor_predeterminado_pagos",
+  "aprobador_predeterminado_pagos",
+  "pagador_predeterminado_pagos",
+  "column_break_snct",
+  "solicitudes_y_liquidaciones_de_viaticos_section",
+  "revisor_predeterminado_viaticos",
+  "aprobador_predeterminado_viaticos",
+  "pagador_predeterminado_viaticos",
+  "column_break_dbqk",
+  "compras_section",
+  "encargado_compras",
+  "column_break_kukg"
+ ],
+ "fields": [
+  {
+   "fieldname": "predeterminados_por_compa\u00f1\u00eda_section",
+   "fieldtype": "Section Break",
+   "label": "Predeterminados por Compa\u00f1\u00eda"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_wxvm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "solicitudes_de_pago_section",
+   "fieldtype": "Section Break",
+   "label": "Solicitudes de Pago"
+  },
+  {
+   "fieldname": "revisor_predeterminado_pagos",
+   "fieldtype": "Link",
+   "label": "Revisor Predeterminado",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "aprobador_predeterminado_pagos",
+   "fieldtype": "Link",
+   "label": "Aprobador Predeterminado",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pagador_predeterminado_pagos",
+   "fieldtype": "Link",
+   "label": "Pagador Predeterminado",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_snct",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "solicitudes_y_liquidaciones_de_viaticos_section",
+   "fieldtype": "Section Break",
+   "label": "Solicitudes y Liquidaciones de Vi\u00e1ticos"
+  },
+  {
+   "fieldname": "revisor_predeterminado_viaticos",
+   "fieldtype": "Link",
+   "label": "Revisor Predeterminado",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "aprobador_predeterminado_viaticos",
+   "fieldtype": "Link",
+   "label": "Aprobador Predeterminado",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "pagador_predeterminado_viaticos",
+   "fieldtype": "Link",
+   "label": "Pagador Predeterminado",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_dbqk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "compras_section",
+   "fieldtype": "Section Break",
+   "label": "Compras"
+  },
+  {
+   "fieldname": "encargado_compras",
+   "fieldtype": "Link",
+   "label": "Encargado de Compras",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_kukg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cost_center",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Cost Center",
+   "link_filters": "[[\"Cost Center\",\"company\",\"=\",\"eval:doc.company\"]]",
+   "options": "Cost Center",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-01-19 12:11:59.513229",
+ "modified_by": "Administrator",
+ "module": "Tekcom Pagos",
+ "name": "Predeterminados Pagos y Viaticos por Centro de Costo",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

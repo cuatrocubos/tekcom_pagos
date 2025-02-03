@@ -14,105 +14,6 @@ frappe.ui.form.on('Solicitud de Pago', {
 		frm.refresh_fields()
 	},
 
-	get_mode_of_payment_predeterminado(frm) {
-		frappe.call({
-			method: "tekcom_pagos.tekcom_pagos.utils.get_mode_of_payment_predeterminado",
-			args: {
-				"company": frm.doc.company,
-				"doc": "Configuracion de Solicitudes de Pago"
-			},
-			callback: function(res) {
-				if (res && !res.exc) {
-					if (res.message) {	
-						return res.message.mode_of_payment_predeterminado
-					} else {
-						return ""
-					}
-				}
-			}
-		})			
-	},
-
-	async before_workflow_action(frm) {
-		let mode_of_payment_predeterminado = frm.events.get_mode_of_payment_predeterminado(frm)
-		return await new Promise((resolve, reject) => {
-			if (frm.doc.workflow_status == 'Approved' && frm.selected_workflow_action == 'Pagar') {
-					let fields = [
-					{
-						label: 'Mode of Payment',
-						fieldtype: 'Link',
-						reqd: true,
-						fieldname: 'mode_of_payment_on_pagado',
-						options: 'Mode of Payment',
-						get_query: () => ({
-							filters: {
-								company: frm.doc.company
-							},
-						}),
-						// selected_value: mode_of_payment_predeterminado,
-						// selected_value: frm.events.get_mode_of_payment_predeterminado(frm),
-					},
-					{
-						label: 'Cheque/Reference Date',
-						fieldtype: 'Date',
-						reqd: true,
-						fieldname: 'reference_date_on_pagado',
-						default: frappe.datetime.nowdate()
-					},
-					{
-						label: 'Cheque/Reference No',
-						fieldtype: 'Data',
-						reqd: true,
-						fieldname: 'reference_no_on_pagado'
-					},
-				]
-				frappe.dom.unfreeze()
-					
-				frappe.prompt(fields, (values) => {
-					// action to take
-					// this.set_value('mode_of_payment', mode_of_payment_predeterminado)
-					frappe.call({
-						method: "tekcom_pagos.tekcom_pagos.utils.add_payment_details",
-						args: {
-							doctype: frm.doc.doctype,
-							doc: frm.doc.name,
-							mode_of_payment: values.mode_of_payment_on_pagado,
-							reference_date: values.reference_date_on_pagado,
-							reference_no: values.reference_no_on_pagado
-						},
-						callback: function(res) {
-							if (res && !res.exc) {
-								frm.reload_doc()
-								resolve(values)
-							} else {
-								reject()
-							}
-						}
-					})
-				},
-				'Detalles de Pago',
-				'Aplicar Pago'
-				)
-			} else {
-				resolve()
-			}
-		})
-
-		// await promise.catch(() => frappe.throw())
-	},
-
-	after_workflow_action(frm) {
-		prev_route = frappe.get_prev_route()
-		if (prev_route == 'aprobaciones-y-pagos') {
-			frappe.set_route('aprobaciones-y-pagos')
-		} else {
-			frappe.set_route(prev_route)
-		}
-		// prev_doctype = frappe.prev_route[1]
-		// prev_docname = frappe.prev_route[2]
-		// prev_doc = frappe.get_doc(prev_doctype, prev_docname)
- 	},
-
 	validate(frm) {
 		if (frm.doc.workflow_status == 'Draft' || frm.doc.workflow_status == 'Rejected') {
 			frm.set_value("revisado_por", null)
@@ -341,26 +242,17 @@ frappe.ui.form.on('Solicitud de Pago', {
 			}
 		}
 
-		// if (frm.doc.workflow_status == 'Pagado') {
-		// 	frm.add_custom_button(
-		// 		__("Payment"),
-		// 		() => frm.events.make_payment_entry(doc),
-		// 		__("Create")
-		// 	);
-		// }
+		if (frm.doc.workflow_status == 'Pagado') {
+			frm.add_custom_button(
+				__("Payment"),
+				() => frm.events.make_payment_entry(frm),
+				__("Create")
+			);
+		}
 
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
 		// frm.events.show_general_ledger(frm);
-	},
-
-	validate_company: (frm) => {
-		if (!frm.doc.company) {
-			frappe.throw({
-				message:__("Please select a Company first."),
-				title:__("Mandatory")
-			})
-		}
 	},
 
 	company: function(frm) {
@@ -391,36 +283,6 @@ frappe.ui.form.on('Solicitud de Pago', {
 	contact_person: function(frm) {
 		frm.set_value("contact_email","");
 		erpnext.utils.get_contact_details(frm);
-	},
-
-	hide_unhide_fields: function(frm) {
-		var company_currency = frm.doc.company ? frappe.get_doc(":Company", frm.doc.company).default_currency : "";
-
-		frm.toggle_display("conversion_rate", (frm.doc.currency != company_currency));
-		frm.toggle_display("monto_solicitado_base", (frm.doc.currency != company_currency));
-
-		// frm.toggle_display(["base_total_allocated_amount"],(frm.doc.monto_solicitado && frm.doc.base_total_allocated_amount && (frm.doc.currency != company_currency)))
-
-		frm.refresh_fields();
-	},
-
-	set_dynamic_labels: function(frm) {
-		var company_currency = frm.doc.company? frappe.get_doc(":Company", frm.doc.company).default_currency: "";
-
-		frm.set_currency_labels(["monto_solicitado_base"], company_currency);
-		
-		frm.set_currency_labels(["monto_solicitado"], frm.doc.currency)
-
-		frm.set_df_property("monto_solicitado", "options", "currency");
-
-		frm.set_df_property("conversion_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
-
-		frm.set_currency_labels(["total_amount", "outstanding_amount","allocated_amount"], frm.doc.currency, "references")
-
-		frm.set_df_property("total_allocated_amount", "options", "currency")
-		frm.set_df_property("unallocated_amount", "options", "currency")
-
-		frm.refresh_fields()
 	},
 
 	party_type: function(frm) {
@@ -567,21 +429,6 @@ frappe.ui.form.on('Solicitud de Pago', {
 		frm.events.hide_unhide_fields(frm);
 	},
 
-	set_current_conversion_rate: function(frm, conversion_rate_field, from_currency, to_currency) {
-		frappe.call({
-			method: "erpnext.setup.utils.get_exchange_rate",
-			args: {
-				transaction_date: frm.doc.fecha_solicitud,
-				from_currency: from_currency,
-				to_currency: to_currency
-			},
-			callback: function(r, rt) {
-				const ex_rate = flt(r.message, frm.get_field(conversion_rate_field).get_precision());
-				frm.set_value(conversion_rate_field, ex_rate);
-			}
-		})
-	},
-
 	fecha_solicitud: function(frm) {
 		frm.events.currency(frm);
 	},
@@ -614,6 +461,63 @@ frappe.ui.form.on('Solicitud de Pago', {
 				}
 			});
 		}
+	},
+
+	validate_company: (frm) => {
+		if (!frm.doc.company) {
+			frappe.throw({
+				message:__("Please select a Company first."),
+				title:__("Mandatory")
+			})
+		}
+	},
+
+	hide_unhide_fields: function(frm) {
+		var company_currency = frm.doc.company ? frappe.get_doc(":Company", frm.doc.company).default_currency : "";
+
+		frm.toggle_display("conversion_rate", (frm.doc.currency != company_currency));
+		frm.toggle_display("monto_solicitado_base", (frm.doc.currency != company_currency));
+		// frm.toggle_display(["revisor", "aprobador","coordinador_pagos"], frm.doc.workflow_status in ["Draft","Rejected"])	
+
+		// frm.toggle_display(["base_total_allocated_amount"],(frm.doc.monto_solicitado && frm.doc.base_total_allocated_amount && (frm.doc.currency != company_currency)))
+
+		frm.refresh_fields();
+	},
+
+	set_dynamic_labels: function(frm) {
+		var company_currency = frm.doc.company? frappe.get_doc(":Company", frm.doc.company).default_currency: "";
+
+		frm.set_currency_labels(["monto_solicitado_base"], company_currency);
+		
+		frm.set_currency_labels(["monto_solicitado"], frm.doc.currency)
+
+		frm.set_df_property("monto_solicitado", "options", "currency");
+
+		frm.set_df_property("conversion_rate", "description", "1 " + frm.doc.currency + " = [?]" + company_currency)
+
+		frm.set_currency_labels(["total_amount", "outstanding_amount","allocated_amount"], frm.doc.currency, "references")
+
+		frm.set_df_property("total_allocated_amount", "options", "currency")
+		frm.set_df_property("unallocated_amount", "options", "currency")
+
+		frm.set_df_property(["revisor", "aprobador","coordinador_pagos"], "read_only", frm.doc.workflow_status in ["Draft","Solicitado","Rejected"])	
+
+		frm.refresh_fields()
+	},
+
+	set_current_conversion_rate: function(frm, conversion_rate_field, from_currency, to_currency) {
+		frappe.call({
+			method: "erpnext.setup.utils.get_exchange_rate",
+			args: {
+				transaction_date: frm.doc.fecha_solicitud,
+				from_currency: from_currency,
+				to_currency: to_currency
+			},
+			callback: function(r, rt) {
+				const ex_rate = flt(r.message, frm.get_field(conversion_rate_field).get_precision());
+				frm.set_value(conversion_rate_field, ex_rate);
+			}
+		})
 	},
 
 	set_monto_solicitado(frm) {
@@ -653,6 +557,105 @@ frappe.ui.form.on('Solicitud de Pago', {
 			}
 		})
 	},
+
+	get_mode_of_payment_predeterminado(frm) {
+		frappe.call({
+			method: "tekcom_pagos.tekcom_pagos.utils.get_mode_of_payment_predeterminado",
+			args: {
+				"company": frm.doc.company,
+				"doc": "Configuracion de Solicitudes de Pago"
+			},
+			callback: function(res) {
+				if (res && !res.exc) {
+					if (res.message) {	
+						return res.message.mode_of_payment_predeterminado
+					} else {
+						return ""
+					}
+				}
+			}
+		})			
+	},
+
+	async before_workflow_action(frm) {
+		let mode_of_payment_predeterminado = frm.events.get_mode_of_payment_predeterminado(frm)
+		return await new Promise((resolve, reject) => {
+			if (frm.doc.workflow_status == 'Approved' && frm.selected_workflow_action == 'Pagar') {
+					let fields = [
+					{
+						label: 'Mode of Payment',
+						fieldtype: 'Link',
+						reqd: true,
+						fieldname: 'mode_of_payment_on_pagado',
+						options: 'Mode of Payment',
+						get_query: () => ({
+							filters: {
+								company: frm.doc.company
+							},
+						}),
+						// selected_value: mode_of_payment_predeterminado,
+						// selected_value: frm.events.get_mode_of_payment_predeterminado(frm),
+					},
+					{
+						label: 'Cheque/Reference Date',
+						fieldtype: 'Date',
+						reqd: true,
+						fieldname: 'reference_date_on_pagado',
+						default: frappe.datetime.nowdate()
+					},
+					{
+						label: 'Cheque/Reference No',
+						fieldtype: 'Data',
+						reqd: true,
+						fieldname: 'reference_no_on_pagado'
+					},
+				]
+				frappe.dom.unfreeze()
+					
+				frappe.prompt(fields, (values) => {
+					// action to take
+					// this.set_value('mode_of_payment', mode_of_payment_predeterminado)
+					frappe.call({
+						method: "tekcom_pagos.tekcom_pagos.utils.add_payment_details",
+						args: {
+							doctype: frm.doc.doctype,
+							doc: frm.doc.name,
+							mode_of_payment: values.mode_of_payment_on_pagado,
+							reference_date: values.reference_date_on_pagado,
+							reference_no: values.reference_no_on_pagado
+						},
+						callback: function(res) {
+							if (res && !res.exc) {
+								frm.reload_doc()
+								resolve(values)
+							} else {
+								reject()
+							}
+						}
+					})
+				},
+				'Detalles de Pago',
+				'Aplicar Pago'
+				)
+			} else {
+				resolve()
+			}
+		})
+
+		// await promise.catch(() => frappe.throw())
+	},
+
+	after_workflow_action(frm) {
+		prev_route = frappe.get_prev_route()
+		if (prev_route == 'aprobaciones-y-pagos') {
+			frappe.set_route('aprobaciones-y-pagos')
+		} else {
+			frappe.set_route(prev_route)
+		}
+		// prev_doctype = frappe.prev_route[1]
+		// prev_docname = frappe.prev_route[2]
+		// prev_doc = frappe.get_doc(prev_doctype, prev_docname)
+ 	},
 
 	// set_unallocated_amount(frm) {
 	// 	var unallocated_amount = 0

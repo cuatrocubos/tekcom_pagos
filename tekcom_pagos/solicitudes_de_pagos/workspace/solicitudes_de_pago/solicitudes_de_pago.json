@@ -88,15 +88,15 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Configuracion de Solicitudes de Pago",
+   "label": "Configuracion de Solicitudes de Pago y Viaticos",
    "link_count": 0,
-   "link_to": "Configuracion de Solicitudes de Pago",
+   "link_to": "Configuraciones de Pagos y Viaticos",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
   }
  ],
- "modified": "2024-03-31 23:41:42.301838",
+ "modified": "2025-01-22 08:17:44.330581",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitudes de Pago",

@@ -32,6 +32,14 @@ import json
 from functools import reduce
 
 from hrms.hr.utils import validate_active_employee
+from tekcom_pagos.tekcom_pagos.doctype.configuraciones_de_pagos_y_viaticos.configuraciones_de_pagos_y_viaticos import (
+  get_configuraciones_cuentas, get_configuraciones_de_pagos
+)
+from tekcom_pagos.tekcom_pagos.utils import (
+  get_mode_of_payment_bank_cash_account,
+	get_bank_account_details,
+	make_journal_entry_for_payment_solicitud_de_pago
+)
 
 class SolicituddePago(Document):
 	# def set_indicator(self):
@@ -64,6 +72,23 @@ class SolicituddePago(Document):
 		self.update_workflow_details()
 		if (self.workflow_status == 'Entregado a Contabilidad'):
 			self.create_payment_entry(submit=True)
+		if self.workflow_status not in ["Draft", "Rejected"]:
+			if not self.party:
+				frappe.throw(_("Party is mandatory"))
+			if not self.party_type:
+				frappe.throw(_("Party Type is mandatory"))
+			if not self.monto_solicitado:
+				frappe.throw(_("Monto Solicitado is mandatory"))
+			if not self.cost_center:
+				frappe.throw(_("Cost Center is mandatory"))
+			if not self.company:
+				frappe.throw(_("Company is mandatory"))
+			if not self.revisor:
+				frappe.throw(_("Revisor is mandatory"))
+			if not self.aprobador:
+				frappe.throw(_("Aprobador is mandatory"))
+			if not self.coordinador_pagos:
+				frappe.throw(_("Coordinador Pagos is mandatory"))
 		
 	# def on_submit(self):
 	#   make_payment_entry(self)
@@ -71,46 +96,22 @@ class SolicituddePago(Document):
 	def get_constancia_date(constancia):
 		return constancia['fecha_vencimiento']
 
-	def get_configuracion_pagos(self):
-		configuracion_pagos = frappe.get_doc('Configuracion de Solicitudes de Pago')
-		configuracion_centro_costos = configuracion_pagos.cost_center_predeterminados
-		
-		revisor_predeterminado = configuracion_pagos.revisor_predeterminado
-		aprobador_predeterminado = configuracion_pagos.aprobador_predeterminado
-		coordinador_pagos_predeterminado = configuracion_pagos.coordinador_pagos_predeterminado
-		if len(configuracion_centro_costos) > 0:
-			cc_predeterminado = next((ele for ele in configuracion_centro_costos if ele.cost_center == self.cost_center), None)
-
-			if cc_predeterminado != None:
-				if cc_predeterminado.revisor_predeterminado != None:
-					revisor_predeterminado = cc_predeterminado.revisor_predeterminado
-				if cc_predeterminado.aprobador_predeterminado != None:
-					aprobador_predeterminado = cc_predeterminado.aprobador_predeterminado
-				if cc_predeterminado.coordinador_pagos_predeterminado != None:
-					coordinador_pagos_predeterminado = cc_predeterminado.coordinador_pagos_predeterminado
-					
-		return {
-			"revisor_predeterminado": revisor_predeterminado,
-			"aprobador_predeterminado": aprobador_predeterminado,
-			"coordinador_pagos_predeterminado": coordinador_pagos_predeterminado
-		}
-
 	def update_workflow_details(self):
 		old_doc = Document.get_doc_before_save(self)
 		
-		configuracion_pagos = self.get_configuracion_pagos()
-		
+		configuracion_pagos = get_configuraciones_de_pagos(self.company, self.cost_center)
+
 		if self.workflow_status == 'Draft':
 			self.revisor = configuracion_pagos["revisor_predeterminado"]
 			self.aprobador = configuracion_pagos["aprobador_predeterminado"]
-			self.coordinador_pagos = configuracion_pagos["coordinador_pagos_predeterminado"]
+			self.coordinador_pagos = configuracion_pagos["pagador_predeterminado"]
 			
 		if self.revisor == None or self.revisor == '':
 			self.revisor = configuracion_pagos["revisor_predeterminado"]
 		if self.aprobador == None or self.aprobador == '':
 			self.aprobador = configuracion_pagos["aprobador_predeterminado"]
 		if self.coordinador_pagos == None or self.coordinador_pagos == '':
-			self.coordinador_pagos = configuracion_pagos["coordinador_pagos_predeterminado"]
+			self.coordinador_pagos = configuracion_pagos["pagador_predeterminado"]
 		
 		if old_doc != None:
 			if old_doc.workflow_status != self.workflow_status:
@@ -134,7 +135,7 @@ class SolicituddePago(Document):
 		has_existing_payment_entries = frappe.db.count('Employee Advance', {'solicitud_de_pago': self.name, 'docstatus': 1} )
 
 		if has_existing_payment_entries == 0:
-			party_account = party_account = get_party_account_from_accounts("Employee", self.party, self.company)
+			party_account = get_configuraciones_de_pagos(self.company, self.cost_center)["cuenta_cobrar_empleado"]
 			party_account_currency = self.get("party_account_currency") or get_account_currency(party_account)
 			bank_account = get_mode_of_payment_bank_cash_account(self.mode_of_payment, self.company)
 			bank = get_bank_cash_account(self, bank_account)
@@ -160,7 +161,8 @@ class SolicituddePago(Document):
 			if submit:
 				employee_advance.save(ignore_permissions=True)
 				employee_advance.submit()
-				get_payment_entry_for_employee(employee_advance.doctype, employee_advance.name, party_amount, reference_date=self.reference_date, reference_no=self.reference_no, solicitud_de_pago=self.name, submit=True)
+				# get_payment_entry_for_employee(employee_advance.doctype, employee_advance.name, party_amount, reference_date=self.reference_date, reference_no=self.reference_no, solicitud_de_pago=self.name, submit=True)
+				make_journal_entry_for_payment_solicitud_de_pago(employee_advance.doctype, employee_advance.name, self.doctype, self.name, submit)
 			else:
 				employee_advance.save(ignore_permissions=True)
 			payment_docs.append(get_link_to_form(employee_advance.doctype, employee_advance.name))
@@ -174,6 +176,11 @@ class SolicituddePago(Document):
 		# if self.party_type == "Employee":
 		#   pass
 		# if self.party_type == "Supplier":
+  
+		payment_entry_exists = frappe.db.count("Payment Entry", { "reference_no": self.reference_no, "reference_date": self.reference_date, "mode_of_payment": self.mode_of_payment})
+  
+		if payment_entry_exists > 0:
+			return payment_docs
 		
 		if self.party_type == "Employee" and len(self.references) == 0:
 			self.create_employee_advance_payment_entry(payment_docs, submit)
@@ -296,24 +303,6 @@ class SolicituddePago(Document):
 				payment_docs.append(get_link_to_form(payment_entry.doctype, payment_entry.name))
 			
 		return payment_docs
-		
-@frappe.whitelist()
-def get_mode_of_payment_bank_cash_account(mode_of_payment, company):
-	account = frappe.db.get_value(
-		"Mode of Payment Account", {"parent": mode_of_payment, "company": company}, "default_account"
-	)
-	if not account:
-		frappe.throw(
-			_("Please set default Cash or Bank account in Mode of Payment {0}").format(
-				get_link_to_form("Mode of Payment", mode_of_payment)
-			),
-			title=_("Missing Account"),
-		)
-		
-	# bank_account = frappe.get_doc(
-	#   "Bank Account", { "account": account, "company": company }
-	# )
-	return account
 
 @frappe.whitelist()
 def get_constancia_pago_cuenta(party_type, party, date):
@@ -419,11 +408,6 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
 def make_payment_entry(docname):
 	doc = frappe.get_doc("Solicitud de Pago", docname)
 	return doc.create_payment_entry(submit=True)
-@frappe.whitelist()
-def get_bank_account_details(bank_account):
-	return frappe.db.get_value(
-		"Bank Account", bank_account, ["account", "bank", "bank_account_no", "account_type"], as_dict=1
-	)
 
 def get_payment_entry_for_employee(dt, dn, party_amount=None, bank_account=None, bank_amount=None, reference_date=None, reference_no=None, solicitud_de_pago=None, submit=False):
 	"""Function to make Payment Entry for Employee Advance, Gratuity, Expense Claim"""

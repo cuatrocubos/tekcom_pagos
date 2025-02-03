@@ -16,104 +16,24 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		frm.refresh_fields()
 	},
 
-	get_mode_of_payment_predeterminado(frm) {
-		frappe.call({
-			method: "tekcom_pagos.tekcom_pagos.utils.get_mode_of_payment_predeterminado",
-			args: {
-				"company": frm.doc.company,
-				"doc": "Configuracion de Viaticos"
-			},
-			callback: function(res) {
-				if (res && !res.exc) {
-					if (res.message) {	
-						return res.message.mode_of_payment_predeterminado
-					} else {
-						return ""
-					}
-				}
+	refresh(frm) {
+		const workflow_status_for_liquidacion = ['Pagado', 'Entregado a Contabilidad', 'Contabilizado']
+		if (frm.doc.docstatus==0) {
+			if (!frm.doc.fecha_solicitud) {
+				frm.set_value('fecha_solicitud', frappe.datetime.nowdate())
 			}
-		})			
-	},
-
-	async before_workflow_action(frm) {
-		let mode_of_payment_predeterminado = frm.events.get_mode_of_payment_predeterminado(frm)
-		return await new Promise((resolve, reject) => {
-			if (frm.doc.workflow_status == 'Approved' && frm.selected_workflow_action == 'Pagar') {
-					let fields = [
-					{
-						label: 'Mode of Payment',
-						fieldtype: 'Link',
-						reqd: true,
-						fieldname: 'mode_of_payment_on_pagado',
-						options: 'Mode of Payment',
-						get_query: () => ({
-							filters: {
-								company: frm.doc.company
-							},
-						}),
-						// selected_value: mode_of_payment_predeterminado,
-						// selected_value: frm.events.get_mode_of_payment_predeterminado(frm),
-					},
-					{
-						label: 'Cheque/Reference Date',
-						fieldtype: 'Date',
-						reqd: true,
-						fieldname: 'reference_date_on_pagado',
-						default: frappe.datetime.nowdate()
-					},
-					{
-						label: 'Cheque/Reference No',
-						fieldtype: 'Data',
-						reqd: true,
-						fieldname: 'reference_no_on_pagado'
-					},
-				]
-				frappe.dom.unfreeze()
-					
-				frappe.prompt(fields, (values) => {
-					// action to take
-					// this.set_value('mode_of_payment', mode_of_payment_predeterminado)
-					frappe.call({
-						method: "tekcom_pagos.tekcom_pagos.utils.add_payment_details",
-						args: {
-							doctype: frm.doc.doctype,
-							doc: frm.doc.name,
-							mode_of_payment: values.mode_of_payment_on_pagado,
-							reference_date: values.reference_date_on_pagado,
-							reference_no: values.reference_no_on_pagado
-						},
-						callback: function(res) {
-							if (res && !res.exc) {
-								frm.reload_doc()
-								resolve(values)
-							} else {
-								reject()
-							}
-						}
-					})
-				},
-				'Detalles de Pago',
-				'Aplicar Pago'
-				)
-			} else {
-				resolve()
-			}
-		})
-
-		// await promise.catch(() => frappe.throw())
-	},
-
-	after_workflow_action(frm) {
-		prev_route = frappe.get_prev_route()
-		if (prev_route == 'aprobaciones-y-pagos') {
-			frappe.set_route('aprobaciones-y-pagos')
-		} else {
-			frappe.set_route(prev_route)
 		}
-		// prev_doctype = frappe.prev_route[1]
-		// prev_docname = frappe.prev_route[2]
-		// prev_doc = frappe.get_doc(prev_doctype, prev_docname)
- 	},
+		if (workflow_status_for_liquidacion.includes(frm.doc.workflow_status)) {
+			frm.add_custom_button(__('Crear Liquidación'), () => {
+				frm.events.make_liquidacion_viaticos()
+			})
+			frm.add_custom_button(__('Crear Pago'), () => {
+				frm.events.make_payment_entry(frm)
+			})
+		}
+		frm.events.hide_unhide_fields(frm);
+		frm.events.set_dynamic_labels(frm);
+	},
 
 	validate(frm) {
 		if (frm.doc.workflow_status == 'Draft' || frm.doc.workflow_status == 'Rejected') {
@@ -127,12 +47,6 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 	},
 
 	setup(frm) {
-		// if (frm.doc.docstatus == 0) {
-		// 	if (!frm.doc.fecha_solicitud) {
-		// 		frm.set_value("fecha_solicitud", frappe.datetime.nowdate())
-		// 	}
-		// }
-
 		if (frm.doc.solicitante == "" || frm.doc.solicitante == null) {
 			frappe.call({
 				method: "frappe.client.get_value",
@@ -150,49 +64,6 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				}
 			})
 		}
-		// if (frm.doc.workflow_status == 'Solicitado') {
-		// 	if (frm.doc.revisado_por == "" || frm.doc.revisado_por == null) {
-		// 		frappe.call({
-		// 			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
-		// 			args: {
-		// 				role: 'Revisor de Solicitud de Viaticos'
-		// 			},
-		// 			callback: function(r) {
-		// 				if (r.message != undefined) {
-		// 					frm.set_query("revisado_por", function() {
-		// 						return {
-		// 							filters: {
-		// 								name: ["in", r.message.map(c => c.parent)]
-		// 							}
-		// 						}
-		// 					})
-		// 				}
-		// 			}
-		// 		})
-		// 	}
-		// }
-
-		// if (frm.doc.workflow_status == 'Revisado') {
-		// 	if (frm.doc.aprobado_por == "" || frm.doc.aprobado_por == null) {
-		// 		frappe.call({
-		// 			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_users_by_role",
-		// 			args: {
-		// 				role: 'Aprobador de Solicitud de Viaticos'
-		// 			},
-		// 			callback: function(r) {
-		// 				if (r.message != undefined) {
-		// 					frm.set_query("aprobado_por", function() {
-		// 						return {
-		// 							filters: {
-		// 								name: ["in", r.message.map(c => c.parent)]
-		// 							}
-		// 						}
-		// 					})
-		// 				}
-		// 			}
-		// 		})
-		// 	}
-		// }
 
 		frm.set_query("depositar_a_cuenta", function() {
 			return {
@@ -203,45 +74,12 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				}
 			}
 		})
-
-		// frm.set_query("solicitante", function() {
-		// 	frm.events.validate_company()
-		// })
 	},
 
-	depositar_a(frm) {
-		if (frm.doc.depositar_a) {
-			return frappe.call({
-				method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_party_details",
-				args: {
-					company: frm.doc.company,
-					party_type: 'Employee',
-					party: frm.doc.depositar_a,
-					date: frm.doc.fecha_solicitud,
-					cost_center: frm.doc.cost_center
-				},
-				callback: function(r, rt) {
-					if (r.message) {
-						frappe.run_serially([
-							() => frm.events.hide_unhide_fields(frm),
-							() => frm.events.set_dynamic_labels(frm),
-							() => {
-								if (r.message.bank_account) {
-									frm.set_value("bank", r.message.bank);
-									frm.set_value("depositar_a_cuenta", r.message.bank_account);
-								}
-							},
-						]);
-					}
-				}
-			});
-		}
-	},
-
-	validate_company(frm) {
-		if (!frm.doc.company){
-			frappe.throw({message:__("Please select a Company first."), title: __("Mandatory")});
-		}
+	company(frm) {
+		frm.events.hide_unhide_fields(frm);
+		frm.events.set_dynamic_labels(frm);
+		erpnext.accounts.dimensions.update_dimension(frm, frm.doctype)
 	},
 
 	fecha_salida(frm) {
@@ -262,12 +100,6 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		}
 	},
 
-	company(frm) {
-		frm.events.hide_unhide_fields(frm);
-		frm.events.set_dynamic_labels(frm);
-		erpnext.accounts.dimensions.update_dimension(frm, frm.doctype)
-	},
-
 	project(frm) {
 		if (frm.doc.project) {
 			frappe.call({
@@ -286,6 +118,8 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			})
 		}
 	},
+
+	cost_center(frm) {},
 
 	currecy(frm) {
 		if (!frm.doc.currency || !frm.doc.company) return;
@@ -313,7 +147,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 	exchange_rate(frm) {
 		if (frm.doc.total_anticipo_solicitado) {
 			frm.events.set_totales()
-			frm.set_df_property("exchange_rate", "read_onlu", erpnext.stale_rate_allowed() ? 0 : 1)
+			frm.set_df_property("exchange_rate", "read_only", erpnext.stale_rate_allowed() ? 0 : 1)
 		}
 	},
 
@@ -395,31 +229,38 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		frm.refresh_fields()
 	},
 
-	refresh(frm) {
-		if (frm.doc.docstatus==0) {
-			if (!frm.doc.fecha_solicitud) {
-				frm.set_value('fecha_solicitud', frappe.datetime.nowdate())
-			}
+	depositar_a(frm) {
+		if (frm.doc.depositar_a) {
+			return frappe.call({
+				method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_party_details",
+				args: {
+					company: frm.doc.company,
+					party_type: 'Employee',
+					party: frm.doc.depositar_a,
+					date: frm.doc.fecha_solicitud,
+					cost_center: frm.doc.cost_center
+				},
+				callback: function(r, rt) {
+					if (r.message) {
+						frappe.run_serially([
+							() => frm.events.hide_unhide_fields(frm),
+							() => frm.events.set_dynamic_labels(frm),
+							() => {
+								if (r.message.bank_account) {
+									frm.set_value("bank", r.message.bank);
+									frm.set_value("depositar_a_cuenta", r.message.bank_account);
+								}
+							},
+						]);
+					}
+				}
+			});
 		}
-		if (frm.doc.workflow_status == 'Pagado' || frm.doc.workflow_status == 'Contabilizado') {
-			frm.add_custom_button(__('Liquidacion de Viaticos'), () => {
-				frm.events.make_liquidacion_viaticos()
-			})
-		}
-		if (frm.doc.workflow_status == 'Pagado') {
-			frm.add_custom_button(
-				__("Payment"),
-				() => frm.events.make_payment_entry(frm),
-				__("Create")
-			);
-		}
-		frm.events.hide_unhide_fields(frm);
-		frm.events.set_dynamic_labels(frm);
 	},
 
 	make_payment_entry(frm) {
 		return frappe.call({
-			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.make_payment_entry",
+			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.make_employee_advance",
 			args: {
 				"docname": frm.doc.name
 			},
@@ -434,13 +275,6 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 				}
 				// frappe.set_route("Form", doclist[0].doctype, doclist[0].name)
 			}
-		})
-	},
-
-	make_liquidacion_viaticos() {
-		frappe.model.open_mapped_doc({
-			method: 'tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.make_liquidacion_viaticos',
-			frm: cur_frm
 		})
 	},
 
@@ -475,6 +309,19 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		frm.set_df_property("fecha_solicitud", 'read_only', 1)
 
 		frm.refresh_fields()
+	},
+
+	validate_company(frm) {
+		if (!frm.doc.company){
+			frappe.throw({message:__("Please select a Company first."), title: __("Mandatory")});
+		}
+	},
+
+	make_liquidacion_viaticos() {
+		frappe.model.open_mapped_doc({
+			method: 'tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.make_liquidacion_viaticos',
+			frm: cur_frm
+		})
 	},
 
 	update_grid_fields(frm) {
@@ -959,7 +806,106 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 		frappe.model.set_value(cdt, cdn, "total_solicitado", total)
 		// frm.refresh_fields()
-	}
+	},
+
+	get_mode_of_payment_predeterminado(frm) {
+		frappe.call({
+			method: "tekcom_pagos.tekcom_pagos.utils.get_mode_of_payment_predeterminado",
+			args: {
+				"company": frm.doc.company,
+				"doc": "Configuracion de Viaticos"
+			},
+			callback: function(res) {
+				if (res && !res.exc) {
+					if (res.message) {	
+						return res.message.mode_of_payment_predeterminado
+					} else {
+						return ""
+					}
+				}
+			}
+		})			
+	},
+
+	async before_workflow_action(frm) {
+		let mode_of_payment_predeterminado = frm.events.get_mode_of_payment_predeterminado(frm)
+		return await new Promise((resolve, reject) => {
+			if (frm.doc.workflow_status == 'Approved' && frm.selected_workflow_action == 'Pagar') {
+					let fields = [
+					{
+						label: 'Mode of Payment',
+						fieldtype: 'Link',
+						reqd: true,
+						fieldname: 'mode_of_payment_on_pagado',
+						options: 'Mode of Payment',
+						get_query: () => ({
+							filters: {
+								company: frm.doc.company
+							},
+						}),
+						// selected_value: mode_of_payment_predeterminado,
+						// selected_value: frm.events.get_mode_of_payment_predeterminado(frm),
+					},
+					{
+						label: 'Cheque/Reference Date',
+						fieldtype: 'Date',
+						reqd: true,
+						fieldname: 'reference_date_on_pagado',
+						default: frappe.datetime.nowdate()
+					},
+					{
+						label: 'Cheque/Reference No',
+						fieldtype: 'Data',
+						reqd: true,
+						fieldname: 'reference_no_on_pagado'
+					},
+				]
+				frappe.dom.unfreeze()
+					
+				frappe.prompt(fields, (values) => {
+					// action to take
+					// this.set_value('mode_of_payment', mode_of_payment_predeterminado)
+					frappe.call({
+						method: "tekcom_pagos.tekcom_pagos.utils.add_payment_details",
+						args: {
+							doctype: frm.doc.doctype,
+							doc: frm.doc.name,
+							mode_of_payment: values.mode_of_payment_on_pagado,
+							reference_date: values.reference_date_on_pagado,
+							reference_no: values.reference_no_on_pagado
+						},
+						callback: function(res) {
+							if (res && !res.exc) {
+								frm.reload_doc()
+								resolve(values)
+							} else {
+								reject()
+							}
+						}
+					})
+				},
+				'Detalles de Pago',
+				'Aplicar Pago'
+				)
+			} else {
+				resolve()
+			}
+		})
+
+		// await promise.catch(() => frappe.throw())
+	},
+
+	after_workflow_action(frm) {
+		prev_route = frappe.get_prev_route()
+		if (prev_route == 'aprobaciones-y-pagos') {
+			frappe.set_route('aprobaciones-y-pagos')
+		} else {
+			frappe.set_route(prev_route)
+		}
+		// prev_doctype = frappe.prev_route[1]
+		// prev_docname = frappe.prev_route[2]
+		// prev_doc = frappe.get_doc(prev_doctype, prev_docname)
+ 	},
 });
 
 frappe.ui.form.on("Presupuesto Solicitud de Viaticos", {

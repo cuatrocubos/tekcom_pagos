@@ -1,0 +1,119 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-12-17 23:48:32.201152",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "tipo_gasto",
+  "section_break_scxf",
+  "monto_solicitado",
+  "monto_aprobado",
+  "monto_ejecutado",
+  "diferencia",
+  "column_break_wnwk",
+  "monto_solicitado_base",
+  "monto_aprobado_base",
+  "monto_ejecutado_base",
+  "diferencia_base"
+ ],
+ "fields": [
+  {
+   "fieldname": "tipo_gasto",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Tipo Gasto",
+   "options": "Expense Claim Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_scxf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "monto_solicitado",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Monto Solicitado",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "monto_aprobado",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Monto Aprobado",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_wnwk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "monto_solicitado_base",
+   "fieldtype": "Currency",
+   "label": "Monto Solicitado",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "monto_aprobado_base",
+   "fieldtype": "Currency",
+   "label": "Monto Aprobado",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "monto_ejecutado",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Monto Ejecutado",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "monto_ejecutado_base",
+   "fieldtype": "Currency",
+   "label": "Monto Ejecutado",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "diferencia",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Diferencia",
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "diferencia_base",
+   "fieldtype": "Currency",
+   "label": "Diferencia",
+   "options": "Company:company:default_currency",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-12-18 00:46:25.673600",
+ "modified_by": "Administrator",
+ "module": "Viaticos",
+ "name": "Presupuesto de Liquidacion de Viaticos",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

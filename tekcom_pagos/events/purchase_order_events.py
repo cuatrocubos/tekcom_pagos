@@ -1,33 +1,16 @@
 import frappe
 from frappe.model.document import Document
 
+from tekcom_pagos.tekcom_pagos.doctype.configuraciones_de_pagos_y_viaticos.configuraciones_de_pagos_y_viaticos import get_configuraciones_de_compras
+
 def before_validate_event(doc, method=None):
   user = frappe.session.user
   update_workflow_details(doc, user)
 
-@frappe.whitelist()
-def get_configuracion_pagos(doc):
-  configuracion_pagos = frappe.get_doc('Configuracion de Solicitudes de Pago')
-  configuracion_centro_costos = configuracion_pagos.cost_center_predeterminados
-  
-  aprobador_predeterminado = configuracion_pagos.aprobador_predeterminado
-  encargado_compras = configuracion_pagos.encargado_compras
-  if len(configuracion_centro_costos) > 0:
-    cc_predeterminado = next((ele for ele in configuracion_centro_costos if ele.cost_center == doc.cost_center), None)
-
-    if cc_predeterminado != None:
-      if cc_predeterminado.aprobador_predeterminado != None:
-        aprobador_predeterminado = cc_predeterminado.aprobador_predeterminado
-        
-  return {
-    "aprobador_predeterminado": aprobador_predeterminado,
-    "encargado_compras": encargado_compras
-  }
-
 def update_workflow_details(doc, user=None):
   old_doc = Document.get_doc_before_save(doc)
   
-  configuracion_pagos = get_configuracion_pagos(doc)
+  configuracion_pagos = get_configuraciones_de_compras(doc.company, doc.cost_center)
   
   if doc.workflow_status == 'Draft':
     doc.custom_aprobador = configuracion_pagos["aprobador_predeterminado"]
