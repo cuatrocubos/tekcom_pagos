@@ -2,7 +2,7 @@ import frappe
 from frappe.model.document import Document
 
 from tekcom_pagos.tekcom_pagos.doctype.configuraciones_de_pagos_y_viaticos.configuraciones_de_pagos_y_viaticos import (
-  get_configuraciones_cuentas, get_configuraciones_de_pagos
+  get_configuraciones_de_compras
 )
 
 def before_validate_event(doc, method=None):
@@ -12,7 +12,7 @@ def before_validate_event(doc, method=None):
 def update_workflow_details(doc, user=None):
   old_doc = Document.get_doc_before_save(doc)
   
-  configuracion_pagos = get_configuraciones_de_pagos(doc.company, doc.cost_center)
+  configuracion_pagos = get_configuraciones_de_compras(doc.company, doc.cost_center)
   
   if doc.workflow_status == 'Draft':
     doc.custom_aprobador = configuracion_pagos["aprobador_predeterminado"]

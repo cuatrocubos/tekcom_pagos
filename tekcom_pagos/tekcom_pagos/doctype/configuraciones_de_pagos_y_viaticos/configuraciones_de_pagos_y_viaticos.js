@@ -11,18 +11,28 @@ frappe.ui.form.on("Configuraciones de Pagos y Viaticos", {
       callback: function(r) {
         if (r.message != undefined) {
           frappe.run_serially([
+            () => console.log(r.message),
+            () => console.log(r.message.map(c => c.parent)),
             () => user_list = r.message.map(c => c.parent),
+            () => console.log(user_list),
             () => frm.set_query("revisor_predeterminado_pagos", "predeterminados_de_pagos_y_viaticos", function(frm, cdt, cdn) {
               return {
                 filters: {
-                  name: ["in", user_list]
+                  name: ["in", r.message.map(c => c.parent)]
+                }
+              }
+            }),
+            () => frm.set_query("revisor_predeterminado_viaticos", "predeterminados_de_pagos_y_viaticos", function(frm, cdt, cdn) {
+              return {
+                filters: {
+                  name: ["in", r.message.map(c => c.parent)]
                 }
               }
             }),
             () => frm.set_query("revisor_predeterminado_pagos", "predeterminados_centro_costos", function(frm, cdt, cdn) {
               return {
                 filters: {
-                  name: ["in", user_list]
+                  name: ["in", r.message.map(c => c.parent)]
                 }
               }
             }),
@@ -43,14 +53,21 @@ frappe.ui.form.on("Configuraciones de Pagos y Viaticos", {
             () => frm.set_query("aprobador_predeterminado_pagos", "predeterminados_de_pagos_y_viaticos", function(frm, cdt, cdn) {
               return {
                 filters: {
-                  name: ["in", user_list]
+                  name: ["in", r.message.map(c => c.parent)]
+                }
+              }
+            }),
+            () => frm.set_query("aprobador_predeterminado_viaticos", "predeterminados_de_pagos_y_viaticos", function(frm, cdt, cdn) {
+              return {
+                filters: {
+                  name: ["in", r.message.map(c => c.parent)]
                 }
               }
             }),
             () => frm.set_query("aprobador_predeterminado_pagos", "predeterminados_centro_costos", function(frm, cdt, cdn) {
               return {
                 filters: {
-                  name: ["in", user_list]
+                  name: ["in", r.message.map(c => c.parent)]
                 }
               }
             }),
@@ -71,28 +88,28 @@ frappe.ui.form.on("Configuraciones de Pagos y Viaticos", {
             () => frm.set_query("pagador_predeterminado_pagos", "predeterminados_de_pagos_y_viaticos", function(frm, cdt, cdn) {
               return {
                 filters: {
-                  name: ["in", user_list]
+                  name: ["in", r.message.map(c => c.parent)]
                 }
               }
             }),
             () => frm.set_query("pagador_predeterminado_viaticos", "predeterminados_de_pagos_y_viaticos", function(frm, cdt, cdn) {
               return {
                 filters: {
-                  name: ["in", user_list]
+                  name: ["in", r.message.map(c => c.parent)]
                 }
               }
             }),
             () => frm.set_query("pagador_predeterminado_pagos", "predeterminados_centro_costos", function(frm, cdt, cdn) {
               return {
                 filters: {
-                  name: ["in", user_list]
+                  name: ["in", r.message.map(c => c.parent)]
                 }
               }
             }),
             () => frm.set_query("pagador_predeterminado_viaticos", "predeterminados_centro_costos", function(frm, cdt, cdn) {
               return {
                 filters: {
-                  name: ["in", user_list]
+                  name: ["in", r.message.map(c => c.parent)]
                 }
               }
             }),
@@ -101,9 +118,6 @@ frappe.ui.form.on("Configuraciones de Pagos y Viaticos", {
       } // callback
     }) // frappe.call
   }, // setup
-});
-
-frappe.ui.form.on("Predeterminados Pagos y Viaticos", {
 });
 
 frappe.ui.form.on("Predeterminados Pagos y Viaticos por Centro de Costo", {

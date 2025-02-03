@@ -22,7 +22,8 @@
   "pagador_predeterminado_viaticos",
   "column_break_dbqk",
   "compras_section",
-  "encargado_compras",
+  "revisor_predeterminado_compras",
+  "aprobador_predeterminado_compras",
   "column_break_kukg"
  ],
  "fields": [
@@ -110,13 +111,6 @@
    "label": "Compras"
   },
   {
-   "fieldname": "encargado_compras",
-   "fieldtype": "Link",
-   "label": "Encargado de Compras",
-   "options": "User",
-   "reqd": 1
-  },
-  {
    "fieldname": "column_break_kukg",
    "fieldtype": "Column Break"
   },
@@ -128,12 +122,26 @@
    "link_filters": "[[\"Cost Center\",\"company\",\"=\",\"eval:doc.company\"]]",
    "options": "Cost Center",
    "reqd": 1
+  },
+  {
+   "fieldname": "revisor_predeterminado_compras",
+   "fieldtype": "Link",
+   "label": "Revisor Predeterminado",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "aprobador_predeterminado_compras",
+   "fieldtype": "Link",
+   "label": "Aprobador Predeterminado",
+   "options": "User",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-01-19 12:11:59.513229",
+ "modified": "2025-02-03 01:39:35.513962",
  "modified_by": "Administrator",
  "module": "Tekcom Pagos",
  "name": "Predeterminados Pagos y Viaticos por Centro de Costo",
