@@ -3,7 +3,7 @@
 
 import frappe
 from frappe import ValidationError, _, qb, scrub, throw
-from frappe.utils import cint, comma_or, flt, getdate, nowdate, get_link_to_form
+from frappe.utils import cint, comma_or, flt, getdate, nowdate, get_link_to_form, now
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.query_builder.functions import Count
@@ -70,30 +70,61 @@ class SolicituddeViaticos(Document):
 	def validate(self):
 		validate_active_employee(self)	
 		self.validate_employee_permite_asignar_viaticos()
+		# self.validate_solicitudes_por_liquidar(self)
 		self.set_totales_personas_dia()
 		self.update_workflow_details()
 		if (self.workflow_status == 'Entregado a Contabilidad'):
 			self.create_employee_advance(submit=True)
 		# set_revision(self)
 		# set_aprobado(self)
+  
+	def validate_solicitudes_por_liquidar(self):
+   
+		# SELECT tsdv.name, tsdv.workflow_status, tldv.solicitud_de_viaticos 
+		# FROM `tabSolicitud de Viaticos` tsdv
+		# LEFT JOIN `tabLiquidacion de Viaticos` tldv ON tsdv.name = tldv.solicitud_de_viaticos 
+		# WHERE tsdv.depositar_a = 'E-00021'
+		# AND NOT tsdv.workflow_status IN ('Draft', 'Solicitad', 'Revisado', 'Approved', 'Rejected')
+		# AND NOT tsdv.name = 'GA-FO-001-TEK-2025-00059'
+		# AND tldv.name IS NULL;
+		
+		SolicitudViaticos = frappe.qb.DocType('Solicitud de Viaticos')
+		LiquidacionViaticos = frappe.qb.DocType('Liquidacion de Viaticos')
+  
+		count_all = Count('*').as_("count")
+		query = (frappe.qb.from_(SolicitudViaticos)
+						.left_join(LiquidacionViaticos)
+						.on(SolicitudViaticos.name == LiquidacionViaticos.solicitud_de_viaticos)
+						.select(count_all)
+						.where(SolicitudViaticos.depositar_a == self.depositar_a)
+						.where(SolicitudViaticos.fecha_solicitud > '2025-01-01')
+						.where(SolicitudViaticos.workflow_status.notin(['Draft', 'Solicitad', 'Revisado', 'Approved', 'Rejected']))
+						.where(SolicitudViaticos.name != self.name)
+						.where(LiquidacionViaticos.name.isnull())
+						).run()
+		
+		if self.workflow_status == 'Solicitado':
+			if query and query[0][0] > 3:
+				frappe.throw(_("No se puede aprobar la solicitud si existen solicitudes por liquidar"), frappe.ValidationError)
+		
 
 	def validate_employee_permite_asignar_viaticos(self):
 		message = []
 		for persona in self.personas:
 			employee_name = frappe.get_cached_value('Employee', persona.employee, 'employee_name')
-			solicitudes_fecha_dia_1 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_1, self.name)
+			solicitudes_fecha_dia_1 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_1, self.name, self.cost_center)
 			persona.permite_asignar_viaticos_dia_1 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_1)
-			solicitudes_fecha_dia_2 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_2, self.name)
+			solicitudes_fecha_dia_2 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_2, self.name, self.cost_center)
 			persona.permite_asignar_viaticos_dia_2 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_2)
-			solicitudes_fecha_dia_3 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_3, self.name)
+			solicitudes_fecha_dia_3 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_3, self.name, self.cost_center)
 			persona.permite_asignar_viaticos_dia_3 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_3)
-			solicitudes_fecha_dia_4 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_4, self.name)
+			solicitudes_fecha_dia_4 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_4, self.name, self.cost_center)
 			persona.permite_asignar_viaticos_dia_4 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_4)
-			solicitudes_fecha_dia_5 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_5, self.name)
+			solicitudes_fecha_dia_5 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_5, self.name, self.cost_center)
 			persona.permite_asignar_viaticos_dia_5 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_5)
-			solicitudes_fecha_dia_6 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_6, self.name)
+			solicitudes_fecha_dia_6 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_6, self.name, self.cost_center)
 			persona.permite_asignar_viaticos_dia_6 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_6)
-			solicitudes_fecha_dia_7 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_7, self.name)
+			solicitudes_fecha_dia_7 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_7, self.name, self.cost_center)
 			persona.permite_asignar_viaticos_dia_7 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_7)
 			
 			if persona.permite_asignar_viaticos_dia_1 == 0:
@@ -191,8 +222,12 @@ class SolicituddeViaticos(Document):
 		# 2. Create Employee Advance
 		# 3. Create Payment Entry for Employee Advance
 		get_employee_advances = frappe.db.exists("Employee Advance", { "solicitud_de_viaticos": self.name, "docstatus": 1 })
+		get_payment_entries = frappe.db.exists("Payment Entry", { "reference_no": self.reference_no, "reference_date": self.reference_date, "mode_of_payment": self.mode_of_payment, "docstatus": 1 })
+		get_journal_entries = frappe.db.exists("Journal Entry", { "cheque_no": self.reference_no, "cheque_date": self.reference_date, "mode_of_payment": self.mode_of_payment })
 		
-		if get_employee_advances:
+		if get_employee_advances or get_payment_entries or get_journal_entries:
+			if get_journal_entries:
+				frappe.db.update("Journal Entry", { "cheque_no": self.reference_no, "cheque_date": self.reference_date, "mode_of_payment": self.mode_of_payment }, { "bill_no": self.name, "bill_date": self.fecha_solicitud })
 			frappe.msgprint(_("Employee Advance already exists for this Solicitud de Viaticos. {0}").format(get_link_to_form("Employee Advance", get_employee_advances)))
 			return docs
 		
@@ -231,6 +266,7 @@ class SolicituddeViaticos(Document):
 		employee_advance.purpose = self.remarks
 		employee_advance.currency = self.currency
 		employee_advance.exchange_rate = self.exchange_rate
+		employee_advance.target_exchange_rate = self.exchange_rate
 		employee_advance.advance_account = advance_account
 		employee_advance.mode_of_payment = self.mode_of_payment
 		employee_advance.repay_unclaimed_amount_from_salary = 1
@@ -272,7 +308,7 @@ def get_asignacion_diaria_alimentacion(employee):
 	return "0.0"
 
 @frappe.whitelist()
-def validate_permite_asignar_viaticos_dia(employee, fecha, solicitud):
+def validate_permite_asignar_viaticos_dia(employee, fecha, solicitud, cost_center):
 	if fecha == None:
 		return 1
 	
@@ -285,6 +321,7 @@ def validate_permite_asignar_viaticos_dia(employee, fecha, solicitud):
 					 .select(SolicitudViaticos.name)
 					 .where(PersonasSolicitudViaticos.employee == employee)
 					 .where(PersonasSolicitudViaticos.parent != solicitud)
+					 .where(SolicitudViaticos.cost_center == cost_center)
 					 .where(
 						 (PersonasSolicitudViaticos.fecha_dia_1 == fecha)
 						 | (PersonasSolicitudViaticos.fecha_dia_2 == fecha)

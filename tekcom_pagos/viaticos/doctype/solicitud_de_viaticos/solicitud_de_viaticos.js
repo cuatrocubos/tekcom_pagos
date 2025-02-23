@@ -231,6 +231,8 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 
 	depositar_a(frm) {
 		if (frm.doc.depositar_a) {
+			let company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency;
+
 			return frappe.call({
 				method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_party_details",
 				args: {
@@ -251,6 +253,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 									frm.set_value("depositar_a_cuenta", r.message.bank_account);
 								}
 							},
+							() => frm.events.set_current_conversion_rate(frm, "exchange_rate", frm.doc.currency, company_currency)
 						]);
 					}
 				}
@@ -336,6 +339,21 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		})
 	},
 
+	set_current_conversion_rate: function(frm, conversion_rate_field, from_currency, to_currency) {
+		frappe.call({
+			method: "erpnext.setup.utils.get_exchange_rate",
+			args: {
+				transaction_date: frm.doc.fecha_solicitud,
+				from_currency: from_currency,
+				to_currency: to_currency
+			},
+			callback: function(r, rt) {
+				const ex_rate = flt(r.message, frm.get_field(conversion_rate_field).get_precision());
+				frm.set_value(conversion_rate_field, ex_rate);
+			}
+		})
+	},
+
 	get_dias_de_viaje(frm) {
 		if (!frm.doc.fecha_salida || !frm.doc.fecha_retorno) {
 			frappe.throw({
@@ -375,8 +393,8 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 
 		frm.set_value("total_anticipo_solicitado", total_anticipo_solicitado)
 		frm.set_value("total_anticipo_aprobado", total_anticipo_aprobado)
-		frm.set_value("total_anticipo_solicitado_base", ftl(frm.doc.total_anticipo_solicitado) * ftl(frm.doc.exchange_rate()))
-		frm.set_value("total_anticipo_aprobado_base", ftl(frm.doc.total_anticipo_aprobado) * ftl(frm.doc.exchange_rate()))
+		frm.set_value("total_anticipo_solicitado_base", flt(frm.doc.total_anticipo_solicitado) * flt(frm.doc.exchange_rate))
+		frm.set_value("total_anticipo_aprobado_base", flt(frm.doc.total_anticipo_aprobado) * flt(frm.doc.exchange_rate))
 
 
 		// frm.refresh_fields()
@@ -910,7 +928,10 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 
 frappe.ui.form.on("Presupuesto Solicitud de Viaticos", {
 	monto_solicitado(frm, cdt, cdn) {
+		row = locals[cdt][cdn]
 		frappe.model.set_value(cdt, cdn, "monto_aprobado", frappe.model.get_value(cdt, cdn, "monto_solicitado"))
+		frappe.model.set_value(cdt, cdn, "monto_solicitado_base", flt(row.monto_solicitado) * flt(frm.doc.exchange_rate))
+		frappe.model.set_value(cdt, cdn, "monto_aprobado_base", flt(row.monto_aprobado) * flt(frm.doc.exchange_rate))
 		frm.events.set_totales(frm)
 	},
 	monto_aprobado(frm, cdt, cdn) {

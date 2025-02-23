@@ -21,6 +21,7 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import (
 	get_payment_entry,
 	get_bank_cash_account
 )
+from hrms.hr.doctype.expense_claim.expense_claim import get_expense_claim_account
 from hrms.overrides.employee_payment_entry import (
 	get_grand_total_and_outstanding_amount,
 	get_paid_amount_and_received_amount,
@@ -167,6 +168,62 @@ class SolicituddePago(Document):
 				employee_advance.save(ignore_permissions=True)
 			payment_docs.append(get_link_to_form(employee_advance.doctype, employee_advance.name))
 
+	def create_journal_entry_for_gastos_varios(self, submit=False):
+		exists = frappe.db.exists("Journal Entry", {"cheque_date": self.reference_date, "cheque_no": self.reference_no, "mode_of_payment": self.mode_of_payment})
+		if exists:
+			frappe.db.set_value("Journal Entry", {"reference_doctype": reference.reference_doctype, "reference_name": reference.reference_name}, "docstatus", 0)
+			return
+		for reference in self.references:
+			ref_doc = frappe.get_doc(reference.reference_doctype, reference.reference_name)
+			solicitante = frappe.get_cached_doc("Employee", self.solicitante)
+			bank_account = get_mode_of_payment_bank_cash_account(self.mode_of_payment, self.company)
+			bank = get_bank_cash_account(self, bank_account)
+			journal_entry = frappe.new_doc("Journal Entry")
+			journal_entry.voucher_type = "Bank Entry"
+			journal_entry.company = self.company
+			journal_entry.posting_date = self.reference_date
+			journal_entry.cheque_date = self.reference_date
+			journal_entry.cheque_no = self.reference_no
+			journal_entry.user_remark = "Solicitud de Pago {0} por Caja Chica {1} a favor de {2}".format(self.name, reference.reference_name, solicitante.employee_name)
+			journal_entry.title = "Solicitud de Pago {0} por Caja Chica {1} a favor de {2}".format(self.name, reference.reference_name, solicitante.employee_name)
+			journal_entry.mode_of_payment = self.mode_of_payment
+			journal_entry.multi_currency = 0
+			journal_entry.bill_no = self.name
+			journal_entry.bill_date = self.fecha_solicitud
+			journal_entry.append("accounts", {
+				"account": bank_account,
+				"cost_center": ref_doc.cost_center,
+				"credit_in_account_currency": reference.allocated_amount,
+				"account_currenty": self.currency,
+				"exchange_rate": flt(self.conversion_rate),
+			})
+			for expense in ref_doc.references:
+				expense_account = get_expense_claim_account(expense.tipo_gasto, self.company)[
+					"account"
+				]
+				journal_entry.append("accounts", {
+					"account": expense_account,
+					"cost_center": expense.cost_center,
+					"debit_in_account_currency": expense.total,
+					"account_currenty": self.currency,
+					"exchange_rate": flt(self.conversion_rate),
+					"user_remark": "{0} x REEMBOLSO DE CAJA CHICHA".format(expense.tipo_gasto),
+					"custom_otras_referencias": "Factura {0} del {1} de {2}".format(expense.reference, expense.reference_date, expense.supplier)
+				})
+			total_taxes_and_charges = sum(flt(item.total_taxes_and_charges) for item in ref_doc.references)
+			if total_taxes_and_charges > 0:
+				purchase_taxes_and_charges_template = frappe.get_doc("Purchase Taxes and Charges Template", {"company": self.company, "is_default": 1})
+				for tax in purchase_taxes_and_charges_template.taxes:
+					journal_entry.append("accounts", {
+						"account": tax.account_head,
+						"debit_in_account_currency": total_taxes_and_charges,
+						"account_currenty": self.currency,
+						"exchange_rate": flt(self.conversion_rate),
+						"user_remark": "Impuestos y Cargos sobre compras por Caja Chica",
+					})
+			journal_entry.save(ignore_permissions=True)
+
+
 	def create_payment_entry(self, submit=False):
 		# create payment entry
 		frappe.flags.ignore_account_permissions = True
@@ -178,76 +235,86 @@ class SolicituddePago(Document):
 		# if self.party_type == "Supplier":
   
 		payment_entry_exists = frappe.db.count("Payment Entry", { "reference_no": self.reference_no, "reference_date": self.reference_date, "mode_of_payment": self.mode_of_payment})
+		journal_entry_exists = frappe.db.exists("Journal Entry", {"cheque_date": self.reference_date, "cheque_no": self.reference_no, "mode_of_payment": self.mode_of_payment})
   
-		if payment_entry_exists > 0:
+		if payment_entry_exists > 0 or journal_entry_exists:
 			return payment_docs
 		
 		if self.party_type == "Employee" and len(self.references) == 0:
 			self.create_employee_advance_payment_entry(payment_docs, submit)
+		
+		if len(self.references) > 0 and self.references[0].reference_doctype == 'Gastos Varios':
+			# self.create_employee_advance_payment_entry(payment_docs, submit)
+			self.create_journal_entry_for_gastos_varios(submit=False)
+			for reference in self.references:
+				frappe.db.set_value(reference.reference_doctype, reference.reference_name, "workflow_state", "Pagado")
+		elif len(self.references) > 0:
+			total_taxes_and_charges = 0
+			for reference in self.references:
+				ref_doc = frappe.get_doc(reference.reference_doctype, reference.reference_name)
+				
+				if hasattr(ref_doc, 'total_taxes_and_charges'):
+					total_taxes_and_charges += flt(ref_doc.total_taxes_and_charges)
+				
+				if reference.reference_doctype in ["Purchase Invoice", "Purchase Order"]:
+					party_account = party_account = get_party_account_from_accounts("Supplier", ref_doc.supplier, ref_doc.company)
+					
+				party_account_currency = ref_doc.get("party_account_currency") or get_account_currency(party_account)
+				
+				bank_account = get_mode_of_payment_bank_cash_account(self.mode_of_payment, self.company)
+				bank_amount = reference.allocated_amount
+				if party_account_currency == ref_doc.company_currency and party_account_currency != ref_doc.currency:
+					party_amount = ref_doc.get("base_rounded_total") or ref_doc.get("base_grand_total")
+				else:
+					party_amount = reference.allocated_amount
+					
+				payment_entry = get_payment_entry(
+					reference.reference_doctype,
+					reference.reference_name,
+					party_amount=party_amount,
+					bank_account=bank_account,
+					bank_amount=bank_amount,
+					party_type = "Supplier",
+					payment_type = "Pay",
+					reference_date=self.reference_date,
+					custom_referencia_de_solicitud_pago=reference.name
+				)
+				
+				payment_entry.update(
+					{
+						"solicitud_de_pago": self.name,
+						"mode_of_payment": self.mode_of_payment,
+						"reference_no": self.reference_no,
+						"reference_date": self.reference_date,
+						"remarks": "Entrada de Pago via Solicitud de Pago {}".format(
+							self.name
+						),
+					}
+				)
+				
+				payment_entry.update(
+					{
+						"cost_center": ref_doc.get("cost_center"),
+						"project": self.get("project")
+					}
+				)
+				
+				if party_account_currency == ref_doc.company_currency and party_account_currency != ref_doc.currency:
+					amount = payment_entry.base_paid_amount
+				else:
+					amount = reference.allocated_amount
+					
+				payment_entry.received_amount = amount
+				# esto aplica el monto solicitado a la primera fila de referencias pagadas
+				payment_entry.get("references")[0].allocated_amount = amount
+				
+				payment_entry.insert(ignore_permissions=True)
+				if submit:
+					payment_entry.submit()
+				else:
+					payment_entry.save()
+				payment_docs.append(get_link_to_form(payment_entry.doctype, payment_entry.name))
 		else:
-			if len(self.references) > 0:
-				for reference in self.references:
-					ref_doc = frappe.get_doc(reference.reference_doctype, reference.reference_name)
-					
-					if reference.reference_doctype in ["Purchase Invoice", "Purchase Order"]:
-						party_account = party_account = get_party_account_from_accounts("Supplier", ref_doc.supplier, ref_doc.company)
-						
-					party_account_currency = ref_doc.get("party_account_currency") or get_account_currency(party_account)
-					
-					bank_account = get_mode_of_payment_bank_cash_account(self.mode_of_payment, self.company)
-					bank_amount = reference.allocated_amount
-					if party_account_currency == ref_doc.company_currency and party_account_currency != ref_doc.currency:
-						party_amount = ref_doc.get("base_rounded_total") or ref_doc.get("base_grand_total")
-					else:
-						party_amount = reference.allocated_amount
-						
-					payment_entry = get_payment_entry(
-						reference.reference_doctype,
-						reference.reference_name,
-						party_amount=party_amount,
-						bank_account=bank_account,
-						bank_amount=bank_amount,
-						party_type = "Supplier",
-						payment_type = "Pay",
-						reference_date=self.reference_date,
-						custom_referencia_de_solicitud_pago=reference.name
-					)
-					
-					payment_entry.update(
-						{
-							"solicitud_de_pago": self.name,
-							"mode_of_payment": self.mode_of_payment,
-							"reference_no": self.reference_no,
-							"reference_date": self.reference_date,
-							"remarks": "Entrada de Pago via Solicitud de Pago {}".format(
-								self.name
-							),
-						}
-					)
-					
-					payment_entry.update(
-						{
-							"cost_center": ref_doc.get("cost_center"),
-							"project": self.get("project")
-						}
-					)
-					
-					if party_account_currency == ref_doc.company_currency and party_account_currency != ref_doc.currency:
-						amount = payment_entry.base_paid_amount
-					else:
-						amount = reference.allocated_amount
-						
-					payment_entry.received_amount = amount
-					# esto aplica el monto solicitado a la primera fila de referencias pagadas
-					payment_entry.get("references")[0].allocated_amount = amount
-					
-					payment_entry.insert(ignore_permissions=True)
-					if submit:
-						payment_entry.submit()
-					else:
-						payment_entry.save()
-					payment_docs.append(get_link_to_form(payment_entry.doctype, payment_entry.name))
-			else:
 				party_account = party_account = get_party_account_from_accounts("Supplier", self.party, self.company)
 
 				party_account_currency = self.get("party_account_currency") or get_account_currency(party_account)
@@ -355,7 +422,7 @@ def get_party_details(company, party_type, party, date, cost_center=None):
 	else:
 		party_tax_id = frappe.db.get_value(party_type, party, "numero_dni")
 		bank_account = frappe.db.get_value(party_type, party, "bank_ac_no")
-		bank = frappe.db.get_value(party_type, party, "bank_name")
+		bank = frappe.db.get_value(party_type, party, "custom_bank")
 		
 	return {
 		"party_account": party_account,

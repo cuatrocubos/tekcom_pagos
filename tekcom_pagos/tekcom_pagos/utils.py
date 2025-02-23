@@ -427,15 +427,15 @@ def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, 
 	advance_account_currency = frappe.db.get_value("Account", advance_account, "account_currency")
  
 	payable_party = configuracion_cuentas_reference_doc["parte_supplier"]
-	payable_account = get_party_account("Supplier", payable_party, reference_doc.company)
+	payable_account = get_party_account("Supplier", payable_party, doc.company)
 	payable_account_currency = get_account_currency(payable_account)
 	
 	receivable_party = configuracion_cuentas_doc["parte_customer"]
-	receivable_account = get_party_account("Customer", payable_party, doc.company)
+	receivable_account = get_party_account("Customer", payable_party, reference_doc.company)
  
 	bank_account = get_mode_of_payment_bank_cash_account(reference_doc.mode_of_payment, reference_doc.company)
 	bank = get_bank_cash_account(reference_doc, bank_account)
- 
+
 	payment_account = get_default_bank_cash_account(
 		reference_doc.company, account_type="Bank", mode_of_payment=reference_doc.mode_of_payment
 	)
@@ -446,9 +446,10 @@ def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, 
 
 	je = frappe.new_doc("Journal Entry")
 	je.posting_date = reference_doc.reference_date
-	je.voucher_type = "Bank Entry"
+	je.voucher_type = "Journal Entry"
 	je.company = doc.company
 	je.remark = "Solicitud de Pago {0} a favor de {1} contra Avance de Empleado {2}".format(reference_doc.name, reference_doc.party_name, dn)
+	je.title = "Solicitud de Pago {0} de Empleado {1}".format(reference_docname, dn)
 	je.multi_currency = 1 if advance_account_currency != payable_account_currency else 0
 	# // crear asiento contable para Cuenta por Cobrar a Empleado
 	je.append(
@@ -481,8 +482,6 @@ def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, 
 	)
 
 	if submit:
-		print("JE")
-		print(je.as_dict())
 		je.save(ignore_permissions=True)
 		je.submit()
  
@@ -492,7 +491,8 @@ def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, 
 	je2.posting_date = reference_doc.reference_date
 	je2.voucher_type = "Bank Entry"
 	je2.company = reference_doc.company
-	je2.remark = "Cuenta por Cobrar por Solicitud de Pago {0} a favor de {1} con Avance de Empleado {2}".format(reference_doc.name, reference_doc.party_name, dn)
+	je2.user_remark = "Cuenta por Cobrar por Solicitud de Pago {0} a favor de {1} con Avance de Empleado {2}".format(reference_doc.name, reference_doc.party_name, dn)
+	je2.title = "Cuenta por Cobrar por Solicitud de Pago {0} Avance de Empleado {1}".format(reference_doc.name, dn)
 	je2.cheque_no = reference_doc.reference_no
 	je2.cheque_date = reference_doc.reference_date
 	je2.mode_of_payment = reference_doc.mode_of_payment
@@ -524,12 +524,8 @@ def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, 
 	)
  
 	if submit:
-		print("JE2")
-		print(je2.as_dict())
 		je2.save(ignore_permissions=True)
 		je2.submit()
-  
-	frappe.db.updatedb("Journal Entry", je.name, "inter_company_journal_entry_reference", je2.name, update_modified=False)
 
 	return je2.as_dict()
 
