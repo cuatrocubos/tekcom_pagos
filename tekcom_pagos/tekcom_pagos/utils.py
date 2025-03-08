@@ -10,8 +10,8 @@ from frappe.utils import nowdate, today, unique, flt, get_link_to_form
 from pypika import Order
 
 from hrms.hr.doctype.employee_advance.employee_advance import (
-  get_advance_amount_advance_exchange_rate, 
-  get_paying_amount_paying_exchange_rate
+	get_advance_amount_advance_exchange_rate, 
+	get_paying_amount_paying_exchange_rate
 )
 
 from hrms.overrides.employee_payment_entry import (
@@ -43,7 +43,7 @@ from erpnext.accounts.utils import get_account_currency
 
 from tekcom_pagos.tekcom_pagos.doctype.configuraciones_de_pagos_y_viaticos.configuraciones_de_pagos_y_viaticos import (
 	get_configuraciones_de_pagos,
-  get_configuraciones_cuentas
+	get_configuraciones_cuentas
 )
 
 def get_employee_cost_center(employee):
@@ -56,31 +56,31 @@ def get_employee_cost_center(employee):
 
 @frappe.whitelist()
 def add_payment_details(doctype, doc, mode_of_payment, reference_date, reference_no):
-  message = []
-  
-  if (mode_of_payment == None):
-    message.append(_('Modo de Pago no puede estar vacio'))
-  if (reference_date == None):
-    message.append(_('Cheque / Fecha de referencia no puede estar vacio'))
-  if (reference_no == None):
-    message.append(_('Cheque / No. de Referencia no puede estar vacio'))
-    
-  if len(message) > 0:
-    frappe.throw(msg=message, exc=frappe.ValidationError, title="Error al pagar esta solicitud", as_list=True)
-  else:
-    doc = frappe.get_cached_doc(doctype, doc)
-    doc.mode_of_payment = mode_of_payment
-    doc.reference_date = reference_date
-    doc.reference_no = reference_no
-    doc.save()
+	message = []
+	
+	if (mode_of_payment == None):
+		message.append(_('Modo de Pago no puede estar vacio'))
+	if (reference_date == None):
+		message.append(_('Cheque / Fecha de referencia no puede estar vacio'))
+	if (reference_no == None):
+		message.append(_('Cheque / No. de Referencia no puede estar vacio'))
+		
+	if len(message) > 0:
+		frappe.throw(msg=message, exc=frappe.ValidationError, title="Error al pagar esta solicitud", as_list=True)
+	else:
+		doc = frappe.get_cached_doc(doctype, doc)
+		doc.mode_of_payment = mode_of_payment
+		doc.reference_date = reference_date
+		doc.reference_no = reference_no
+		doc.save()
 
 @frappe.whitelist()
 def get_users_by_role(role):
-  usuarios = []
-  usuarios = frappe.get_all(
-    "Has Role", filters={"role": ['like', role], "parenttype": "User"}, fields=["parent"]
-  )
-  return usuarios
+	usuarios = []
+	usuarios = frappe.get_all(
+		"Has Role", filters={"role": ['like', role], "parenttype": "User"}, fields=["parent"]
+	)
+	return usuarios
 
 @frappe.whitelist()
 @frappe.validate_and_sanitize_search_inputs
@@ -113,15 +113,15 @@ def employee_query(doctype, txt, searchfield, start, page_len, filters):
 	)
 
 def get_asignacion_diaria_alimentacion(employee):
-  Employee = frappe.qb.DocType('Employee')
-  query = (frappe.qb.from_(Employee)
-           .select(Employee.custom_asignacion_viaticos_alimentacion)
-           .where(Employee.name == employee)).run(as_dict=True,debug=True)
-  
-  if len(query) > 0:
-    return query[0].custom_asignacion_viaticos_alimentacion
+	Employee = frappe.qb.DocType('Employee')
+	query = (frappe.qb.from_(Employee)
+					 .select(Employee.custom_asignacion_viaticos_alimentacion)
+					 .where(Employee.name == employee)).run(as_dict=True,debug=True)
+	
+	if len(query) > 0:
+		return query[0].custom_asignacion_viaticos_alimentacion
 
-  return "0.0"
+	return "0.0"
 
 def get_fields(doctype, fields=None):
 	if fields is None:
@@ -136,23 +136,23 @@ def get_fields(doctype, fields=None):
 
 @frappe.whitelist()
 def get_mode_of_payment_predeterminado(company, doc):
-  configuracion_pagos = frappe.get_doc(doc)
-  configuracion_mode_of_payment = configuracion_pagos.mode_of_payment_predeterminados
-  
-  if len(configuracion_mode_of_payment) > 0:
-    mode_of_payment_predeterminado = next((ele for ele in configuracion_mode_of_payment if ele.company == company), None)
+	configuracion_pagos = frappe.get_doc(doc)
+	configuracion_mode_of_payment = configuracion_pagos.mode_of_payment_predeterminados
+	
+	if len(configuracion_mode_of_payment) > 0:
+		mode_of_payment_predeterminado = next((ele for ele in configuracion_mode_of_payment if ele.company == company), None)
 
-    if mode_of_payment_predeterminado != None:
-      mode_of_payment_predeterminado = mode_of_payment_predeterminado.mode_of_payment
-  else:
-    return {
-      "mode_of_payment_predeterminado": ""
-    }
-        
-  return {
-    "mode_of_payment_predeterminado": mode_of_payment_predeterminado,
-  }
-  
+		if mode_of_payment_predeterminado != None:
+			mode_of_payment_predeterminado = mode_of_payment_predeterminado.mode_of_payment
+	else:
+		return {
+			"mode_of_payment_predeterminado": ""
+		}
+				
+	return {
+		"mode_of_payment_predeterminado": mode_of_payment_predeterminado,
+	}
+	
 # def get_amount(ref_doc, payment_account=None):
 # 	"""get amount based on doctype"""
 # 	dt = ref_doc.doctype
@@ -202,7 +202,7 @@ def get_mode_of_payment_predeterminado(company, doc):
 # # 		(ref_dt, ref_dn),
 # # 	)
 # # 	return flt(existing_payment_request_amount[0][0]) if existing_payment_request_amount else 0
-  
+	
 # # @frappe.whitelist(allow_guest=True)
 # # def make_payment_request(**args):
 # 	"""Make payment request"""
@@ -331,25 +331,27 @@ def get_payroll_cost_center(employee):
 
 @frappe.whitelist()
 def get_payment_entry_for_employee(
-  dt, dn, 
-  party_amount=None, 
-  bank_account=None, 
-  bank_amount=None, 
-  reference_date=None, reference_no=None, 
-  reference_doctype=None, reference_docname=None, 
-  submit=False):
+	dt, dn, 
+	party_amount=None, 
+	bank_account=None, 
+	bank_amount=None, 
+	reference_date=None, reference_no=None, 
+	reference_doctype=None, reference_docname=None, 
+	submit=False):
 	"""Function to make Payment Entry for Employee Advance, Gratuity, Expense Claim"""
 	doc = frappe.get_doc(dt, dn)
+	ref_doc = frappe.get_doc(reference_doctype, reference_docname)
  
 	if reference_doctype == "Solicitud de Viaticos":
 		party_type = "Employee"
 		party = doc.employee
+		party_account = get_configuraciones_de_pagos(doc.company, ref_doc.cost_center)["cuenta_anticipo_viaticos"]
 	else:
 		party_type = doc.party_type
 		party = doc.party
-  
-	party_account = get_party_account(party_type=party_type, party=party, company=doc.company)
-	party_account_currency = get_account_currency(party_account)
+		party_account = get_configuraciones_de_pagos(doc.company, ref_doc.cost_center)["cuenta_anticipo_viaticos"]
+	
+	party_account_currency = frappe.db.get_value("Account", party_account, "account_currency")
 	payment_type = "Pay"
 	grand_total, outstanding_amount = get_grand_total_and_outstanding_amount(
 		doc, party_amount, party_account_currency
@@ -401,6 +403,11 @@ def get_payment_entry_for_employee(
 	pe.set_missing_ref_details()
 
 	if party_account and bank:
+		frappe.msgprint(
+				_(f"{dt} Getting exchange rate from {pe.paid_to_account_currency} to {pe.company_currency} for date {pe.posting_date}"), 
+				indicator="blue",
+				alert=True
+		)	
 		reference_doc = None
 		if dt == "Employee Advance":
 			reference_doc = doc
@@ -410,6 +417,7 @@ def get_payment_entry_for_employee(
 	if submit:
 		pe.reference_date = reference_date
 		pe.reference_no = reference_no
+		frappe.msgprint("Party Account {0}, Bank Account {1}".format(party_account, bank.account))
 		pe.save(ignore_permissions=True)
 		pe.submit()
 	return pe
@@ -653,7 +661,7 @@ def make_journal_entry_for_payment_solicitud_de_viaticos(dt, dn, reference_docty
 	if submit:
 		je2.save(ignore_permissions=True)
 		je2.submit()
-  
+	
 	# frappe.db.set_value("Journal Entry", je.name, "inter_company_journal_entry_reference", je2.name, update_modified=False)
 
 	return je2.as_dict()

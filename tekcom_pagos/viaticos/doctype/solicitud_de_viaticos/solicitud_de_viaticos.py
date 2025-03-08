@@ -109,22 +109,24 @@ class SolicituddeViaticos(Document):
 		
 
 	def validate_employee_permite_asignar_viaticos(self):
+		if self.cost_center == None or self.cost_center == '':
+			frappe.throw(_("Seleccione un centro de costos para el documento"), frappe.ValidationError)
 		message = []
 		for persona in self.personas:
 			employee_name = frappe.get_cached_value('Employee', persona.employee, 'employee_name')
-			solicitudes_fecha_dia_1 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_1, self.name, self.cost_center)
+			solicitudes_fecha_dia_1 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_1, self.name, cost_center=self.cost_center)
 			persona.permite_asignar_viaticos_dia_1 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_1)
-			solicitudes_fecha_dia_2 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_2, self.name, self.cost_center)
+			solicitudes_fecha_dia_2 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_2, self.name, cost_center=self.cost_center)
 			persona.permite_asignar_viaticos_dia_2 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_2)
-			solicitudes_fecha_dia_3 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_3, self.name, self.cost_center)
+			solicitudes_fecha_dia_3 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_3, self.name, cost_center=self.cost_center)
 			persona.permite_asignar_viaticos_dia_3 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_3)
-			solicitudes_fecha_dia_4 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_4, self.name, self.cost_center)
+			solicitudes_fecha_dia_4 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_4, self.name, cost_center=self.cost_center)
 			persona.permite_asignar_viaticos_dia_4 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_4)
-			solicitudes_fecha_dia_5 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_5, self.name, self.cost_center)
+			solicitudes_fecha_dia_5 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_5, self.name, cost_center=self.cost_center)
 			persona.permite_asignar_viaticos_dia_5 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_5)
-			solicitudes_fecha_dia_6 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_6, self.name, self.cost_center)
+			solicitudes_fecha_dia_6 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_6, self.name, cost_center=self.cost_center)
 			persona.permite_asignar_viaticos_dia_6 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_6)
-			solicitudes_fecha_dia_7 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_7, self.name, self.cost_center)
+			solicitudes_fecha_dia_7 = validate_permite_asignar_viaticos_dia(persona.employee, persona.fecha_dia_7, self.name, cost_center=self.cost_center)
 			persona.permite_asignar_viaticos_dia_7 = get_permite_asignar_viaticos_dia(solicitudes_fecha_dia_7)
 			
 			if persona.permite_asignar_viaticos_dia_1 == 0:
@@ -227,7 +229,14 @@ class SolicituddeViaticos(Document):
 		
 		if get_employee_advances or get_payment_entries or get_journal_entries:
 			if get_journal_entries:
-				frappe.db.update("Journal Entry", { "cheque_no": self.reference_no, "cheque_date": self.reference_date, "mode_of_payment": self.mode_of_payment }, { "bill_no": self.name, "bill_date": self.fecha_solicitud })
+				frappe.db.set_value(
+				"Journal Entry",
+				{"bill_no": self.name, "bill_date": self.fecha_solicitud},  # Filters
+				{
+						"cheque_no": self.reference_no,
+						"cheque_date": self.reference_date,
+						"mode_of_payment": self.mode_of_payment
+				})  # Fields to update
 			frappe.msgprint(_("Employee Advance already exists for this Solicitud de Viaticos. {0}").format(get_link_to_form("Employee Advance", get_employee_advances)))
 			return docs
 		

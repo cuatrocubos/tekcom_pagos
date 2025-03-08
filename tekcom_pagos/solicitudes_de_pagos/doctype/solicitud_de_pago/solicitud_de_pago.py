@@ -133,26 +133,26 @@ class SolicituddePago(Document):
 						self.aprobado_por = frappe.session.user
       
 	def create_employee_advance_payment_entry(self, payment_docs=[], submit=False):
-		has_existing_payment_entries = frappe.db.count('Employee Advance', {'solicitud_de_pago': self.name, 'docstatus': 1} )
-
-		if has_existing_payment_entries == 0:
-			party_account = get_configuraciones_de_pagos(self.company, self.cost_center)["cuenta_cobrar_empleado"]
+		has_existing_employee_advance = frappe.db.exists('Employee Advance', {'solicitud_de_pago': self.name, 'docstatus': 1} )
+		has_existing_payment_entry = frappe.db.exists('Payment Entry', {'mode_of_payment': self.mode_of_payment, 'reference_date': self.reference_date, 'reference_no': self.reference_no, 'docstatus': 1} )
+		if not has_existing_employee_advance or not has_existing_payment_entry:
+			party_company = frappe.db.get_value("Employee", self.party, "company")
+			party_account = get_configuraciones_de_pagos(party_company, self.cost_center)["cuenta_cobrar_empleado"]
 			party_account_currency = self.get("party_account_currency") or get_account_currency(party_account)
-			bank_account = get_mode_of_payment_bank_cash_account(self.mode_of_payment, self.company)
+			bank_account = get_mode_of_payment_bank_cash_account(self.mode_of_payment, party_company)
 			bank = get_bank_cash_account(self, bank_account)
-			
 			party_amount = self.monto_solicitado
 			
 			employee_advance = frappe.new_doc("Employee Advance")
 			employee_advance.posting_date = self.reference_date
-			employee_advance.company = self.company
+			employee_advance.company = party_company
 			employee_advance.employee = self.party
 			employee_advance.advance_amount = party_amount
 			employee_advance.outstanding_amount = party_amount
 			employee_advance.purpose = self.descripcion
 			employee_advance.currency = self.currency
 			employee_advance.exchange_rate = self.conversion_rate
-			# employee_advance.advance_account = self.party_account
+			employee_advance.advance_account = party_account
 			employee_advance.mode_of_payment = self.mode_of_payment
 			employee_advance.repay_unclaimed_amount_from_salary = 0
 			employee_advance.reference_date = self.reference_date
@@ -162,11 +162,15 @@ class SolicituddePago(Document):
 			if submit:
 				employee_advance.save(ignore_permissions=True)
 				employee_advance.submit()
-				# get_payment_entry_for_employee(employee_advance.doctype, employee_advance.name, party_amount, reference_date=self.reference_date, reference_no=self.reference_no, solicitud_de_pago=self.name, submit=True)
-				make_journal_entry_for_payment_solicitud_de_pago(employee_advance.doctype, employee_advance.name, self.doctype, self.name, submit)
+				if self.company == party_company:
+					get_payment_entry_for_employee(employee_advance.doctype, employee_advance.name, party_amount, reference_date=self.reference_date, reference_no=self.reference_no, solicitud_de_pago=self.name, submit=True)
+				else:
+					make_journal_entry_for_payment_solicitud_de_pago(employee_advance.doctype, employee_advance.name, self.doctype, self.name, submit)
 			else:
 				employee_advance.save(ignore_permissions=True)
 			payment_docs.append(get_link_to_form(employee_advance.doctype, employee_advance.name))
+		else:
+			return payment_docs
 
 	def create_journal_entry_for_gastos_varios(self, submit=False):
 		exists = frappe.db.exists("Journal Entry", {"cheque_date": self.reference_date, "cheque_no": self.reference_no, "mode_of_payment": self.mode_of_payment})
@@ -242,8 +246,7 @@ class SolicituddePago(Document):
 		
 		if self.party_type == "Employee" and len(self.references) == 0:
 			self.create_employee_advance_payment_entry(payment_docs, submit)
-		
-		if len(self.references) > 0 and self.references[0].reference_doctype == 'Gastos Varios':
+		elif len(self.references) > 0 and self.references[0].reference_doctype == 'Gastos Varios':
 			# self.create_employee_advance_payment_entry(payment_docs, submit)
 			self.create_journal_entry_for_gastos_varios(submit=False)
 			for reference in self.references:
@@ -386,21 +389,6 @@ def get_constancia_pago_cuenta(party_type, party, date):
 		fecha_vencimiento_constancia_pago_cuenta = getdate(_constancias[0].fecha_vencimiento)
 	
 	return fecha_vencimiento_constancia_pago_cuenta
-
-# @frappe.whitelist()
-# def get_constancia_pago_cuenta(party_type, party, date):
-#   fecha_vencimiento_constancia_pago_cuenta = None
-#   _party = frappe.get_doc(party_type, party).as_dict()
-#   if party_type == 'Employee':
-#     pass
-	
-#   _constancias = _party.custom_constancias_pago_a_cuenta
-#   if len(_constancias) == 0:
-#     pass
-#   if len(_constancias) > 0:
-#     fecha_vencimiento_constancia_pago_cuenta = getdate(_constancias[0].fecha_vencimiento)
-	
-#   return fecha_vencimiento_constancia_pago_cuenta
 
 @frappe.whitelist()
 def get_party_details(company, party_type, party, date, cost_center=None):

@@ -759,7 +759,8 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			args: {
 				employee: _employee,
 				fecha: _fecha,
-				solicitud: frm.doc.name
+				solicitud: frm.doc.name,
+				cost_center: frm.doc.cost_center
 			},
 			callback: function(r, rt) {
 				if (r.message) {
