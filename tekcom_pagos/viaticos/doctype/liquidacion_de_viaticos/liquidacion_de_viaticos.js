@@ -52,11 +52,11 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
     if (frm.doc.solicitud_de_viaticos && frm.doc.__islocal == 1) {
       frm.trigger("solicitud_de_viaticos")
     }
-    // if (workflow_status_for_liquidacion.includes(frm.doc.workflow_status)) {
-    //   frm.add_custom_button(__('Crear Reembolso de Gastos'), () => {
-    //     frm.events.make_expense_claim()
-    //   })
-    // }
+    if (workflow_status_for_liquidacion.includes(frm.doc.workflow_status)) {
+      frm.add_custom_button(__('Crear Reembolso de Gastos'), () => {
+        frm.events.make_expense_claim()
+      })
+    }
     frm.events.hide_unhide_fields(frm)
     frm.events.set_dynamic_labels(frm)
   },

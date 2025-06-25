@@ -44,7 +44,7 @@ frappe.ui.form.on("Configuraciones de Pagos y Viaticos", {
     frappe.call({
       method: "tekcom_pagos.tekcom_pagos.utils.get_users_by_role",
       args: {
-        role: 'Arobador de Solicitudes de Pago'
+        role: 'Aprobador de Solicitudes de Pago'
       },
       callback: function(r) {
         if (r.message != undefined) {

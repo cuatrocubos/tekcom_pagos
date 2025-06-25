@@ -41,7 +41,12 @@ from tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pa
 from tekcom_pagos.tekcom_pagos.doctype.configuraciones_de_pagos_y_viaticos.configuraciones_de_pagos_y_viaticos import (
 	get_configuraciones_de_pagos
 )
-from tekcom_pagos.tekcom_pagos.utils import get_employee_cost_center
+from tekcom_pagos.tekcom_pagos.utils import (
+  get_configuraciones_cuentas, 
+  get_employee_cost_center,
+  get_journal_entry_for_employee_advance,
+  get_party_account as get_party_account_from_utils
+)
 
 class LiquidaciondeViaticos(Document):
 	def before_save(self):
@@ -60,7 +65,7 @@ class LiquidaciondeViaticos(Document):
 		self.set_expense_account(validate=True)
 		self.update_workflow_details()
 		if (self.workflow_status == 'Entregado a Talento Humano'):
-			self.create_expense_claim(submit=True)
+			self.create_expense_claim(submit=False)
 	 
 	def set_revision(self):
 		if (self.workflow_status) == 'Revisado' and self.fecha_hora_revision == None:
@@ -126,12 +131,240 @@ class LiquidaciondeViaticos(Document):
 		# & (advance.paid_amount > 0)
 		# 	& (advance.status.notin(["Claimed", "Returned", "Partly Claimed and Returned"]))
 		# get_expense_claims = frappe.db.count("Employee Advance", { "solicitud_de_viaticos": self.name, "docstatus": 1, "paid_amount": [">", 0], "status": ["not in", ["Claimed", "Returned", "Partly Claimed and Returned"]]  })
-		get_expense_claims = frappe.db.exists("Expense Claim", { "liquidacion_de_viaticos": self.name, "docstatus": 1})
+		# get_expense_claims = frappe.db.exists("Expense Claim", { "liquidacion_de_viaticos": self.name, "docstatus": 1})
+		get_journal_entries = frappe.db.exists("Journal Entry", { "liquidacion_de_viaticos": self.name, "docstatus": 1})
 		
-		if get_expense_claims:
+		if get_journal_entries:
 			return docs
 		
-		self.create_expense_claim_for_employee(docs, submit)
+		self.create_expense_claim_jv_for_employee(docs, submit)
+		
+		return docs
+
+	def create_expense_claim_jv_for_employee(self, docs=[], submit=False):
+		company = frappe.get_cached_value("Employee", self.solicitante, "company")
+		configuracion_viaticos = get_configuraciones_de_pagos(company, self.cost_center)
+  
+		advance_account = configuracion_viaticos["cuenta_anticipo_viaticos"]
+		advance_account_currency = frappe.db.get_value("Account", advance_account, "account_currency")
+		cost_center = get_employee_cost_center(self.solicitante)
+		
+		# Get the related employee advance
+		employee_advance = frappe.get_doc("Employee Advance", {"solicitud_de_viaticos": self.solicitud_de_viaticos, "docstatus": 1})
+		paid_amount = employee_advance.paid_amount
+		claimed_amount = employee_advance.claimed_amount
+		
+		if company == self.company:
+			cost_center = self.cost_center
+		
+		# Create Journal Entry
+		je = frappe.new_doc("Journal Entry")
+		je.voucher_type = "Journal Entry"
+		je.posting_date = self.fecha_liquidacion
+		je.company = company
+		je.user_remark = f"Liquidación de viáticos {self.name} contra anticipo {employee_advance.name}"
+		je.title = f"Liquidación de viáticos {self.name} contra anticipo {employee_advance.name}"
+		je.liquidacion_de_viaticos = self.name
+		je.multi_currency = 1 if advance_account_currency != self.currency else 0
+		
+		# Calculate the total amount from all expenses
+		total_expense = sum(expense.subtotal for expense in self.detalle_liquidacion)
+		
+		# Add the expense entries (debit side)
+		if self.company == company:
+			for expense in self.detalle_liquidacion:
+				expense_account = get_expense_claim_account(expense.expense_type, self.company)["account"]
+				expense_cost_center = expense.cost_center if expense.cost_center else cost_center
+				
+				je.append("accounts", {
+					"account": expense_account,
+					"debit_in_account_currency": expense.subtotal,
+					"cost_center": expense_cost_center,
+					"user_remark": "Fecha: {0}\nProveedor: {1}\nFactura No.: {2}\nDescripcion: {3}".format(
+						expense.expense_date,
+						expense.nombre_proveedor,
+						expense.numero_factura,
+						expense.description)
+				})
+			
+			# Add tax entry if applicable
+			if self.total_impuestos > 0:
+				taxes = get_default_taxes_and_charges("Purchase Taxes and Charges Template", company=company)
+				tax_details = taxes.get('taxes')[0]
+				
+				je.append("accounts", {
+					"account": tax_details.account_head,
+					"debit_in_account_currency": self.total_impuestos,
+					"cost_center": tax_details.cost_center
+				})
+		else:
+			configuracion_cuentas_reference_doc = get_configuraciones_cuentas(self.company)
+			payable_party = configuracion_cuentas_reference_doc["parte_supplier"]
+			payable_account = get_party_account_from_utils("Supplier", payable_party, company)
+			payable_account_currency = get_account_currency(payable_account)
+
+			advance_journal_entry = get_journal_entry_for_employee_advance(employee_advance.name)
+   
+			if len(advance_journal_entry) > 0:
+				# Get the journal entry for the advance
+				je.append("accounts", {
+					"account": payable_account,
+					"debit_in_account_currency": total_expense,
+					"cost_center": cost_center,
+					"reference_type": "Journal Entry",
+					"reference_name": advance_journal_entry[0].name,
+					"party_type": "Supplier",
+					"party": payable_party,
+				})
+			else:
+				je.append("accounts", {
+					"account": payable_account,
+					"debit_in_account_currency": total_expense,
+					"account_currency": payable_account_currency,
+					"cost_center": cost_center,
+					"party_type": "Supplier",
+					"party": payable_party,
+				})
+		
+		# Calculate total amount and difference with advance
+		total_amount = total_expense + (self.total_impuestos or 0)
+		difference = flt(paid_amount) - flt(total_amount)
+		
+		# Add employee advance entry (credit side) - always credit the full advance amount
+		je.append("accounts", {
+			"account": advance_account,
+			"credit_in_account_currency": total_expense,
+			"cost_center": cost_center,
+			"reference_type": "Employee Advance",
+			"reference_name": employee_advance.name,
+			"party_type": "Employee",
+			"party": self.solicitante
+		})
+  
+		print("je", je.as_dict())
+  
+		if submit:
+			je.save(ignore_permissions=True)
+			je.submit()
+		else:
+			je.save(ignore_permissions=True)
+  
+		if self.company != company:
+			# Get the receivable account for the intercompany transaction
+			configuracion_cuentas_doc = get_configuraciones_cuentas(company)
+			
+			receivable_party = configuracion_cuentas_doc["parte_customer"]
+			receivable_account = get_party_account_from_utils("Customer", receivable_party, self.company)
+			receivable_account_currency = frappe.db.get_value("Account", receivable_account, "account_currency")
+   
+			advance_journal_entry = get_journal_entry_for_employee_advance(employee_advance.name)
+
+			je2 = frappe.new_doc("Journal Entry")
+			je2.voucher_type = "Journal Entry"
+			je2.posting_date = self.fecha_liquidacion
+			je2.company = self.company
+			je2.user_remark = f"Cuenta por cobrar por Liquidación de viáticos {self.name} contra anticipo {employee_advance.name}"
+			je2.title = f"Cuenta por cobrar por Liquidación de viáticos {self.name} contra anticipo {employee_advance.name}"
+			# je2.inter_company_journal_entry_reference = je.name
+			je2.multi_currency = 1 if advance_account_currency != self.currency else 0
+   
+			for expense in self.detalle_liquidacion:
+				expense_account = get_expense_claim_account(expense.expense_type, self.company)["account"]
+				expense_cost_center = expense.cost_center if expense.cost_center else cost_center
+				
+				je2.append("accounts", {
+					"account": expense_account,
+					"debit_in_account_currency": expense.subtotal,
+					"cost_center": expense_cost_center,
+					"user_remark": "Fecha: {0}\nProveedor: {1}\nFactura No.: {2}\nDescripcion: {3}".format(
+						expense.expense_date,
+						expense.nombre_proveedor,
+						expense.numero_factura,
+						expense.description)
+				})
+			
+			# Add tax entry if applicable
+			if self.total_impuestos > 0:
+				taxes = get_default_taxes_and_charges("Purchase Taxes and Charges Template", company=self.company)
+				tax_details = taxes.get('taxes')[0]
+				
+				je2.append("accounts", {
+					"account": tax_details.account_head,
+					"debit_in_account_currency": self.total_impuestos,
+					"cost_center": tax_details.cost_center
+				})
+
+			if len(advance_journal_entry) > 0:
+				# Get the journal entry for the advance
+				je2.append("accounts", {
+					"account": receivable_account,
+					"account_currency": receivable_account_currency,
+					"credit_in_account_currency": total_amount,
+					"cost_center": self.cost_center,
+					"party_type": "Customer",
+					"party": receivable_party,
+					# "reference_type": "Journal Entry",
+					# "reference_name": advance_journal_entry[0].inter_company_journal_entry_reference,
+				})
+			else:
+				je2.append("accounts", {
+					"account": receivable_account,
+					"account_currency": receivable_account_currency,
+					"credit_in_account_currency": total_amount,
+					"cost_center": self.cost_center,
+					"party_type": "Customer",
+					"party": receivable_party
+				})
+		
+		# If employee needs to receive money (expense > advance)
+		# if difference < 0:
+		# 	# Get default payable account for employees
+		# 	employee_payable_account = frappe.get_cached_value("Company", company, "default_payable_account")
+		# 	je.append("accounts", {
+		# 		"account": employee_payable_account,
+		# 		"credit_in_account_currency": abs(difference),
+		# 		"party_type": "Employee",
+		# 		"party": self.solicitante,
+		# 		"reference_type": "Liquidacion de Viaticos",
+		# 		"reference_name": self.name
+		# 	})
+		
+		# # If employee needs to return money (advance > expense)
+		# elif difference > 0:
+		# 	# Get default receivable account for employees
+		# 	employee_receivable_account = frappe.get_cached_value("Company", company, "default_employee_advance_account")
+		# 	je.append("accounts", {
+		# 		"account": employee_receivable_account,
+		# 		"debit_in_account_currency": difference,
+		# 		"party_type": "Employee",
+		# 		"party": self.solicitante,
+		# 		"reference_type": "Liquidacion de Viaticos",
+		# 		"reference_name": self.name
+		# 	})
+		
+		if submit:
+			je2.save(ignore_permissions=True)
+			je2.submit()
+		else:
+			je2.save(ignore_permissions=True)
+			
+		docs.append(get_link_to_form(je.doctype, je.name))
+		
+		# Update the employee_advance status and claimed amount
+		# if difference <= 0:  # Fully claimed or more
+			# employee_advance.status = "Claimed"
+			# employee_advance.claimed_amount = paid_amount
+		# else:  # Partially claimed
+			# frappe.db.set_value("Employee Advance", self.name, "claimed_amount", flt(total_amount))
+			# employee_advance.status = "Partly Claimed and Returned"
+			# employee_advance.claimed_amount = total_amount
+   
+		frappe.db.set_value("Employee Advance", employee_advance, "claimed_amount", flt(total_amount))
+		employee_advance.reload()
+		employee_advance.set_status(update=True)
+		# employee_advance.save(ignore_permissions=True)
+		
+		# employee_advance.save(ignore_permissions=True)
 		
 		return docs
 
@@ -179,15 +412,13 @@ class LiquidaciondeViaticos(Document):
 				"employee_advance": employee_advance.name,
 				"posting_date": self.fecha_hora_solicitud,
 				"advance_paid": flt(paid_amount),
-				"unclaimed_amount": flt(paid_amount) - flt(claimed_amount),
+				"unclaimed_amount": flt(paid_amount) - flt(self.total_reembolso),
 				"allocated_amount": flt(self.total_reembolso),
 			},
 		)
 		
 		for expense in self.detalle_liquidacion:
 			expense_cost_center = expense.cost_center	
-			print("expense_cost_center", expense_cost_center)
-			print("cost_center", cost_center)
 			if company != self.company:
 				expense_cost_center = cost_center
 			expense_claim.append("expenses",

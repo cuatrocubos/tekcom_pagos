@@ -487,6 +487,8 @@ frappe.ui.form.on('Solicitud de Pago', {
 	set_dynamic_labels: function(frm) {
 		var company_currency = frm.doc.company? frappe.get_doc(":Company", frm.doc.company).default_currency: "";
 
+		frm.set_value("currency", company_currency);
+
 		frm.set_currency_labels(["monto_solicitado_base"], company_currency);
 		
 		frm.set_currency_labels(["monto_solicitado"], frm.doc.currency)

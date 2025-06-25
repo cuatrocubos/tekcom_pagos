@@ -237,6 +237,7 @@ class SolicituddeViaticos(Document):
 						"cheque_date": self.reference_date,
 						"mode_of_payment": self.mode_of_payment
 				})  # Fields to update
+			# frappe.throw(_("Employee Advance or Payment Entry already exists for this Solicitud de Viaticos. {0}").format(get_link_to_form("Employee Advance", get_employee_advances)), frappe.LinkExistsError)
 			frappe.msgprint(_("Employee Advance already exists for this Solicitud de Viaticos. {0}").format(get_link_to_form("Employee Advance", get_employee_advances)))
 			return docs
 		
