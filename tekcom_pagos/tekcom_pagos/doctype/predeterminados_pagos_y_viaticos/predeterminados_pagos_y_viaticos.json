@@ -24,7 +24,9 @@
   "compras_section",
   "revisor_predeterminado_compras",
   "aprobador_predeterminado_compras",
-  "column_break_kukg"
+  "column_break_kukg",
+  "flota_section",
+  "aprobador_predeterminado_flota"
  ],
  "fields": [
   {
@@ -143,12 +145,24 @@
    "label": "Aprobador Predeterminado",
    "options": "User",
    "reqd": 1
+  },
+  {
+   "fieldname": "flota_section",
+   "fieldtype": "Section Break",
+   "label": "Flota"
+  },
+  {
+   "fieldname": "aprobador_predeterminado_flota",
+   "fieldtype": "Link",
+   "label": "Aprobador Predeterminado",
+   "options": "User",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-01-19 21:28:52.041991",
+ "modified": "2025-07-17 07:53:24.471094",
  "modified_by": "Administrator",
  "module": "Tekcom Pagos",
  "name": "Predeterminados Pagos y Viaticos",

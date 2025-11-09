@@ -7,7 +7,6 @@ from frappe.utils import cint, comma_or, flt, getdate, nowdate, get_link_to_form
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.query_builder.functions import Count
-# from frappe.core.doctype import Role
 from collections import namedtuple
 import erpnext
 from erpnext.accounts.doctype.bank_account.bank_account import (
@@ -62,53 +61,74 @@ class LiquidaciondeViaticos(Document):
 	def validate(self):
 		if len(self.detalle_liquidacion) == 0:
 			frappe.throw(_("Detalle de Liquidación no puede estar vacia"), frappe.ValidationError)
+		
+		# Validate that all required fields are present
+		# self.validate_required_fields()
+		
 		self.set_expense_account(validate=True)
 		self.update_workflow_details()
 		if (self.workflow_status == 'Entregado a Talento Humano'):
 			self.create_expense_claim(submit=False)
+	
+	def validate_required_fields(self):
+		"""Validate required fields based on workflow status"""
+		if self.workflow_status == 'Revisado' and not self.revisado_por:
+			frappe.throw(_("Revisado por es requerido cuando el estado es 'Revisado'"))
+		
+		if self.workflow_status == 'Approved' and not self.aprobado_por:
+			frappe.throw(_("Aprobado por es requerido cuando el estado es 'Approved'"))
+		
+		if not self.solicitante:
+			frappe.throw(_("Solicitante es requerido"))
+		
+		if not self.fecha_liquidacion:
+			frappe.throw(_("Fecha de liquidación es requerida"))
 	 
 	def set_revision(self):
-		if (self.workflow_status) == 'Revisado' and self.fecha_hora_revision == None:
+		if (self.workflow_status) == 'Revisado' and not self.fecha_hora_revision:
 			self.fecha_hora_revision = frappe.utils.now_datetime()
-			if self.revisado_por == None or self.revisado_por == '':
+			if not self.revisado_por:
 				frappe.throw(_("Seleccione un revisor para el documento"), frappe.ValidationError)
 		
 	def set_aprobado(self):
-		if (self.workflow_status) == 'Approved' and self.fecha_hora_aprobacion == None:
+		if (self.workflow_status) == 'Approved' and not self.fecha_hora_aprobacion:
 			self.fecha_hora_aprobacion = frappe.utils.now_datetime()
-			if self.aprobado_por == None or self.aprobado_por == '':
+			if not self.aprobado_por:
 				frappe.throw(_("Seleccione un aprobador para el documento"), frappe.ValidationError)
 		
 	def update_workflow_details(self):
 		old_doc = Document.get_doc_before_save(self)
 		
-		configuracion_pagos = get_configuraciones_de_pagos(self.company, self.cost_center)
+		try:
+			configuracion_pagos = get_configuraciones_de_pagos(self.company, self.cost_center)
+		except Exception as e:
+			frappe.throw(_("Error al obtener configuraciones de pagos: {0}").format(str(e)))
 
 		if self.workflow_status == 'Draft':
-			self.revisor = configuracion_pagos["revisor_predeterminado"]
-			self.aprobador = configuracion_pagos["aprobador_predeterminado"]
+			self.revisor = configuracion_pagos.get("revisor_predeterminado")
+			self.aprobador = configuracion_pagos.get("aprobador_predeterminado")
 			
-		if self.revisor == None or self.revisor == '':
-			self.revisor = configuracion_pagos["revisor_predeterminado"]
-		if self.aprobador == None or self.aprobador == '':
-			self.aprobador = configuracion_pagos["aprobador_predeterminado"]
+		if not self.revisor:
+			self.revisor = configuracion_pagos.get("revisor_predeterminado")
+		if not self.aprobador:
+			self.aprobador = configuracion_pagos.get("aprobador_predeterminado")
 		
-		if old_doc != None:
+		if old_doc is not None:
 			if old_doc.workflow_status != self.workflow_status:
-				if (self.workflow_status) == 'En Revisión' and self.fecha_hora_revision == None:
+				if (self.workflow_status) == 'En Revisión' and not self.fecha_hora_revision:
 					# set fecha hora revision
 					self.fecha_hora_solicitud = frappe.utils.now_datetime()
-					# if self.solicitado_por == None or self.solicitado_por == '':
+					# if not self.solicitado_por:
 					#   self.solicitado_por = frappe.session.user
-				if (self.workflow_status) == 'Revisado' and self.fecha_hora_revision == None:
+				if (self.workflow_status) == 'Revisado' and not self.fecha_hora_revision:
 					# set fecha hora revision
 					self.fecha_hora_revision = frappe.utils.now_datetime()
-					if self.revisado_por == None or self.revisado_por == '':
+					if not self.revisado_por:
 						self.revisado_por = frappe.session.user
-				if (self.workflow_status) == 'Approved' and self.fecha_hora_aprobacion == None:
+				if (self.workflow_status) == 'Approved' and not self.fecha_hora_aprobacion:
 					# set fecha hora aprobacion
 					self.fecha_hora_aprobacion = frappe.utils.now_datetime()
-					if self.aprobado_por == None or self.aprobado_por == '':
+					if not self.aprobado_por:
 						self.aprobado_por = frappe.session.user
 
 	def set_expense_account(self, validate=False):
@@ -142,15 +162,27 @@ class LiquidaciondeViaticos(Document):
 		return docs
 
 	def create_expense_claim_jv_for_employee(self, docs=[], submit=False):
+		"""Create journal entries for expense claim liquidation with proper error handling"""
+		
 		company = frappe.get_cached_value("Employee", self.solicitante, "company")
-		configuracion_viaticos = get_configuraciones_de_pagos(company, self.cost_center)
-  
-		advance_account = configuracion_viaticos["cuenta_anticipo_viaticos"]
+		try:
+			configuracion_viaticos = get_configuraciones_de_pagos(company, self.cost_center)
+		except Exception as e:
+			frappe.throw(_("Error al obtener configuraciones de viáticos: {0}").format(str(e)))
+
+		advance_account = configuracion_viaticos.get("cuenta_anticipo_viaticos")
+		if not advance_account:
+			frappe.throw(_("Cuenta de anticipo de viáticos no configurada para la empresa {0}").format(company))
+			
 		advance_account_currency = frappe.db.get_value("Account", advance_account, "account_currency")
 		cost_center = get_employee_cost_center(self.solicitante)
 		
-		# Get the related employee advance
-		employee_advance = frappe.get_doc("Employee Advance", {"solicitud_de_viaticos": self.solicitud_de_viaticos, "docstatus": 1})
+		# Get the related employee advance with proper error handling
+		try:
+			employee_advance = frappe.get_doc("Employee Advance", {"solicitud_de_viaticos": self.solicitud_de_viaticos, "docstatus": 1})
+		except frappe.DoesNotExistError:
+			frappe.throw(_("No se encontró un anticipo de empleado válido para la solicitud de viáticos {0}").format(self.solicitud_de_viaticos))
+		
 		paid_amount = employee_advance.paid_amount
 		claimed_amount = employee_advance.claimed_amount
 		
@@ -165,7 +197,11 @@ class LiquidaciondeViaticos(Document):
 		je.user_remark = f"Liquidación de viáticos {self.name} contra anticipo {employee_advance.name}"
 		je.title = f"Liquidación de viáticos {self.name} contra anticipo {employee_advance.name}"
 		je.liquidacion_de_viaticos = self.name
-		je.multi_currency = 1 if advance_account_currency != self.currency else 0
+		
+		# Improved multi-currency handling
+		company_currency = frappe.get_cached_value("Company", company, "default_currency")
+		is_multi_currency = (advance_account_currency != company_currency) or (self.currency != company_currency)
+		je.multi_currency = 1 if is_multi_currency else 0
 		
 		# Calculate the total amount from all expenses
 		total_expense = sum(expense.subtotal for expense in self.detalle_liquidacion)
@@ -190,13 +226,16 @@ class LiquidaciondeViaticos(Document):
 			# Add tax entry if applicable
 			if self.total_impuestos > 0:
 				taxes = get_default_taxes_and_charges("Purchase Taxes and Charges Template", company=company)
-				tax_details = taxes.get('taxes')[0]
-				
-				je.append("accounts", {
-					"account": tax_details.account_head,
-					"debit_in_account_currency": self.total_impuestos,
-					"cost_center": tax_details.cost_center
-				})
+				if taxes and taxes.get('taxes') and len(taxes.get('taxes')) > 0:
+					tax_details = taxes.get('taxes')[0]
+					
+					je.append("accounts", {
+						"account": tax_details.account_head,
+						"debit_in_account_currency": self.total_impuestos,
+						"cost_center": tax_details.cost_center
+					})
+				else:
+					frappe.throw(_("No se pudo obtener la configuración de impuestos para la empresa {0}").format(company))
 		else:
 			configuracion_cuentas_reference_doc = get_configuraciones_cuentas(self.company)
 			payable_party = configuracion_cuentas_reference_doc["parte_supplier"]
@@ -204,12 +243,15 @@ class LiquidaciondeViaticos(Document):
 			payable_account_currency = get_account_currency(payable_account)
 
 			advance_journal_entry = get_journal_entry_for_employee_advance(employee_advance.name)
+			
+			# Calculate total amount including taxes for inter-company scenario
+			total_amount_with_taxes = total_expense + (self.total_impuestos or 0)
    
 			if len(advance_journal_entry) > 0:
 				# Get the journal entry for the advance
 				je.append("accounts", {
 					"account": payable_account,
-					"debit_in_account_currency": total_expense,
+					"debit_in_account_currency": total_amount_with_taxes,
 					"cost_center": cost_center,
 					"reference_type": "Journal Entry",
 					"reference_name": advance_journal_entry[0].name,
@@ -219,7 +261,7 @@ class LiquidaciondeViaticos(Document):
 			else:
 				je.append("accounts", {
 					"account": payable_account,
-					"debit_in_account_currency": total_expense,
+					"debit_in_account_currency": total_amount_with_taxes,
 					"account_currency": payable_account_currency,
 					"cost_center": cost_center,
 					"party_type": "Supplier",
@@ -230,10 +272,10 @@ class LiquidaciondeViaticos(Document):
 		total_amount = total_expense + (self.total_impuestos or 0)
 		difference = flt(paid_amount) - flt(total_amount)
 		
-		# Add employee advance entry (credit side) - always credit the full advance amount
+		# Add employee advance entry (credit side) - credit the total amount including taxes
 		je.append("accounts", {
 			"account": advance_account,
-			"credit_in_account_currency": total_expense,
+			"credit_in_account_currency": total_amount,
 			"cost_center": cost_center,
 			"reference_type": "Employee Advance",
 			"reference_name": employee_advance.name,
@@ -241,7 +283,8 @@ class LiquidaciondeViaticos(Document):
 			"party": self.solicitante
 		})
   
-		print("je", je.as_dict())
+		# Log journal entry details for debugging
+		# frappe.logger().info(f"Creating journal entry for liquidacion {self.name}: {je.as_dict()}")
   
 		if submit:
 			je.save(ignore_permissions=True)
@@ -266,7 +309,11 @@ class LiquidaciondeViaticos(Document):
 			je2.user_remark = f"Cuenta por cobrar por Liquidación de viáticos {self.name} contra anticipo {employee_advance.name}"
 			je2.title = f"Cuenta por cobrar por Liquidación de viáticos {self.name} contra anticipo {employee_advance.name}"
 			# je2.inter_company_journal_entry_reference = je.name
-			je2.multi_currency = 1 if advance_account_currency != self.currency else 0
+			
+			# Improved multi-currency handling for intercompany entry
+			self_company_currency = frappe.get_cached_value("Company", self.company, "default_currency")
+			is_multi_currency_je2 = (receivable_account_currency != self_company_currency) or (self.currency != self_company_currency)
+			je2.multi_currency = 1 if is_multi_currency_je2 else 0
    
 			for expense in self.detalle_liquidacion:
 				expense_account = get_expense_claim_account(expense.expense_type, self.company)["account"]
@@ -286,13 +333,16 @@ class LiquidaciondeViaticos(Document):
 			# Add tax entry if applicable
 			if self.total_impuestos > 0:
 				taxes = get_default_taxes_and_charges("Purchase Taxes and Charges Template", company=self.company)
-				tax_details = taxes.get('taxes')[0]
-				
-				je2.append("accounts", {
-					"account": tax_details.account_head,
-					"debit_in_account_currency": self.total_impuestos,
-					"cost_center": tax_details.cost_center
-				})
+				if taxes and taxes.get('taxes') and len(taxes.get('taxes')) > 0:
+					tax_details = taxes.get('taxes')[0]
+					
+					je2.append("accounts", {
+						"account": tax_details.account_head,
+						"debit_in_account_currency": self.total_impuestos,
+						"cost_center": tax_details.cost_center
+					})
+				else:
+					frappe.throw(_("No se pudo obtener la configuración de impuestos para la empresa {0}").format(self.company))
 
 			if len(advance_journal_entry) > 0:
 				# Get the journal entry for the advance
@@ -359,10 +409,9 @@ class LiquidaciondeViaticos(Document):
 			# employee_advance.status = "Partly Claimed and Returned"
 			# employee_advance.claimed_amount = total_amount
    
-		frappe.db.set_value("Employee Advance", employee_advance, "claimed_amount", flt(total_amount))
+		frappe.db.set_value("Employee Advance", employee_advance.name, "claimed_amount", flt(total_amount))
 		employee_advance.reload()
 		employee_advance.set_status(update=True)
-		# employee_advance.save(ignore_permissions=True)
 		
 		# employee_advance.save(ignore_permissions=True)
 		
@@ -371,13 +420,25 @@ class LiquidaciondeViaticos(Document):
 	def create_expense_claim_for_employee(self, docs=[], submit=False):
 		company = frappe.get_cached_value("Employee", self.solicitante, "company")
 		
-  	# Get configuraciones de pagos
-		configuracion_viaticos = get_configuraciones_de_pagos(company, self.cost_center)
+		# Get configuraciones de pagos
+		try:
+			configuracion_viaticos = get_configuraciones_de_pagos(company, self.cost_center)
+		except Exception as e:
+			frappe.throw(_("Error al obtener configuraciones de viáticos: {0}").format(str(e)))
 		
-		payable_account = configuracion_viaticos["cuenta_anticipo_viaticos"]
+		payable_account = configuracion_viaticos.get("cuenta_anticipo_viaticos")
+		if not payable_account:
+			frappe.throw(_("Cuenta de anticipo de viáticos no configurada para la empresa {0}").format(company))
+			
 		payable_account_currency = frappe.db.get_value("Account", payable_account, "account_currency")
 		cost_center = get_employee_cost_center(self.solicitante)
-		employee_advance = frappe.get_doc("Employee Advance", {"solicitud_de_viaticos": self.solicitud_de_viaticos, "docstatus": 1})
+		
+		# Get employee advance with proper error handling
+		try:
+			employee_advance = frappe.get_doc("Employee Advance", {"solicitud_de_viaticos": self.solicitud_de_viaticos, "docstatus": 1})
+		except frappe.DoesNotExistError:
+			frappe.throw(_("No se encontró un anticipo de empleado válido para la solicitud de viáticos {0}").format(self.solicitud_de_viaticos))
+		
 		# bank_account = get_mode_of_payment_bank_cash_account(self.mode_of_payment, self.company)
 		# bank = get_bank_cash_account(self, bank_account)
 		
@@ -434,18 +495,21 @@ class LiquidaciondeViaticos(Document):
 			)
 		if (self.total_impuestos > 0):
 			taxes = get_default_taxes_and_charges("Purchase Taxes and Charges Template", company=company)
-			# taxesDict = namedtuple(taxes, taxes.keys())
-			taxDetails = taxes.get('taxes')
-			expense_claim.append("taxes",
-				{
-					"account_head": taxDetails[0].account_head,
-					"tax_amount": self.total_impuestos,
-					"description": taxDetails[0].description,
-					"cost_center": taxDetails[0].cost_center,
-					# "project": taxDetails[0].project
-				}
-			)
-			expense_claim.total_taxes_and_charges = self.total_impuestos
+			if taxes and taxes.get('taxes') and len(taxes.get('taxes')) > 0:
+				# taxesDict = namedtuple(taxes, taxes.keys())
+				taxDetails = taxes.get('taxes')
+				expense_claim.append("taxes",
+					{
+						"account_head": taxDetails[0].account_head,
+						"tax_amount": self.total_impuestos,
+						"description": taxDetails[0].description,
+						"cost_center": taxDetails[0].cost_center,
+						# "project": taxDetails[0].project
+					}
+				)
+				expense_claim.total_taxes_and_charges = self.total_impuestos
+			else:
+				frappe.throw(_("No se pudo obtener la configuración de impuestos para la empresa {0}").format(company))
 		# expense_claim.calculate_taxes()
 
 		if submit:

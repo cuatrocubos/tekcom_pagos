@@ -79,7 +79,7 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
           frappe.run_serially([
             () => frm.set_value("fecha_salida_solicitud", doc.fecha_salida),
             () => frm.set_value("fecha_retorno_solicitud", doc.fecha_retorno),
-            () => frm.set_value("solicitante", doc.solicitante),
+            () => frm.set_value("solicitante", doc.depositar_a),
             () => frm.set_value("project", doc.project),
             () => frm.set_value("cost_center", doc.cost_center),
             () => frm.set_value("currency", doc.currency),
