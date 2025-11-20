@@ -438,6 +438,7 @@
   {
    "fieldname": "cost_center",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Cost Center",
    "mandatory_depends_on": "eval:doc.references==''",
    "options": "Cost Center"
@@ -445,6 +446,7 @@
   {
    "fieldname": "project",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Project",
    "options": "Project"
   },
@@ -516,7 +518,7 @@
    "fieldname": "forma_pago",
    "fieldtype": "Select",
    "label": "Forma de Pago",
-   "options": "Transferencia\nCheque",
+   "options": "Transferencia\nCheque\nTarjeta de Cr\u00e9dito",
    "reqd": 1
   },
   {
@@ -619,7 +621,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-17 18:52:33.057350",
+ "modified": "2025-11-18 19:12:41.635541",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",

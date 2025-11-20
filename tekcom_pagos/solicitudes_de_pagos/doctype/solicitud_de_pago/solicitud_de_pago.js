@@ -6,12 +6,38 @@ frappe.provide("erpnext.accounts.dimensions");
 frappe.ui.form.on('Solicitud de Pago', {
 	onload: function(frm) {
 		erpnext.accounts.dimensions.setup_dimension_filters(frm, frm.doctype)
-		if (frm.doc.workflow_status == 'Revisado') {
+		if (frm.doc.workflow_status != 'Revisado') {
 			
 		} else {
 			
 		}
+		frm.events.show_message_presupuesto(frm)
 		frm.refresh_fields()
+	},
+
+	after_save(frm) {
+		frm.events.show_message_presupuesto(frm)
+	},
+
+	show_message_presupuesto(frm) {
+		filtros = {}
+		if (frm.doc.project) {
+			filtros["project"] = frm.doc.project
+			filtros["docstatus"] = 1
+		} else if (frm.doc.cost_center) {
+			filtros["cost_center"] = frm.doc.cost_center
+			filtros["docstatus"] = 1
+		}
+
+		frappe.db.get_value("Presupuesto de Gastos", filtros, ["name", "total_disponible"])
+			.then(r => {
+				if (r.message) {
+					let total_disponible = r.message.total_disponible || 0
+					if (total_disponible < 0) {
+						frm.set_intro("Solicitud excede el monto disponible en presupuesto: " + total_disponible, "yellow")
+					}
+				}	
+			})
 	},
 
 	validate(frm) {

@@ -14,13 +14,21 @@
   "presupuesto_contra",
   "amended_from",
   "column_break_4arpz",
-  "fiscal_year",
-  "forma_distribucion",
+  "presupuesto_total",
   "section_break_h1wqj",
   "cost_center",
   "project",
   "section_break_spmlb",
-  "gastos"
+  "gastos",
+  "totales_section",
+  "total_presupuestado",
+  "total_solicitado",
+  "total_aprobado",
+  "total_disponible",
+  "column_break_cqea",
+  "total_presupuesto_sin_asignar",
+  "total_solicitado_sin_tipo_de_gasto",
+  "total_aprobado_sin_tipo_de_gasto"
  ],
  "fields": [
   {
@@ -64,17 +72,11 @@
    "options": "Project"
   },
   {
-   "fieldname": "fiscal_year",
-   "fieldtype": "Link",
-   "label": "Fiscal Year",
-   "options": "Fiscal Year",
-   "reqd": 1
-  },
-  {
    "fieldname": "column_break_l2jms",
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "gastos",
    "fieldtype": "Table",
    "label": "Presupuesto por Gasto",
@@ -107,17 +109,75 @@
    "fieldtype": "Section Break"
   },
   {
-   "fieldname": "forma_distribucion",
-   "fieldtype": "Select",
-   "label": "Forma de Distribuci\u00f3n",
-   "options": "\nMensual\nAnual",
+   "fieldname": "totales_section",
+   "fieldtype": "Section Break",
+   "label": "Totales"
+  },
+  {
+   "fieldname": "total_presupuestado",
+   "fieldtype": "Currency",
+   "label": "Total Presupuestado",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_solicitado",
+   "fieldtype": "Currency",
+   "label": "Total Solicitado",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_disponible",
+   "fieldtype": "Currency",
+   "label": "Total Disponible",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_solicitado_sin_tipo_de_gasto",
+   "fieldtype": "Currency",
+   "label": "Total Solicitado sin Tipo de Gasto",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_aprobado_sin_tipo_de_gasto",
+   "fieldtype": "Currency",
+   "label": "Total Aprobado sin Tipo de Gasto",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_cqea",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "presupuesto_total",
+   "fieldtype": "Currency",
+   "label": "Presupuesto Total",
+   "options": "Company:company:default_currency",
    "reqd": 1
+  },
+  {
+   "fieldname": "total_presupuesto_sin_asignar",
+   "fieldtype": "Currency",
+   "label": "Total Presupuesto sin Asignar",
+   "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_aprobado",
+   "fieldtype": "Currency",
+   "label": "Total Aprobado",
+   "options": "Company:company:default_currency",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2023-07-13 20:31:38.993770",
+ "modified": "2025-11-20 11:33:49.846356",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Presupuesto de Gastos",
@@ -134,6 +194,7 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

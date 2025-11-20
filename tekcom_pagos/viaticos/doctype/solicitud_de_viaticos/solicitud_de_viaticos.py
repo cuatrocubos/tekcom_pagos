@@ -45,13 +45,12 @@ from tekcom_pagos.tekcom_pagos.utils import (
 	get_payment_entry_for_employee,
 )
 
+from tekcom_pagos.solicitudes_de_pagos.doctype.presupuesto_de_gastos.presupuesto_de_gastos import actualizar_presupuesto_de_gastos
+
 class SolicituddeViaticos(Document):
-	# def before_save(self):
-	#   presupuesto = dict(self.presupuesto)
-		
-	#   for presupuesto_disponible, presupuesto_gastos in presupuesto.items():
-			
-	#     get_presupuesto_disponible(self.fecha_solicitud, self.cost_center)
+	def on_update(self):
+		actualizar_presupuesto_de_gastos(project=self.project, cost_center=self.cost_center)
+
 	def before_save(self):
 		if self.workflow_status == 'Rejected':
 			self.revisor = ''

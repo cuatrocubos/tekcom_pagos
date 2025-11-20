@@ -33,6 +33,7 @@ import json
 from functools import reduce
 
 from hrms.hr.utils import validate_active_employee
+from tekcom_pagos.solicitudes_de_pagos.doctype.presupuesto_de_gastos.presupuesto_de_gastos import actualizar_presupuesto_de_gastos
 from tekcom_pagos.tekcom_pagos.doctype.configuraciones_de_pagos_y_viaticos.configuraciones_de_pagos_y_viaticos import (
   get_configuraciones_cuentas, get_configuraciones_de_pagos
 )
@@ -93,6 +94,8 @@ class SolicituddePago(Document):
 		
 	# def on_submit(self):
 	#   make_payment_entry(self)
+	def on_update(self):
+		actualizar_presupuesto_de_gastos(project=self.project, cost_center=self.cost_center)
 
 	def get_constancia_date(constancia):
 		return constancia['fecha_vencimiento']
