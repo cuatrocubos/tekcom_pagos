@@ -17,7 +17,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 	},
 
 	refresh(frm) {
-		const workflow_status_for_liquidacion = ['Pagado', 'Entregado a Contabilidad', 'Contabilizado']
+		const workflow_status_for_liquidacion = ['Pagado', 'Recibido en Contabilidad', 'Contabilizado']
 		if (frm.doc.docstatus==0) {
 			if (!frm.doc.fecha_solicitud) {
 				frm.set_value('fecha_solicitud', frappe.datetime.nowdate())
@@ -27,9 +27,9 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			frm.add_custom_button(__('Crear Liquidación'), () => {
 				frm.events.make_liquidacion_viaticos()
 			})
-			frm.add_custom_button(__('Crear Pago'), () => {
-				frm.events.make_payment_entry(frm)
-			})
+			// frm.add_custom_button(__('Crear Pago'), () => {
+			// 	frm.events.make_payment_entry(frm)
+			// })
 		}
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);

@@ -72,7 +72,7 @@ class SolicituddeViaticos(Document):
 		# self.validate_solicitudes_por_liquidar(self)
 		self.set_totales_personas_dia()
 		self.update_workflow_details()
-		if (self.workflow_status == 'Entregado a Contabilidad'):
+		if (self.workflow_status == 'Recibido en Contabilidad'):
 			self.create_employee_advance(submit=True)
 		# set_revision(self)
 		# set_aprobado(self)

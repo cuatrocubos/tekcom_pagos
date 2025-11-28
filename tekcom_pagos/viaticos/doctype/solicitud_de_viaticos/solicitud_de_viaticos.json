@@ -267,7 +267,7 @@
    "hidden": 1,
    "label": "Workflow Status",
    "no_copy": 1,
-   "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nEntregado a Contabilidad\nContabilizado\nRejected"
+   "options": "\nDraft\nSolicitado\nRevisado\nApproved\nPagado\nRecibido en Contabilidad\nEntregado a Contabilidad\nContabilizado\nRejected"
   },
   {
    "fieldname": "naming_series",
@@ -395,7 +395,7 @@
    "label": "Aprobador",
    "no_copy": 1,
    "options": "User",
-   "read_only_depends_on": "eval:(doc.workflow_status!='Solicitado')"
+   "read_only_depends_on": "eval:(doc.workflow_status!='Solicitado' || doc.workflow_status!='Revisado')"
   },
   {
    "fieldname": "fecha_hora_solicitud",

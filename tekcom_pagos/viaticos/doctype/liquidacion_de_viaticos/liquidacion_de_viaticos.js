@@ -45,7 +45,7 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
   },
 
   refresh(frm) {
-    const workflow_status_for_liquidacion = ['Approved','Entregado a Talento Humano']
+    const workflow_status_for_liquidacion = ['Approved','En Revisión Contable']
     if (!frm.doc.fecha_liquidacion) {
       frm.set_value("fecha_liquidacion", frappe.datetime.nowdate())
     }

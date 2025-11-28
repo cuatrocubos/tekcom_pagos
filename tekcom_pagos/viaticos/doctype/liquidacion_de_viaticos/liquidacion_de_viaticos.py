@@ -67,7 +67,7 @@ class LiquidaciondeViaticos(Document):
 		
 		self.set_expense_account(validate=True)
 		self.update_workflow_details()
-		if (self.workflow_status == 'Entregado a Talento Humano'):
+		if (self.workflow_status == 'En Revisión Contable'):
 			self.create_expense_claim(submit=False)
 	
 	def validate_required_fields(self):
