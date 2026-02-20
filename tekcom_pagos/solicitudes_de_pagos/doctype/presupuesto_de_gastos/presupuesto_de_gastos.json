@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2023-06-27 09:34:55.602831",
  "default_view": "List",
@@ -18,6 +19,9 @@
   "section_break_h1wqj",
   "cost_center",
   "project",
+  "column_break_hwga",
+  "cost_center_name",
+  "project_name",
   "section_break_spmlb",
   "gastos",
   "totales_section",
@@ -51,16 +55,18 @@
    "depends_on": "eval:doc.presupuesto_contra == 'Cost Center'",
    "fieldname": "cost_center",
    "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
    "label": "Cost Center",
-   "options": "Cost Center"
+   "options": "Cost Center",
+   "placeholder": "99"
   },
   {
-   "default": "PG-.{fiscal_year}.-",
+   "default": "PG-.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
-   "hidden": 1,
    "label": "Series",
-   "options": "PG-.{fiscal_year}.-",
+   "options": "PG-.#####",
    "reqd": 1,
    "set_only_once": 1
   },
@@ -68,8 +74,10 @@
    "depends_on": "eval:doc.presupuesto_contra == 'Project'",
    "fieldname": "project",
    "fieldtype": "Link",
+   "in_standard_filter": 1,
    "label": "Project",
-   "options": "Project"
+   "options": "Project",
+   "unique": 1
   },
   {
    "fieldname": "column_break_l2jms",
@@ -114,6 +122,7 @@
    "label": "Totales"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_presupuestado",
    "fieldtype": "Currency",
    "label": "Total Presupuestado",
@@ -121,6 +130,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_solicitado",
    "fieldtype": "Currency",
    "label": "Total Solicitado",
@@ -128,6 +138,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_disponible",
    "fieldtype": "Currency",
    "label": "Total Disponible",
@@ -135,6 +146,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_solicitado_sin_tipo_de_gasto",
    "fieldtype": "Currency",
    "label": "Total Solicitado sin Tipo de Gasto",
@@ -142,6 +154,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_aprobado_sin_tipo_de_gasto",
    "fieldtype": "Currency",
    "label": "Total Aprobado sin Tipo de Gasto",
@@ -160,6 +173,7 @@
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_presupuesto_sin_asignar",
    "fieldtype": "Currency",
    "label": "Total Presupuesto sin Asignar",
@@ -167,17 +181,40 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "total_aprobado",
    "fieldtype": "Currency",
    "label": "Total Aprobado",
    "options": "Company:company:default_currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_hwga",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "cost_center.cost_center_name",
+   "fetch_if_empty": 1,
+   "fieldname": "cost_center_name",
+   "fieldtype": "Data",
+   "label": "Cost Center Name",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "project.project_name",
+   "fetch_if_empty": 1,
+   "fieldname": "project_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Project Name",
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-20 11:33:49.846356",
+ "modified": "2026-01-07 16:45:25.123267",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Presupuesto de Gastos",

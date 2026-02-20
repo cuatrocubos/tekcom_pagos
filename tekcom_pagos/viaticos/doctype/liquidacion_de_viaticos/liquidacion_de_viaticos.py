@@ -392,11 +392,11 @@ class LiquidaciondeViaticos(Document):
 		# 		"reference_name": self.name
 		# 	})
 		
-		if submit:
-			je2.save(ignore_permissions=True)
-			je2.submit()
-		else:
-			je2.save(ignore_permissions=True)
+			if submit:
+				je2.save(ignore_permissions=True)
+				je2.submit()
+			else:
+				je2.save(ignore_permissions=True)
 			
 		docs.append(get_link_to_form(je.doctype, je.name))
 		

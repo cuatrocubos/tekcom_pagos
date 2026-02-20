@@ -7,6 +7,15 @@ from frappe.utils import cint, comma_or, flt, getdate, nowdate, get_link_to_form
 from frappe.model.document import Document
 
 class PresupuestodeGastos(Document):
+  def autoname(self):
+    company_abbr = frappe.db.get_value("Company", self.company, "abbr")
+    if self.presupuesto_contra == "Project":
+      project_name = frappe.db.get_value("Project", self.project, "project_name")
+      self.name = f"{company_abbr} - {self.project} - {project_name}"
+    elif self.presupuesto_contra == "Cost Center":
+      cost_center = frappe.db.get_value("Cost Center", self.cost_center, ["cost_center_number", "cost_center_name"], as_dict=1)
+      self.name = f"{company_abbr} - {cost_center.cost_center_number} - {cost_center.cost_center_name}"
+
   def validate(self):
     self.obtener_solicitado()
     self.obtener_aprobado()

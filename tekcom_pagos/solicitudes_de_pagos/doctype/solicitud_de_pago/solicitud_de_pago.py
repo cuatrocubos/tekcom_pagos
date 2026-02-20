@@ -488,7 +488,7 @@ def get_payment_entry_for_employee(dt, dn, party_amount=None, bank_account=None,
 	pe.payment_type = payment_type
 	pe.company = doc.company
 	pe.cost_center = doc.get("cost_center")
-	pe.posting_date = doc.reference_date
+	pe.posting_date = reference_date
 	pe.mode_of_payment = doc.get("mode_of_payment")
 	pe.party_type = "Employee"
 	pe.party = doc.get("employee")
