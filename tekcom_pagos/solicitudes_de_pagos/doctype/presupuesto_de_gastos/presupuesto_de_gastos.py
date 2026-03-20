@@ -16,6 +16,9 @@ class PresupuestodeGastos(Document):
       cost_center = frappe.db.get_value("Cost Center", self.cost_center, ["cost_center_number", "cost_center_name"], as_dict=1)
       self.name = f"{company_abbr} - {cost_center.cost_center_number} - {cost_center.cost_center_name}"
 
+  def onload(self):
+    self.set_presupuesto_compras()
+
   def validate(self):
     self.obtener_solicitado()
     self.obtener_aprobado()
@@ -274,6 +277,14 @@ class PresupuestodeGastos(Document):
       presupuesto_de_gasto.monto_total_aprobado = total_aprobado
           
     self.total_aprobado_sin_tipo_de_gasto = flt(solicitudes_de_pago_sin_referencia[0].monto_solicitado)
+
+  def set_presupuesto_compras(self):
+    """
+    Genera el HTML para el campo presupuesto_compras con los montos comprometidos (órdenes de compra)
+    y ejecutados (facturas de compra) agrupados por cuenta contable.
+    """
+    self.presupuesto_compras = get_presupuesto_compras_html(self)
+
     
 @frappe.whitelist()
 def actualizar_presupuesto_de_gastos(project=None, cost_center=None):
@@ -302,3 +313,133 @@ def actualizar_presupuesto_de_gastos(project=None, cost_center=None):
     presupuesto.obtener_aprobado()
     presupuesto.calcular_totales()
     presupuesto.save(ignore_permissions=True)
+
+
+def get_presupuesto_compras_html(doc):
+  """
+  Genera el HTML que muestra los montos comprometidos y ejecutados agrupados por cuenta contable.
+  - Comprometido: Órdenes de compra no en borrador ni canceladas
+  - Ejecutado: Facturas de compra no en borrador ni canceladas
+  El filtro depende del campo presupuesto_contra (Cost Center o Project)
+  """
+  import erpnext
+  
+  # Obtener la moneda de la compañía
+  currency = erpnext.get_company_currency(doc.company)
+  
+  # Determinar el campo de filtro según presupuesto_contra
+  if doc.presupuesto_contra == "Project":
+    filter_field = "project"
+    filter_value = doc.project
+  else:
+    filter_field = "cost_center"
+    filter_value = doc.cost_center
+  
+  if not filter_value:
+    return ""
+  
+  # Obtener montos comprometidos desde Purchase Order Items
+  # docstatus = 1 (submitted), no incluye draft (0) ni cancelled (2)
+  comprometido_data = frappe.db.sql(
+    f"""
+    SELECT 
+      poi.expense_account as cuenta,
+      SUM(poi.base_net_amount) as comprometido
+    FROM `tabPurchase Order Item` poi
+    INNER JOIN `tabPurchase Order` po ON poi.parent = po.name
+    WHERE po.docstatus = 1
+      AND po.company = %s
+      AND poi.{filter_field} = %s
+      AND poi.expense_account IS NOT NULL
+      AND poi.expense_account != ''
+    GROUP BY poi.expense_account
+    """,
+    (doc.company, filter_value),
+    as_dict=True
+  )
+  
+  # Obtener montos ejecutados desde Purchase Invoice Items vinculados a PO
+  # docstatus = 1 (submitted), no incluye draft (0) ni cancelled (2)
+  ejecutado_data = frappe.db.sql(
+    f"""
+    SELECT 
+      pii.expense_account as cuenta,
+      SUM(pii.base_net_amount) as ejecutado
+    FROM `tabPurchase Invoice Item` pii
+    INNER JOIN `tabPurchase Invoice` pi ON pii.parent = pi.name
+    WHERE pi.docstatus = 1
+      AND pi.company = %s
+      AND pii.{filter_field} = %s
+      AND pii.expense_account IS NOT NULL
+      AND pii.expense_account != ''
+      AND pii.purchase_order IS NOT NULL
+      AND pii.purchase_order != ''
+    GROUP BY pii.expense_account
+    """,
+    (doc.company, filter_value),
+    as_dict=True
+  )
+  
+  # Obtener montos ejecutados desde Purchase Invoice Items SIN orden de compra
+  ejecutado_sin_oc_data = frappe.db.sql(
+    f"""
+    SELECT 
+      pii.expense_account as cuenta,
+      SUM(pii.base_net_amount) as ejecutado_sin_oc
+    FROM `tabPurchase Invoice Item` pii
+    INNER JOIN `tabPurchase Invoice` pi ON pii.parent = pi.name
+    WHERE pi.docstatus = 1
+      AND pi.company = %s
+      AND pii.{filter_field} = %s
+      AND pii.expense_account IS NOT NULL
+      AND pii.expense_account != ''
+      AND (pii.purchase_order IS NULL OR pii.purchase_order = '')
+    GROUP BY pii.expense_account
+    """,
+    (doc.company, filter_value),
+    as_dict=True
+  )
+  
+  # Combinar los datos por cuenta
+  cuentas_dict = {}
+  
+  for row in comprometido_data:
+    cuenta = row.cuenta
+    if cuenta not in cuentas_dict:
+      cuentas_dict[cuenta] = {"cuenta": cuenta, "comprometido": flt(0), "ejecutado": flt(0), "ejecutado_sin_oc": flt(0)}
+    cuentas_dict[cuenta]["comprometido"] = flt(row.comprometido)
+  
+  for row in ejecutado_data:
+    cuenta = row.cuenta
+    if cuenta not in cuentas_dict:
+      cuentas_dict[cuenta] = {"cuenta": cuenta, "comprometido": flt(0), "ejecutado": flt(0), "ejecutado_sin_oc": flt(0)}
+    cuentas_dict[cuenta]["ejecutado"] = flt(row.ejecutado)
+  
+  for row in ejecutado_sin_oc_data:
+    cuenta = row.cuenta
+    if cuenta not in cuentas_dict:
+      cuentas_dict[cuenta] = {"cuenta": cuenta, "comprometido": flt(0), "ejecutado": flt(0), "ejecutado_sin_oc": flt(0)}
+    cuentas_dict[cuenta]["ejecutado_sin_oc"] = flt(row.ejecutado_sin_oc)
+  
+  # Convertir a lista y ordenar por cuenta
+  data = sorted(cuentas_dict.values(), key=lambda x: x["cuenta"])
+  
+  if not data:
+    return ""
+  
+  # Calcular totales
+  total_comprometido = sum(row["comprometido"] for row in data)
+  total_ejecutado = sum(row["ejecutado"] for row in data)
+  total_ejecutado_sin_oc = sum(row["ejecutado_sin_oc"] for row in data)
+  
+  # Renderizar template
+  return frappe.render_template(
+    "tekcom_pagos/templates/includes/presupuesto_compras_breakup.html",
+    dict(
+      data=data,
+      currency=currency,
+      total_comprometido=total_comprometido,
+      total_ejecutado=total_ejecutado,
+      total_ejecutado_sin_oc=total_ejecutado_sin_oc,
+    ),
+  )

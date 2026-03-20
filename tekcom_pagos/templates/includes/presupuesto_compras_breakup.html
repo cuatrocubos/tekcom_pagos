@@ -1,0 +1,42 @@
+<div class="presupuesto-compras-breakup" style="overflow-x: auto;">
+	<table class="table table-bordered table-hover">
+		<thead>
+			<tr>
+				<th class="text-left">{{ _("Cuenta") }}</th>
+				<th class="text-right">{{ _("Comprometido") }}</th>
+				<th class="text-right">{{ _("Ejecutado") }}</th>
+				<th class="text-right">{{ _("Ejecutado sin OC") }}</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in data %}
+				<tr>
+					<td>{{ row.cuenta }}</td>
+					<td class="text-right">
+						{{ frappe.utils.fmt_money(row.comprometido, None, currency) }}
+					</td>
+					<td class="text-right">
+						{{ frappe.utils.fmt_money(row.ejecutado, None, currency) }}
+					</td>
+					<td class="text-right">
+						{{ frappe.utils.fmt_money(row.ejecutado_sin_oc, None, currency) }}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+		<tfoot>
+			<tr style="font-weight: bold;">
+				<td>{{ _("Total") }}</td>
+				<td class="text-right">
+					{{ frappe.utils.fmt_money(total_comprometido, None, currency) }}
+				</td>
+				<td class="text-right">
+					{{ frappe.utils.fmt_money(total_ejecutado, None, currency) }}
+				</td>
+				<td class="text-right">
+					{{ frappe.utils.fmt_money(total_ejecutado_sin_oc, None, currency) }}
+				</td>
+			</tr>
+		</tfoot>
+	</table>
+</div>

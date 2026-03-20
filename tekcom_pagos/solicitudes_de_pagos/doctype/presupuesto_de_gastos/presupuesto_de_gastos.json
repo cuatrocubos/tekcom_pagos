@@ -22,6 +22,8 @@
   "column_break_hwga",
   "cost_center_name",
   "project_name",
+  "presupuesto_segun_ordenes_de_compra_y_facturas_de_compra_section",
+  "presupuesto_compras",
   "section_break_spmlb",
   "gastos",
   "totales_section",
@@ -102,7 +104,8 @@
   },
   {
    "fieldname": "section_break_spmlb",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "hidden": 1
   },
   {
    "fieldname": "column_break_4arpz",
@@ -119,6 +122,7 @@
   {
    "fieldname": "totales_section",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Totales"
   },
   {
@@ -209,12 +213,22 @@
    "in_standard_filter": 1,
    "label": "Project Name",
    "read_only": 1
+  },
+  {
+   "fieldname": "presupuesto_segun_ordenes_de_compra_y_facturas_de_compra_section",
+   "fieldtype": "Section Break",
+   "label": "Presupuesto Segun Ordenes de Compra y Facturas de Compra"
+  },
+  {
+   "fieldname": "presupuesto_compras",
+   "fieldtype": "Text Editor",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-07 16:45:25.123267",
+ "modified": "2026-02-20 10:41:51.037761",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Presupuesto de Gastos",

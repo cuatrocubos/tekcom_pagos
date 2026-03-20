@@ -13,7 +13,8 @@ def solicitud_de_pago_query(user):
   like_user = f"'%{user}%'"
 
   roles = frappe.get_roles(user)
-  if "Administrator":
+  
+  if "Administrator" or "Coordinador de Pagos y Viaticos" in roles:
     pass
   
   if "Revisor de Solicitudes de Pago" in roles or "Coordinador de Pagos y Viaticos" in roles:
@@ -38,7 +39,7 @@ def solicitud_de_viaticos_query(user):
 
   roles = frappe.get_roles(user)
   
-  if "Administrator":
+  if "Administrator" or "Coordinador de Pagos y Viaticos" in roles:
     pass
   
   if "Revisor de Solicitud de Viaticos" in roles or "Coordinador de Pagos y Viaticos" in roles:
