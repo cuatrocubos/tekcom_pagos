@@ -166,6 +166,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "presupuesto_total",
    "fieldtype": "Currency",
    "label": "Presupuesto Total",
@@ -214,7 +215,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-01-07 16:45:25.123267",
+ "modified": "2026-02-24 13:02:53.604724",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Presupuesto de Gastos",

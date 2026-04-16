@@ -73,10 +73,15 @@ class SolicituddeViaticos(Document):
 		self.set_totales_personas_dia()
 		self.update_workflow_details()
 		if (self.workflow_status == 'Recibido en Contabilidad'):
+			if not self.viaticos_liquidados:
+				self.viaticos_liquidados = 1
 			self.create_employee_advance(submit=True)
+		if (self.workflow_status == 'Contabilizado'):
+			if not self.viaticos_liquidados:
+				self.viaticos_liquidados = 1
 		# set_revision(self)
 		# set_aprobado(self)
-  
+
 	def validate_solicitudes_por_liquidar(self):
    
 		# SELECT tsdv.name, tsdv.workflow_status, tldv.solicitud_de_viaticos 
@@ -192,7 +197,7 @@ class SolicituddeViaticos(Document):
 					self.fecha_hora_aprobacion = frappe.utils.now_datetime()
 					if self.aprobado_por == None or self.aprobado_por == '':
 						self.aprobado_por = frappe.session.user
-					
+
 	def update_presupuesto_monto_aprobado(self):
 		for linea in self.presupuesto:
 			# print('monto_aprobado',linea.monto_aprobado)

@@ -58,6 +58,7 @@
   "flujo_de_trabajo_tab",
   "section_break_froc",
   "fecha_hora_solicitud",
+  "viaticos_liquidados",
   "workflow_status",
   "column_break_kneu",
   "fecha_hora_revision",
@@ -494,12 +495,19 @@
    "print_hide": 1,
    "read_only": 1,
    "report_hide": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "viaticos_liquidados",
+   "fieldtype": "Check",
+   "label": "Viaticos Liquidados",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-12-17 18:52:59.331044",
+ "modified": "2026-04-16 13:45:45.734882",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Solicitud de Viaticos",

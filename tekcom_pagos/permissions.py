@@ -13,10 +13,10 @@ def solicitud_de_pago_query(user):
   like_user = f"'%{user}%'"
 
   roles = frappe.get_roles(user)
-  if "Administrator":
+  if "Administrator" or ("Coordinador de Pagos y Viaticos" in roles):
     pass
   
-  if "Revisor de Solicitudes de Pago" in roles or "Coordinador de Pagos y Viaticos" in roles:
+  if "Revisor de Solicitudes de Pago" in roles or ("Coordinador de Pagos y Viaticos" in roles):
     return "IF(`tabSolicitud de Pago`.workflow_status = 'Draft',`tabSolicitud de Pago`.owner = {user},`tabSolicitud de Pago`.owner LIKE '%%')".format(user=frappe.db.escape(user))
   else:
     if employee:
@@ -38,10 +38,10 @@ def solicitud_de_viaticos_query(user):
 
   roles = frappe.get_roles(user)
   
-  if "Administrator":
+  if "Administrator" or ("Coordinador de Pagos y Viaticos" in roles):
     pass
   
-  if "Revisor de Solicitud de Viaticos" in roles or "Coordinador de Pagos y Viaticos" in roles:
+  if "Revisor de Solicitud de Viaticos" in roles or ("Coordinador de Pagos y Viaticos" in roles):
     return "IF(`tabSolicitud de Viaticos`.workflow_status = 'Draft',`tabSolicitud de Viaticos`.owner = {user},`tabSolicitud de Viaticos`.owner LIKE '%%')".format(user=frappe.db.escape(user))
   else:
     if employee:

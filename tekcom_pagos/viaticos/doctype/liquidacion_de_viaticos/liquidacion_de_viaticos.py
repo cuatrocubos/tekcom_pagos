@@ -68,6 +68,8 @@ class LiquidaciondeViaticos(Document):
 		self.set_expense_account(validate=True)
 		self.update_workflow_details()
 		if (self.workflow_status == 'En Revisión Contable'):
+			if self.solicitud_de_viaticos:
+				frappe.db.set_value("Solicitud de Viaticos", self.solicitud_de_viaticos, "viaticos_liquidados", 1)
 			self.create_expense_claim(submit=False)
 	
 	def validate_required_fields(self):
