@@ -283,8 +283,9 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 
 	hide_unhide_fields(frm) {
 		var company_currency = frm.doc.company ? frappe.get_doc(":Company", frm.doc.company).default_currency : "";
-		console.log("company_currency", company_currency)
-		frm.set_value("currency", company_currency);
+		if (!frm.doc.currency) {
+			frm.set_value("currency", company_currency);
+		}
 		frm.toggle_display("exchange_rate", (frm.doc.currency != company_currency));
 		frm.toggle_display(["total_anticipo_solicitado_base","total_anticipo_aprobado_base"], (frm.doc.currency != company_currency));
 		frm.toggle_display(["monto_solicitado_base","monto_aprobado_base"], (frm.doc.currency != company_currency), "presupuesto");

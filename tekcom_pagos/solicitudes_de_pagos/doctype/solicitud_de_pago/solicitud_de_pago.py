@@ -71,6 +71,7 @@ class SolicituddePago(Document):
 	
 	def validate(self):
 		validate_active_employee(self.solicitante)
+		self.set_monto_solicitado_base()
 		self.update_workflow_details()
 		if (self.workflow_status == 'Entregado a Contabilidad'):
 			self.create_payment_entry(submit=True)
@@ -91,7 +92,25 @@ class SolicituddePago(Document):
 				frappe.throw(_("Aprobador is mandatory"))
 			if not self.coordinador_pagos:
 				frappe.throw(_("Coordinador Pagos is mandatory"))
-		
+
+	def set_monto_solicitado_base(self):
+		company_currency = None
+		if self.company:
+			company_currency = erpnext.get_company_currency(self.company)
+			if not self.currency:
+				self.currency = company_currency
+
+		if company_currency and self.currency == company_currency:
+			self.conversion_rate = 1
+		elif not flt(self.conversion_rate) and self.currency and company_currency:
+			self.conversion_rate = get_exchange_rate(
+				self.currency,
+				company_currency,
+				self.fecha_solicitud or nowdate(),
+			)
+
+		self.monto_solicitado_base = flt(self.monto_solicitado) * flt(self.conversion_rate or 1)
+
 	# def on_submit(self):
 	#   make_payment_entry(self)
 	def on_update(self):

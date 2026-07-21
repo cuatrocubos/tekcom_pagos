@@ -460,15 +460,33 @@ frappe.ui.form.on('Solicitud de Pago', {
 	},
 
 	conversion_rate: function(frm) {
-		if (frm.doc.monto_solicitado) {
-			frm.set_value("monto_solicitado_base", flt(frm.doc.monto_solicitado) * flt(frm.doc.conversion_rate));
-			frm.set_df_property("conversion_rate", "read_only", erpnext.stale_rate_allowed() ? 0 : 1);
-		}
+		frm.events.set_monto_solicitado_base(frm);
+		frm.set_df_property("conversion_rate", "read_only", erpnext.stale_rate_allowed() ? 0 : 1);
 	},
 
 	monto_solicitado: function(frm) {
-		frm.set_value("monto_solicitado_base", flt(frm.doc.monto_solicitado) * flt(frm.doc.conversion_rate));
+		frm.events.set_monto_solicitado_base(frm);
 		frm.events.hide_unhide_fields(frm);
+	},
+
+	set_monto_solicitado_base(frm) {
+		let conversion_rate = flt(frm.doc.conversion_rate);
+		let company_currency = frm.doc.company
+			? frappe.get_doc(":Company", frm.doc.company).default_currency
+			: "";
+
+		if (!frm.doc.currency || frm.doc.currency === company_currency) {
+			if (conversion_rate !== 1) {
+				frm.set_value("conversion_rate", 1);
+				return;
+			}
+			conversion_rate = 1;
+		}
+
+		frm.set_value(
+			"monto_solicitado_base",
+			flt(frm.doc.monto_solicitado) * flt(conversion_rate)
+		);
 	},
 
 	party_bank_account: function(frm) {
@@ -513,7 +531,9 @@ frappe.ui.form.on('Solicitud de Pago', {
 	set_dynamic_labels: function(frm) {
 		var company_currency = frm.doc.company? frappe.get_doc(":Company", frm.doc.company).default_currency: "";
 
-		frm.set_value("currency", company_currency);
+		if (!frm.doc.currency) {
+			frm.set_value("currency", company_currency);
+		}
 
 		frm.set_currency_labels(["monto_solicitado_base"], company_currency);
 		
@@ -550,17 +570,15 @@ frappe.ui.form.on('Solicitud de Pago', {
 
 	set_monto_solicitado(frm) {
 		var monto_solicitado = 0.0
-		var monto_solicitado_base = 0.0
 
 		$.each(frm.doc.references || [], function(i, row) {
 			if (row.allocated_amount) {
 				monto_solicitado += flt(row.allocated_amount)
-				monto_solicitado_base += flt(flt(row.allocated_amount) * flt(frm.conversion_rate), precision("monto_solicitado_base"))
 			}
 		})
-		
+
 		frm.set_value("monto_solicitado", monto_solicitado)
-		frm.set_value("monto_solicitado_base", monto_solicitado_base)
+		frm.events.set_monto_solicitado_base(frm)
 
 		// frm.events.set_unallocated_amount(frm)
 		// frm.refresh_fields()
