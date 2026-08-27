@@ -20,9 +20,9 @@ def solicitud_de_pago_query(user):
     return "IF(`tabSolicitud de Pago`.workflow_status = 'Draft',`tabSolicitud de Pago`.owner = {user},`tabSolicitud de Pago`.owner LIKE '%%')".format(user=frappe.db.escape(user))
   else:
     if employee:
-      return "(`tabSolicitud de Pago`.owner = {user} or `tabSolicitud de Pago`.revisado_por = {user} or `tabSolicitud de Pago`.revisor = {user} or `tabSolicitud de Pago`.aprobado_por = {user} or `tabSolicitud de Pago`.aprobador = {user} or `tabSolicitud de Pago`._assign LIKE {like_user})".format(user=frappe.db.escape(user),employee=frappe.db.escape(employee),like_user=frappe.db.escape(like_user))
-    else: 
-      return "(`tabSolicitud de Pago`.owner = {user} or `tabSolicitud de Pago`.revisado_por = {user} or `tabSolicitud de Pago`.revisor = {user} or `tabSolicitud de Pago`.aprobado_por = {user} or `tabSolicitud de Pago`.aprobador = {user} or `tabSolicitud de Pago`._assign LIKE {like_user})".format(user=frappe.db.escape(user),employee=frappe.db.escape(employee),like_user=frappe.db.escape(like_user))
+      return "(`tabSolicitud de Pago`.owner = {user} or `tabSolicitud de Pago`.revisado_por = {user} or `tabSolicitud de Pago`.revisor = {user} or `tabSolicitud de Pago`.aprobado_por = {user} or `tabSolicitud de Pago`.aprobador = {user} or `tabSolicitud de Pago`._assign LIKE {like_user} or `tabSolicitud de Pago`.solicitante in (select name from `tabEmployee` where expense_approver = {user}))".format(user=frappe.db.escape(user),employee=frappe.db.escape(employee),like_user=frappe.db.escape(like_user))
+    else:
+      return "(`tabSolicitud de Pago`.owner = {user} or `tabSolicitud de Pago`.revisado_por = {user} or `tabSolicitud de Pago`.revisor = {user} or `tabSolicitud de Pago`.aprobado_por = {user} or `tabSolicitud de Pago`.aprobador = {user} or `tabSolicitud de Pago`._assign LIKE {like_user} or `tabSolicitud de Pago`.solicitante in (select name from `tabEmployee` where expense_approver = {user}))".format(user=frappe.db.escape(user),employee=frappe.db.escape(employee),like_user=frappe.db.escape(like_user))
 
 def solicitud_de_viaticos_query(user):
   if not user:
@@ -45,9 +45,9 @@ def solicitud_de_viaticos_query(user):
     return "IF(`tabSolicitud de Viaticos`.workflow_status = 'Draft',`tabSolicitud de Viaticos`.owner = {user},`tabSolicitud de Viaticos`.owner LIKE '%%')".format(user=frappe.db.escape(user))
   else:
     if employee:
-      return "(`tabSolicitud de Viaticos`.owner = {user} or `tabSolicitud de Viaticos`.revisado_por = {user} or `tabSolicitud de Viaticos`.revisor = {user} or `tabSolicitud de Viaticos`.aprobado_por = {user} or `tabSolicitud de Viaticos`.aprobador = {user} or `tabSolicitud de Viaticos`._assign LIKE {like_user})".format(user=frappe.db.escape(user),employee=frappe.db.escape(employee),like_user=frappe.db.escape(like_user))
-    else: 
-      return "(`tabSolicitud de Viaticos`.owner = {user} or `tabSolicitud de Viaticos`.revisado_por = {user} or `tabSolicitud de Viaticos`.revisor = {user} or `tabSolicitud de Viaticos`.aprobado_por = {user} or `tabSolicitud de Viaticos`.aprobador = {user} or `tabSolicitud de Viaticos`._assign LIKE {like_user})".format(user=frappe.db.escape(user),employee=frappe.db.escape(employee),like_user=frappe.db.escape(like_user))
+      return "(`tabSolicitud de Viaticos`.owner = {user} or `tabSolicitud de Viaticos`.revisado_por = {user} or `tabSolicitud de Viaticos`.revisor = {user} or `tabSolicitud de Viaticos`.aprobado_por = {user} or `tabSolicitud de Viaticos`.aprobador = {user} or `tabSolicitud de Viaticos`._assign LIKE {like_user} or `tabSolicitud de Viaticos`.solicitante in (select name from `tabEmployee` where expense_approver = {user}))".format(user=frappe.db.escape(user),employee=frappe.db.escape(employee),like_user=frappe.db.escape(like_user))
+    else:
+      return "(`tabSolicitud de Viaticos`.owner = {user} or `tabSolicitud de Viaticos`.revisado_por = {user} or `tabSolicitud de Viaticos`.revisor = {user} or `tabSolicitud de Viaticos`.aprobado_por = {user} or `tabSolicitud de Viaticos`.aprobador = {user} or `tabSolicitud de Viaticos`._assign LIKE {like_user} or `tabSolicitud de Viaticos`.solicitante in (select name from `tabEmployee` where expense_approver = {user}))".format(user=frappe.db.escape(user),employee=frappe.db.escape(employee),like_user=frappe.db.escape(like_user))
   
 ### (TODO: Add has_permission method to overide DocType access for solicitud_de_pago and solicitud_de_viaticos)
 # has_permission = {
