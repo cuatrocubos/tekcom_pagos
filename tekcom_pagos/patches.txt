@@ -3,3 +3,4 @@
 tekcom_pagos.patches.v15_0.update_encargado_compras_pagos
 tekcom_pagos.patches.v15_0.set_default_currency_exchange_rate_solicitud_viaticos
 tekcom_pagos.patches.v15_0.backfill_monto_solicitado_base_solicitud_de_pago
+tekcom_pagos.patches.v15_0.fix_duplicate_presupuesto_viaticos

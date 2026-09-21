@@ -65,12 +65,16 @@ class LiquidaciondeViaticos(Document):
 		# Validate that all required fields are present
 		# self.validate_required_fields()
 		
+		self.consolidate_presupuesto_viaticos()
 		self.set_expense_account(validate=True)
 		self.update_workflow_details()
 		if (self.workflow_status == 'En Revisión Contable'):
 			if self.solicitud_de_viaticos:
 				frappe.db.set_value("Solicitud de Viaticos", self.solicitud_de_viaticos, "viaticos_liquidados", 1)
-			self.create_expense_claim(submit=False)
+			if self.total_reembolso == self.total_solicitado:
+				pass
+			else:
+				self.create_expense_claim(submit=False)
 	
 	def validate_required_fields(self):
 		"""Validate required fields based on workflow status"""
@@ -139,6 +143,50 @@ class LiquidaciondeViaticos(Document):
 				expense.default_account = get_expense_claim_account(expense.expense_type, self.company)[
 					"account"
 				]
+
+	def consolidate_presupuesto_viaticos(self):
+		"""Merge duplicate tipo_gasto rows and recompute ejecutado/totals, regardless of how the doc was saved"""
+		grouped = {}
+		for row in self.presupuesto_viaticos:
+			existing = grouped.get(row.tipo_gasto)
+			if existing:
+				existing.monto_solicitado = flt(existing.monto_solicitado) + flt(row.monto_solicitado)
+				existing.monto_aprobado = flt(existing.monto_aprobado) + flt(row.monto_aprobado)
+			else:
+				grouped[row.tipo_gasto] = row
+
+		self.set("presupuesto_viaticos", list(grouped.values()))
+
+		exchange_rate = flt(self.exchange_rate) or 1
+		total_solicitado = flt(0)
+		total_ejecutado = flt(0)
+		total_reembolso = flt(0)
+
+		for row in self.presupuesto_viaticos:
+			monto_ejecutado = sum(
+				flt(expense.total) for expense in self.detalle_liquidacion if expense.expense_type == row.tipo_gasto
+			)
+			row.monto_ejecutado = monto_ejecutado
+			row.monto_ejecutado_base = flt(monto_ejecutado) * exchange_rate
+			row.diferencia = flt(row.monto_aprobado) - flt(monto_ejecutado)
+			row.diferencia_base = flt(row.diferencia) * exchange_rate
+			row.monto_solicitado_base = flt(row.monto_solicitado) * exchange_rate
+			row.monto_aprobado_base = flt(row.monto_aprobado) * exchange_rate
+
+			total_solicitado += flt(row.monto_solicitado)
+			total_ejecutado += flt(row.monto_ejecutado)
+			total_reembolso += flt(row.diferencia)
+
+		total_impuestos = sum(flt(expense.impuestos) for expense in self.detalle_liquidacion)
+
+		self.total_solicitado = total_solicitado
+		self.total_ejecutado = total_ejecutado
+		self.total_reembolso = total_reembolso
+		self.total_impuestos = total_impuestos
+		self.total_solicitado_base = flt(total_solicitado) * exchange_rate
+		self.total_ejecutado_base = flt(total_ejecutado) * exchange_rate
+		self.total_reembolso_base = flt(total_reembolso) * exchange_rate
+		self.total_impuestos_base = flt(total_impuestos) * exchange_rate
 
 	def create_expense_claim(self, submit=False):
 		# create payment entry

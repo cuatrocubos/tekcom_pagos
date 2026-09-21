@@ -282,6 +282,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 	},
 
 	hide_unhide_fields(frm) {
+		const editable_viaticos_liquidados = ['Recibido en Contabilidad', 'Contabilizado']
 		var company_currency = frm.doc.company ? frappe.get_doc(":Company", frm.doc.company).default_currency : "";
 		if (!frm.doc.currency) {
 			frm.set_value("currency", company_currency);
@@ -289,8 +290,11 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		frm.toggle_display("exchange_rate", (frm.doc.currency != company_currency));
 		frm.toggle_display(["total_anticipo_solicitado_base","total_anticipo_aprobado_base"], (frm.doc.currency != company_currency));
 		frm.toggle_display(["monto_solicitado_base","monto_aprobado_base"], (frm.doc.currency != company_currency), "presupuesto");
-		// var df = frappe.meta.get_docfield("Personas Solicitud de Viaticos", "asignacion_alimentacion", frm.doc.name)
-		// df.read_only = 
+		frm.set_df_property(
+			'viaticos_liquidados',
+			'read_only',
+			!editable_viaticos_liquidados.includes(frm.doc.workflow_status)
+		)
 
 		frm.refresh_fields();
 	},

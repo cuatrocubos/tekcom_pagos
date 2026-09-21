@@ -73,12 +73,9 @@ class SolicituddeViaticos(Document):
 		self.set_totales_personas_dia()
 		self.update_workflow_details()
 		if (self.workflow_status == 'Recibido en Contabilidad'):
-			if not self.viaticos_liquidados:
-				self.viaticos_liquidados = 1
 			self.create_employee_advance(submit=True)
-		if (self.workflow_status == 'Contabilizado'):
-			if not self.viaticos_liquidados:
-				self.viaticos_liquidados = 1
+		# if (self.workflow_status == 'Contabilizado'):
+		# 	pass
 		# set_revision(self)
 		# set_aprobado(self)
 

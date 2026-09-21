@@ -57,6 +57,7 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
         frm.events.make_expense_claim()
       })
     }
+    frm.events.group_presupuesto_viaticos(frm)
     frm.events.hide_unhide_fields(frm)
     frm.events.set_dynamic_labels(frm)
   },
@@ -280,6 +281,9 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
   },
 
   set_total_ejecutado_presupuesto(frm) {
+    frm.events.group_presupuesto_viaticos(frm)
+
+    // assign directly instead of frappe.model.set_value to avoid a race with the totals computed below
     $.each(frm.doc.presupuesto_viaticos || [], function(r, row) {
       const total_ejecutado = 
         frm.doc.detalle_liquidacion.reduce(
@@ -289,33 +293,67 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
             }
             return acc
           }, flt(0))
-      const total_impuestos = 
-        frm.doc.detalle_liquidacion.reduce(
-          (acc, item) => acc + flt(item.impuestos), flt(0))
-      frm.set_value("total_impuestos", total_impuestos)
-      frm.set_value("total_impuestos_base", flt(total_impuestos) * flt(frm.doc.exchange_rate))
-      frappe.model.set_value(row.doctype, row.name, "monto_ejecutado", total_ejecutado)
-      frappe.model.set_value(row.doctype, row.name, "monto_ejecutado_base", flt(total_ejecutado) * flt(frm.doc.exchange_rate))
+      row.monto_ejecutado = total_ejecutado
+      row.monto_ejecutado_base = flt(total_ejecutado) * flt(frm.doc.exchange_rate)
+      row.diferencia = flt(row.monto_aprobado) - flt(total_ejecutado)
+      row.diferencia_base = flt(row.diferencia) * flt(frm.doc.exchange_rate)
     })
+
+    const total_impuestos = 
+      frm.doc.detalle_liquidacion.reduce(
+        (acc, item) => acc + flt(item.impuestos), flt(0))
+    frm.set_value("total_impuestos", total_impuestos)
+    frm.set_value("total_impuestos_base", flt(total_impuestos) * flt(frm.doc.exchange_rate))
+
+    frm.refresh_field("presupuesto_viaticos")
+    frm.events.set_totales(frm)
     frm.events.hide_unhide_fields(frm)
   },
 
   check_expense_types(frm) {
-    let presupuestoViaticosTypes = frm.doc.presupuesto_viaticos.map(item => item.tipo_gasto);
-    let missingExpenseTypes = frm.doc.detalle_liquidacion.filter(item => !presupuestoViaticosTypes.includes(item.expense_type));
+    // track types added in this pass too, so rows sharing a new type don't each add their own budget row
+    let presupuestoViaticosTypes = new Set(frm.doc.presupuesto_viaticos.map(item => item.tipo_gasto));
 
-    if (missingExpenseTypes.length > 0) {
-      missingExpenseTypes.forEach(item => {
-        if (item.expense_type != "") {
-          let newItem = frm.add_child("presupuesto_viaticos");
-          newItem.tipo_gasto = item.expense_type;
-          newItem.monto_solicitado = 0;
-          newItem.monto_aprobado = 0;
-          // Add other necessary fields if required
-        }
-      });
-      frm.refresh_field("presupuesto_viaticos");
+    frm.doc.detalle_liquidacion.forEach(item => {
+      if (item.expense_type && !presupuestoViaticosTypes.has(item.expense_type)) {
+        let newItem = frm.add_child("presupuesto_viaticos");
+        newItem.tipo_gasto = item.expense_type;
+        newItem.monto_solicitado = 0;
+        newItem.monto_aprobado = 0;
+        presupuestoViaticosTypes.add(item.expense_type);
+      }
+    });
+    frm.refresh_field("presupuesto_viaticos");
+  },
+
+  group_presupuesto_viaticos(frm) {
+    let grouped = {};
+    let has_duplicates = false;
+
+    $.each(frm.doc.presupuesto_viaticos || [], function(i, row) {
+      if (grouped[row.tipo_gasto]) {
+        has_duplicates = true;
+        grouped[row.tipo_gasto].monto_solicitado = flt(grouped[row.tipo_gasto].monto_solicitado) + flt(row.monto_solicitado);
+        grouped[row.tipo_gasto].monto_aprobado = flt(grouped[row.tipo_gasto].monto_aprobado) + flt(row.monto_aprobado);
+      } else {
+        grouped[row.tipo_gasto] = row;
+      }
+    });
+
+    if (!has_duplicates) {
+      return;
     }
+
+    frm.clear_table("presupuesto_viaticos");
+    Object.values(grouped).forEach(function(row) {
+      var new_row = frm.add_child("presupuesto_viaticos");
+      new_row.tipo_gasto = row.tipo_gasto;
+      new_row.monto_solicitado = row.monto_solicitado;
+      new_row.monto_aprobado = row.monto_aprobado;
+      new_row.monto_solicitado_base = flt(row.monto_solicitado) * flt(frm.doc.exchange_rate);
+      new_row.monto_aprobado_base = flt(row.monto_aprobado) * flt(frm.doc.exchange_rate);
+    });
+    frm.refresh_field("presupuesto_viaticos");
   },
 
   async before_workflow_action(frm) {
