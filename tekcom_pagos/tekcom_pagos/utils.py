@@ -38,7 +38,7 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import (
 	get_bank_cash_account
 )
 
-from erpnext.accounts.party import get_party_account, get_party_bank_account
+from erpnext.accounts.party import get_party_account
 from erpnext.accounts.utils import get_account_currency
 
 from tekcom_pagos.tekcom_pagos.doctype.configuraciones_de_pagos_y_viaticos.configuraciones_de_pagos_y_viaticos import (
