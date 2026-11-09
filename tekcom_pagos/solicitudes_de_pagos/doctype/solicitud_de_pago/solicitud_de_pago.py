@@ -293,17 +293,23 @@ class SolicituddePago(Document):
 				else:
 					party_amount = reference.allocated_amount
 					
-				payment_entry = get_payment_entry(
-					reference.reference_doctype,
-					reference.reference_name,
-					party_amount=party_amount,
-					bank_account=bank_account,
-					bank_amount=bank_amount,
-					party_type = "Supplier",
-					payment_type = "Pay",
-					reference_date=self.reference_date,
-					custom_referencia_de_solicitud_pago=reference.name
-				)
+				# erpnext checks Payment Entry create permission in get_payment_entry; the
+				# Solicitud creates it on the user's behalf (inserted with ignore_permissions below)
+				frappe.flags.ignore_payment_entry_create_permission = True
+				try:
+					payment_entry = get_payment_entry(
+						reference.reference_doctype,
+						reference.reference_name,
+						party_amount=party_amount,
+						bank_account=bank_account,
+						bank_amount=bank_amount,
+						party_type = "Supplier",
+						payment_type = "Pay",
+						reference_date=self.reference_date,
+						custom_referencia_de_solicitud_pago=reference.name
+					)
+				finally:
+					frappe.flags.ignore_payment_entry_create_permission = False
 				
 				payment_entry.update(
 					{
