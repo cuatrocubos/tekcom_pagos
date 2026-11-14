@@ -462,8 +462,8 @@ def get_solicitudes_sin_liquidar(employee, exclude=None):
 	query = (frappe.qb.from_(SolicitudViaticos)
 					.select(SolicitudViaticos.name)
 					.where(SolicitudViaticos.depositar_a == employee)
-					# earlier solicitudes predate liquidaciones being tracked in the system
-					.where(SolicitudViaticos.fecha_solicitud >= '2025-01-01')
+					# up to 2025 viáticos were settled by hand and closed by the cerrar_viaticos_2025 patch
+					.where(SolicitudViaticos.fecha_solicitud >= '2026-01-01')
 					.where(SolicitudViaticos.docstatus < 2)
 					.where(SolicitudViaticos.workflow_status.isin(['Solicitado', 'Revisado', 'Approved', 'Pagado', 'Recibido en Contabilidad', 'Contabilizado']))
 					.where(SolicitudViaticos.name.notin(liquidadas))

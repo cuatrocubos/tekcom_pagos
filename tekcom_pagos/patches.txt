@@ -8,3 +8,5 @@ tekcom_pagos.patches.v15_0.delete_configuraciones_obsoletas
 tekcom_pagos.patches.v15_0.set_configuracion_viaticos_defaults
 tekcom_pagos.patches.v15_0.set_posting_date_solicitud_de_viaticos
 tekcom_pagos.patches.v15_0.create_componente_deduccion_viaticos_intercompania
+tekcom_pagos.patches.v15_0.cerrar_viaticos_2025
+tekcom_pagos.patches.v15_0.reiniciar_liquidaciones_pendientes
