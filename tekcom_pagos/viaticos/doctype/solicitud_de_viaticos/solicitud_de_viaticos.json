@@ -50,6 +50,7 @@
   "column_break_mjann",
   "reference_no",
   "reference_date",
+  "posting_date",
   "more_information_section",
   "remarks",
   "documentos_adjuntos",
@@ -334,6 +335,14 @@
    "read_only_depends_on": "eval:doc.workflow_status!=\"Approved\""
   },
   {
+   "depends_on": "eval:doc.reference_date",
+   "description": "Fecha del anticipo y de su pago. Si el mes de la fecha de referencia est\u00e1 cerrado se mueve al primer d\u00eda del siguiente periodo abierto.",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Fecha de Contabilizaci\u00f3n",
+   "no_copy": 1
+  },
+  {
    "fieldname": "revisado_por",
    "fieldtype": "Link",
    "label": "Revisado Por",
@@ -507,7 +516,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-16 13:45:45.734882",
+ "modified": "2026-11-13 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Solicitud de Viaticos",

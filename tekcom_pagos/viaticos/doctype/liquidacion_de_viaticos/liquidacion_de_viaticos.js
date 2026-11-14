@@ -6,7 +6,11 @@ frappe.provide("erpnext.accounts.dimensions");
 frappe.ui.form.on('Liquidacion de Viaticos', {
   onload(frm) {
     erpnext.accounts.dimensions.setup_dimension_filters(frm, frm.doctype)
-		// frappe.meta.get_docfield("Configuracion Pagos y Viaticos por Company", "compras", frm.doc.name).reqd=1
+    if (frm.is_new() && frm.doc.amended_from) {
+      // amending copies no_copy fields too; these belong to the cancelled liquidacion's settlement
+      ["employee_advance", "monto_anticipo", "monto_liquidado", "monto_devolucion", "monto_reembolso", "additional_salary"]
+        .forEach((field) => frm.doc[field] = null)
+    }
   },
 
   setup(frm) {
@@ -34,6 +38,15 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
       })
     }
 
+    frm.set_query("cuenta", "presupuesto_viaticos", function() {
+      return {
+        filters: {
+          company: frm.doc.company,
+          is_group: 0
+        }
+      }
+    })
+
     frm.set_query("solicitud_de_viaticos", function() {
       return {
         filters: {
@@ -45,18 +58,18 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
   },
 
   refresh(frm) {
-    const workflow_status_for_liquidacion = ['Approved','En Revisión Contable']
     if (!frm.doc.fecha_liquidacion) {
       frm.set_value("fecha_liquidacion", frappe.datetime.nowdate())
     }
     if (frm.doc.solicitud_de_viaticos && frm.doc.__islocal == 1) {
       frm.trigger("solicitud_de_viaticos")
     }
-    if (workflow_status_for_liquidacion.includes(frm.doc.workflow_status)) {
-      frm.add_custom_button(__('Crear Reembolso de Gastos'), () => {
-        frm.events.make_expense_claim()
-      })
-    }
+    // presupuesto rows come from the solicitud and the detalle; only accounting picks the account
+    const revision_contable = frm.doc.docstatus == 0 && frm.doc.workflow_status == 'En Revisión Contable'
+    frm.set_df_property("presupuesto_viaticos", "cannot_add_rows", true)
+    frm.set_df_property("presupuesto_viaticos", "cannot_delete_rows", true)
+    frm.fields_dict.presupuesto_viaticos.grid.update_docfield_property("cuenta", "read_only", !revision_contable)
+    frm.set_df_property("posting_date", "read_only", !revision_contable)
     frm.events.group_presupuesto_viaticos(frm)
     frm.events.hide_unhide_fields(frm)
     frm.events.set_dynamic_labels(frm)
@@ -92,6 +105,24 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
       }
     })
 },
+
+  fecha_liquidacion(frm) {
+    if (!frm.doc.fecha_liquidacion || !frm.doc.company) return;
+
+    frappe.call({
+      method: "tekcom_pagos.viaticos.doctype.liquidacion_de_viaticos.liquidacion_de_viaticos.get_fecha_contabilizacion_liquidacion",
+      args: {
+        fecha: frm.doc.fecha_liquidacion,
+        company: frm.doc.company,
+        solicitante: frm.doc.solicitante
+      },
+      callback: function(r) {
+        if (r.message) {
+          frm.set_value("posting_date", r.message)
+        }
+      }
+    })
+  },
 
   fecha_salida_solicitud(frm) {
     if (frm.doc.fecha_salida_solicitud) {
@@ -200,13 +231,6 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
     // frm.set_df_property("unallocated_amount", "options", "currency")
 
     frm.refresh_fields()
-  },
-
-  make_expense_claim() {
-    frappe.model.open_mapped_doc({
-      method: 'tekcom_pagos.viaticos.doctype.liquidacion_de_viaticos.liquidacion_de_viaticos.make_expense_claim',
-      frm: cur_frm
-    })
   },
 
   validate_company(frm) {
@@ -335,6 +359,7 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
         has_duplicates = true;
         grouped[row.tipo_gasto].monto_solicitado = flt(grouped[row.tipo_gasto].monto_solicitado) + flt(row.monto_solicitado);
         grouped[row.tipo_gasto].monto_aprobado = flt(grouped[row.tipo_gasto].monto_aprobado) + flt(row.monto_aprobado);
+        grouped[row.tipo_gasto].cuenta = grouped[row.tipo_gasto].cuenta || row.cuenta;
       } else {
         grouped[row.tipo_gasto] = row;
       }
@@ -350,6 +375,7 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
       new_row.tipo_gasto = row.tipo_gasto;
       new_row.monto_solicitado = row.monto_solicitado;
       new_row.monto_aprobado = row.monto_aprobado;
+      new_row.cuenta = row.cuenta;
       new_row.monto_solicitado_base = flt(row.monto_solicitado) * flt(frm.doc.exchange_rate);
       new_row.monto_aprobado_base = flt(row.monto_aprobado) * flt(frm.doc.exchange_rate);
     });
@@ -357,18 +383,25 @@ frappe.ui.form.on('Liquidacion de Viaticos', {
   },
 
   async before_workflow_action(frm) {
+    const sin_detalle_reembolso = !frm.doc.mode_of_payment || !frm.doc.reference_date || !frm.doc.reference_no
+    if (
+      frm.selected_workflow_action != 'Enviar a Revisión'
+      || flt(frm.doc.total_reembolso) <= 0
+      || !sin_detalle_reembolso) {
+      return
+    }
+
+    const mensaje = frm.doc.__onload && frm.doc.__onload.empleado_retirado
+      ? __('No ha ingresado los detalles del reembolso en su contra. El empleado ya no está en planilla, por lo que el depósito deberá registrarse antes de contabilizar, ¿Está seguro que desea realizar esta acción?')
+      : __('No ha ingresado los detalles del reembolso en su contra, de continuar, el valor a reembolsar será debitado de su próxima planilla, ¿Está seguro que desea realizar esta acción?')
+
     return await new Promise((resolve, reject) => {
       frappe.dom.unfreeze()
-      if (
-        frm.selected_workflow_action == 'Enviar a Revisión' 
-        && (!frm.doc.mode_of_payment || !frm.doc.reference_date || !frm.doc.reference_no)) {
-          frappe.confirm(__('No ha ingresado los detalles del reembolso en su contra, de continuar, el valor a reembolsar será debitado de su próxima planilla, ¿Está seguro que desea realizar esta acción?'), () => { 
-            resolve()
-          }, () => {
-            reject()
-          })
-      }
-      resolve()
+      frappe.confirm(mensaje, () => {
+        resolve()
+      }, () => {
+        reject()
+      })
     })
   },
 });
@@ -409,6 +442,11 @@ frappe.ui.form.on("Detalle de Liquidacion de Viaticos", {
       callback: function (r) {
         if (r.message) {
           d.default_account = r.message.account;
+          (frm.doc.presupuesto_viaticos || []).forEach(row => {
+            if (row.tipo_gasto == d.expense_type && !row.cuenta) {
+              row.cuenta = r.message.account
+            }
+          })
           d.cost_center = frm.doc.cost_center ? frm.doc.cost_center : r.message.cost_center;
           frm.events.set_total_ejecutado_presupuesto(frm)
           frm.events.hide_unhide_fields(frm)

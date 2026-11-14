@@ -134,25 +134,6 @@ def get_fields(doctype, fields=None):
 
 	return unique(fields)
 
-@frappe.whitelist()
-def get_mode_of_payment_predeterminado(company, doc):
-	configuracion_pagos = frappe.get_doc(doc)
-	configuracion_mode_of_payment = configuracion_pagos.mode_of_payment_predeterminados
-	
-	if len(configuracion_mode_of_payment) > 0:
-		mode_of_payment_predeterminado = next((ele for ele in configuracion_mode_of_payment if ele.company == company), None)
-
-		if mode_of_payment_predeterminado != None:
-			mode_of_payment_predeterminado = mode_of_payment_predeterminado.mode_of_payment
-	else:
-		return {
-			"mode_of_payment_predeterminado": ""
-		}
-				
-	return {
-		"mode_of_payment_predeterminado": mode_of_payment_predeterminado,
-	}
-	
 # def get_amount(ref_doc, payment_account=None):
 # 	"""get amount based on doctype"""
 # 	dt = ref_doc.doctype
@@ -336,8 +317,8 @@ def get_payment_entry_for_employee(
 	bank_account=None, 
 	bank_amount=None, 
 	reference_date=None, reference_no=None, 
-	reference_doctype=None, reference_docname=None, 
-	submit=False):
+	reference_doctype=None, reference_docname=None,
+	submit=False, posting_date=None):
 	"""Function to make Payment Entry for Employee Advance, Gratuity, Expense Claim"""
 	doc = frappe.get_doc(dt, dn)
 	ref_doc = frappe.get_doc(reference_doctype, reference_docname)
@@ -367,7 +348,7 @@ def get_payment_entry_for_employee(
 	pe.payment_type = payment_type
 	pe.company = doc.company
 	pe.cost_center = doc.get("cost_center")
-	pe.posting_date = reference_date
+	pe.posting_date = posting_date or reference_date
 	pe.mode_of_payment = doc.get("mode_of_payment")
 	pe.party_type = "Employee"
 	pe.party = doc.get("employee")
@@ -538,11 +519,13 @@ def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, 
 	return je2.as_dict()
 
 @frappe.whitelist()
-def make_journal_entry_for_payment_solicitud_de_viaticos(dt, dn, reference_doctype, reference_docname, submit=False):
+def make_journal_entry_for_payment_solicitud_de_viaticos(dt, dn, reference_doctype, reference_docname, submit=False, posting_date=None):
 	# Employee Advance doc
 	doc = frappe.get_doc(dt, dn)
 	# Solicitud de Viaticos doc
 	reference_doc = frappe.get_cached_doc(reference_doctype, reference_docname)
+	# the solicitud is mid-save when this runs, so its posting date may not be in the db yet
+	posting_date = posting_date or reference_doc.get("posting_date") or reference_doc.reference_date
 
 	# Get configuraciones de pagos and cuentas
 	configuracion_pagos = get_configuraciones_de_pagos(doc.company)
@@ -580,7 +563,7 @@ def make_journal_entry_for_payment_solicitud_de_viaticos(dt, dn, reference_docty
 	employee_cost_center = get_payroll_cost_center(doc.employee)
 
 	je = frappe.new_doc("Journal Entry")
-	je.posting_date = reference_doc.reference_date
+	je.posting_date = posting_date
 	je.voucher_type = "Journal Entry"
 	je.company = doc.company
 	je.remark = "Solicitud de Viaticos {0} a favor de {1} contra Avance de Empleado {2}".format(reference_doc.name, reference_doc.nombre_depositar_a, dn)
@@ -623,7 +606,7 @@ def make_journal_entry_for_payment_solicitud_de_viaticos(dt, dn, reference_docty
 	# Paso 2: Create Journal Entry for Paying Company (reference_doc.company)
 	
 	je2 = frappe.new_doc("Journal Entry")
-	je2.posting_date = reference_doc.reference_date
+	je2.posting_date = posting_date
 	je2.voucher_type = "Bank Entry"
 	je2.company = reference_doc.company
 	je2.user_remark = "CxC - Solicitud de Viaticos {0} a favor de {1} contra Avance de Empleado {2}".format(reference_doc.name, reference_doc.nombre_depositar_a, dn)
@@ -666,129 +649,6 @@ def make_journal_entry_for_payment_solicitud_de_viaticos(dt, dn, reference_docty
 
 	return je2.as_dict()
 
-@frappe.whitelist()
-def make_journal_entry_for_liquidacion_de_viaticos(dt, dn, submit=False):
-	# Employee Advance doc
-	doc = frappe.get_doc(dt, dn)
-	# Solicitud de Viaticos doc
-	employee_advance = frappe.get_cached_doc("Employee Advance", {"solicitud_de_viaticos": doc.solicitud_de_viaticos, "docstatus": 1})
-	company = frappe.get_cached_value("Employee", doc.solicitante, "company")
-	cost_center = get_employee_cost_center(doc.solicitante)
-
-	# Get configuraciones de pagos and cuentas
-	configuracion_viaticos = get_configuraciones_de_pagos(doc.company, doc.cost_center)
-	# configuracion_cuentas_doc = get_configuraciones_cuentas(doc.company)
-	# configuracion_cuentas_reference_doc = get_configuraciones_cuentas(reference_doc.company)
- 
-	# Get Paid and Claimed amounts
-	paid_amount = employee_advance.paid_amount
-	claimed_amount = employee_advance.claimed_amount
- 
-	if company == doc.company:
-		cost_center = doc.cost_center
-
-	bank_account = get_mode_of_payment_bank_cash_account(doc.mode_of_payment, doc.company)
-	bank = get_bank_cash_account(doc, bank_account)
- 
-	payment_account = get_default_bank_cash_account(
-		company, account_type="Bank", mode_of_payment=doc.mode_of_payment
-	)
-
-# Advance Account: 10020111 - Cuentas por cobrar empleado por viaticos - NAVI
-# Payable Account: 20010106 - Otras cuentas por pagar - TEK
-# Payable Party: PROV-2023-00048 TEKCOM
-# Receivable Account: 10020102 - Cuentas por cobrar comerciales - NAVI
-# Receivable Party: 24181 NAVI
- 
-	# Paso 1: Create Journal Entry for Employee
- 
-	employee_cost_center = get_payroll_cost_center(doc.employee)
-
-	je = frappe.new_doc("Journal Entry")
-	je.posting_date = doc.fecha_liquidacion
-	je.voucher_type = "Journal Entry"
-	je.company = doc.company
-	je.remark = "Liquidacion de Viaticos {0} a favor de {1} contra Avance de Empleado {2}".format(reference_doc.name, reference_doc.nombre_depositar_a, dn)
-	je.title = "Liquidacion de Viaticos {0}".format(dn)
-	je.multi_currency = 1 if advance_account_currency != payable_account_currency else 0
-	# // crear asiento contable para Cuenta por Cobrar a Empleado
-	je.append(
-		"accounts",
-		{
-			"account": advance_account,
-			"account_currency": advance_account_currency,
-			"debit_in_account_currency": doc.advance_amount,
-			"reference_type": "Employee Advance",
-			"reference_name": doc.name,
-			"party_type": "Employee",
-			"cost_center": employee_cost_center,
-			"party": doc.employee,
-			"is_advance": "Yes",
-		}
-	)
-
-	je.append(
-		"accounts",
-		{
-			"account": payable_account,
-			"cost_center": employee_cost_center,
-			"credit_in_account_currency": doc.advance_amount,
-			"account_currency": advance_account_currency,
-			"exchange_rate": flt(doc.exchange_rate),
-			"party_type": "Supplier",
-			"party": payable_party,
-			"account_type": "Payable"
-		},
-	)
-
-	if submit:
-		je.save(ignore_permissions=True)
-		je.submit()
- 
-	# Paso 2: Create Journal Entry for Paying Company (reference_doc.company)
-	
-	je2 = frappe.new_doc("Journal Entry")
-	je2.posting_date = reference_doc.reference_date
-	je2.voucher_type = "Bank Entry"
-	je2.company = reference_doc.company
-	je2.user_remark = "Cuenta por Cobrar por Solicitud de Viaticos {0} a favor de {1} con Avance de Empleado {2}".format(reference_doc.name, reference_doc.nombre_depositar_a, dn)
-	je2.title = "Cuenta por Cobrar por Solicitud de Viaticos {0} Avance de Empleado {1}".format(reference_doc.name, dn)
-	je2.cheque_no = reference_doc.reference_no
-	je2.cheque_date = reference_doc.reference_date
-	je2.mode_of_payment = reference_doc.mode_of_payment
-	je2.multi_currency = 1 if advance_account_currency != payable_account_currency else 0
-	je2.inter_company_journal_entry_reference = je.name
-	# // crear asiento contable para Cuenta por Cobrar a Empleado
-	je2.append(
-		"accounts",
-		{
-			"account": receivable_account,
-			"account_currency": advance_account_currency,
-			"debit_in_account_currency": doc.advance_amount,
-			"party_type": "Customer",
-			"account_type": "Receivable",
-			"cost_center": reference_doc.cost_center,
-			"party": receivable_party,
-		}
-	)
-
-	je2.append(
-		"accounts",
-		{
-			"account": bank.account,
-			"cost_center": reference_doc.cost_center,
-			"credit_in_account_currency": doc.advance_amount,
-			"account_currency": advance_account_currency,
-			"exchange_rate": flt(doc.exchange_rate),
-		},
-	)
- 
-	if submit:
-		je2.save(ignore_permissions=True)
-		je2.submit()
-
-	return je2.as_dict()
-
 def validate_expense_cost_center(self):
 	if not self.cost_center:
 		return
@@ -809,18 +669,31 @@ def validate_expense_cost_center(self):
 			).format(self.voucher_type, self.voucher_no, frappe.bold(self.cost_center))
 		)
   
-@frappe.whitelist()
-def get_journal_entry_for_employee_advance(employee_advance):
-	"""Get Journal Entry for Employee Advance"""
-	journal_entries = frappe.get_all(
-		"Journal Entry",
-		filters={
-			"company": frappe.get_cached_value("Employee Advance", employee_advance, "company"),
-			"reference_type": "Employee Advance",
-			"reference_name": employee_advance,
-			"docstatus": 1
-		},
-		fields=["name", "posting_date", "company", "voucher_type", "remark", "inter_company_journal_entry_reference"]
+def get_advance_payment_journal_entries(employee_advance, account, party):
+	"""Journal Entries that paid the Employee Advance (debit to the advance) against `account` / `party`,
+	e.g. the intercompany payable, with the credit not yet matched by other Journal Entries. Oldest first."""
+	return frappe.db.sql(
+		"""
+		SELECT je.name, SUM(jea.credit_in_account_currency) - IFNULL((
+			SELECT SUM(m.debit_in_account_currency - m.credit_in_account_currency)
+			FROM `tabJournal Entry Account` m
+			WHERE m.reference_type = 'Journal Entry' AND m.reference_name = je.name
+				AND m.account = %(account)s AND m.party = %(party)s AND m.docstatus = 1
+		), 0) AS outstanding
+		FROM `tabJournal Entry` je
+		JOIN `tabJournal Entry Account` jea ON jea.parent = je.name
+		WHERE je.docstatus = 1
+			AND jea.account = %(account)s AND jea.party = %(party)s
+			AND IFNULL(jea.reference_type, '') = '' AND jea.credit_in_account_currency > 0
+			AND EXISTS (
+				SELECT 1 FROM `tabJournal Entry Account` adv
+				WHERE adv.parent = je.name AND adv.reference_type = 'Employee Advance'
+					AND adv.reference_name = %(employee_advance)s AND adv.debit_in_account_currency > 0
+			)
+		GROUP BY je.name
+		HAVING outstanding > 0
+		ORDER BY je.posting_date, je.creation
+		""",
+		{"employee_advance": employee_advance, "account": account, "party": party},
+		as_dict=True,
 	)
-	
-	return journal_entries

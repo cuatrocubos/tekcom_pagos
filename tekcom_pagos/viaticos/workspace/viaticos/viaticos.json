@@ -16,7 +16,7 @@
    "hidden": 0,
    "is_query_report": 0,
    "label": "Viaticos",
-   "link_count": 2,
+   "link_count": 3,
    "onboard": 0,
    "type": "Card Break"
   },
@@ -42,6 +42,16 @@
   },
   {
    "hidden": 0,
+   "is_query_report": 1,
+   "label": "Anticipos de Viaticos sin Conciliar",
+   "link_count": 0,
+   "link_to": "Anticipos de Viaticos sin Conciliar",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
    "is_query_report": 0,
    "label": "Configuraci\u00f3n",
    "link_count": 1,
@@ -52,15 +62,15 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "Configuracion de Viaticos",
+   "label": "Configuraciones de Pagos y Viaticos",
    "link_count": 0,
-   "link_to": "Configuracion de Viaticos",
+   "link_to": "Configuraciones de Pagos y Viaticos",
    "link_type": "DocType",
    "onboard": 0,
    "type": "Link"
   }
  ],
- "modified": "2024-03-18 00:04:17.713027",
+ "modified": "2026-11-08 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Viaticos",

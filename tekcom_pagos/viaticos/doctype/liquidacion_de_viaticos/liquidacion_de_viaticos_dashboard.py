@@ -4,6 +4,7 @@ def get_data():
   return {
     "fieldname": "liquidacion_de_viaticos",
     "transactions": [
+      {"label": _("Contabilidad"), "items": ["Journal Entry", "Additional Salary"]},
       {"label": _("Viaticos"), "items": ["Expense Claim"]}
     ]
   }

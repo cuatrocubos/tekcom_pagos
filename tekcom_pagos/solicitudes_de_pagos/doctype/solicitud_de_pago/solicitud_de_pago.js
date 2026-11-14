@@ -604,27 +604,7 @@ frappe.ui.form.on('Solicitud de Pago', {
 		})
 	},
 
-	get_mode_of_payment_predeterminado(frm) {
-		frappe.call({
-			method: "tekcom_pagos.tekcom_pagos.utils.get_mode_of_payment_predeterminado",
-			args: {
-				"company": frm.doc.company,
-				"doc": "Configuracion de Solicitudes de Pago"
-			},
-			callback: function(res) {
-				if (res && !res.exc) {
-					if (res.message) {	
-						return res.message.mode_of_payment_predeterminado
-					} else {
-						return ""
-					}
-				}
-			}
-		})			
-	},
-
 	async before_workflow_action(frm) {
-		let mode_of_payment_predeterminado = frm.events.get_mode_of_payment_predeterminado(frm)
 		return await new Promise((resolve, reject) => {
 			if (frm.doc.workflow_status == 'Approved' && frm.selected_workflow_action == 'Pagar') {
 					let fields = [
@@ -639,8 +619,6 @@ frappe.ui.form.on('Solicitud de Pago', {
 								company: frm.doc.company
 							},
 						}),
-						// selected_value: mode_of_payment_predeterminado,
-						// selected_value: frm.events.get_mode_of_payment_predeterminado(frm),
 					},
 					{
 						label: 'Cheque/Reference Date',
@@ -660,7 +638,6 @@ frappe.ui.form.on('Solicitud de Pago', {
 					
 				frappe.prompt(fields, (values) => {
 					// action to take
-					// this.set_value('mode_of_payment', mode_of_payment_predeterminado)
 					frappe.call({
 						method: "tekcom_pagos.tekcom_pagos.utils.add_payment_details",
 						args: {

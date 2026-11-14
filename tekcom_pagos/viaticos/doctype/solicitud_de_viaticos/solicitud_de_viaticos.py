@@ -46,8 +46,12 @@ from tekcom_pagos.tekcom_pagos.utils import (
 )
 
 from tekcom_pagos.solicitudes_de_pagos.doctype.presupuesto_de_gastos.presupuesto_de_gastos import actualizar_presupuesto_de_gastos
+from tekcom_pagos.viaticos.doctype.liquidacion_de_viaticos.liquidacion_de_viaticos import get_fecha_contabilizacion
 
 class SolicituddeViaticos(Document):
+	def onload(self):
+		self.set_onload("tiene_anticipo", bool(self.get_employee_advance()))
+
 	def on_update(self):
 		actualizar_presupuesto_de_gastos(project=self.project, cost_center=self.cost_center)
 
@@ -64,50 +68,70 @@ class SolicituddeViaticos(Document):
 			self.mode_of_payment = ''
 			self.reference_no = ''
 			self.reference_date = ''
+			self.posting_date = ''
 			self.update_presupuesto_monto_aprobado()
 	
 	def validate(self):
 		validate_active_employee(self)	
 		self.validate_employee_permite_asignar_viaticos()
-		# self.validate_solicitudes_por_liquidar(self)
+		self.validate_solicitudes_por_liquidar()
 		self.set_totales_personas_dia()
 		self.update_workflow_details()
+		self.set_posting_date()
 		if (self.workflow_status == 'Recibido en Contabilidad'):
+			self.create_employee_advance(submit=True)
+		elif self.workflow_status == 'Contabilizado' and not self.get_employee_advance():
+			# 'Contabilizar' straight from 'Pagado' skips 'Recibido en Contabilidad'
 			self.create_employee_advance(submit=True)
 		# if (self.workflow_status == 'Contabilizado'):
 		# 	pass
 		# set_revision(self)
 		# set_aprobado(self)
 
+	def set_posting_date(self):
+		"""Posting date of the advance and its payment: the reference date, moved past closed periods.
+		Fixed once the advance exists."""
+		if not self.reference_date or self.get_employee_advance():
+			return
+
+		old_doc = self.get_doc_before_save()
+		fecha_cambiada = (
+			old_doc
+			and getdate(old_doc.reference_date) != getdate(self.reference_date)
+			and old_doc.posting_date == self.posting_date
+		)
+		if not self.posting_date or fecha_cambiada:
+			self.posting_date = self.reference_date
+
+		self.posting_date = get_fecha_contabilizacion_solicitud(self.posting_date, self.company, self.depositar_a)
+
+	def get_employee_advance(self):
+		if self.is_new():
+			return None
+		return frappe.db.exists("Employee Advance", {"solicitud_de_viaticos": self.name, "docstatus": 1})
+
 	def validate_solicitudes_por_liquidar(self):
-   
-		# SELECT tsdv.name, tsdv.workflow_status, tldv.solicitud_de_viaticos 
-		# FROM `tabSolicitud de Viaticos` tsdv
-		# LEFT JOIN `tabLiquidacion de Viaticos` tldv ON tsdv.name = tldv.solicitud_de_viaticos 
-		# WHERE tsdv.depositar_a = 'E-00021'
-		# AND NOT tsdv.workflow_status IN ('Draft', 'Solicitad', 'Revisado', 'Approved', 'Rejected')
-		# AND NOT tsdv.name = 'GA-FO-001-TEK-2025-00059'
-		# AND tldv.name IS NULL;
-		
-		SolicitudViaticos = frappe.qb.DocType('Solicitud de Viaticos')
-		LiquidacionViaticos = frappe.qb.DocType('Liquidacion de Viaticos')
-  
-		count_all = Count('*').as_("count")
-		query = (frappe.qb.from_(SolicitudViaticos)
-						.left_join(LiquidacionViaticos)
-						.on(SolicitudViaticos.name == LiquidacionViaticos.solicitud_de_viaticos)
-						.select(count_all)
-						.where(SolicitudViaticos.depositar_a == self.depositar_a)
-						.where(SolicitudViaticos.fecha_solicitud > '2025-01-01')
-						.where(SolicitudViaticos.workflow_status.notin(['Draft', 'Solicitad', 'Revisado', 'Approved', 'Rejected']))
-						.where(SolicitudViaticos.name != self.name)
-						.where(LiquidacionViaticos.name.isnull())
-						).run()
-		
-		if self.workflow_status == 'Solicitado':
-			if query and query[0][0] > 3:
-				frappe.throw(_("No se puede aprobar la solicitud si existen solicitudes por liquidar"), frappe.ValidationError)
-		
+		"""Block 'Solicitar' while the employee already has the configured number of solicitudes without a liquidacion"""
+		old_doc = self.get_doc_before_save()
+		if self.workflow_status != 'Solicitado' or (old_doc and old_doc.workflow_status == 'Solicitado'):
+			return
+
+		limite = cint(frappe.db.get_single_value("Configuraciones de Pagos y Viaticos", "limite_solicitudes_sin_liquidar"))
+		if not limite:
+			return
+
+		pendientes = get_solicitudes_sin_liquidar(self.depositar_a, exclude=self.name)
+		if len(pendientes) >= limite:
+			frappe.throw(
+				_("{0} tiene {1} solicitudes de viáticos sin liquidar (límite: {2}). Liquide las pendientes antes de solicitar nuevos viáticos:<br>{3}").format(
+					self.nombre_depositar_a or self.depositar_a,
+					len(pendientes),
+					limite,
+					"<br>".join(get_link_to_form("Solicitud de Viaticos", name) for name in pendientes),
+				),
+				title=_("Solicitudes sin liquidar"),
+			)
+
 
 	def validate_employee_permite_asignar_viaticos(self):
 		if self.cost_center == None or self.cost_center == '':
@@ -225,8 +249,9 @@ class SolicituddeViaticos(Document):
 		# 2. Create Employee Advance
 		# 3. Create Payment Entry for Employee Advance
 		get_employee_advances = frappe.db.exists("Employee Advance", { "solicitud_de_viaticos": self.name, "docstatus": 1 })
-		get_payment_entries = frappe.db.exists("Payment Entry", { "reference_no": self.reference_no, "reference_date": self.reference_date, "mode_of_payment": self.mode_of_payment, "docstatus": 1 })
-		get_journal_entries = frappe.db.exists("Journal Entry", { "cheque_no": self.reference_no, "cheque_date": self.reference_date, "mode_of_payment": self.mode_of_payment })
+		# one transfer can pay several solicitudes, so match payments to this solicitud and not only by reference
+		get_payment_entries = frappe.db.exists("Payment Entry", { "solicitud_de_viaticos": self.name, "reference_no": self.reference_no, "reference_date": self.reference_date, "mode_of_payment": self.mode_of_payment, "docstatus": 1 })
+		get_journal_entries = frappe.db.exists("Journal Entry", { "title": ["like", f"%{self.name}%"], "cheque_no": self.reference_no, "cheque_date": self.reference_date, "mode_of_payment": self.mode_of_payment })
 		
 		if get_employee_advances or get_payment_entries or get_journal_entries:
 			if get_journal_entries:
@@ -269,7 +294,7 @@ class SolicituddeViaticos(Document):
 		party_amount = self.total_anticipo_aprobado
 		
 		employee_advance = frappe.new_doc("Employee Advance")
-		employee_advance.posting_date = self.reference_date
+		employee_advance.posting_date = self.posting_date or self.reference_date
 		employee_advance.company = company
 		employee_advance.employee = self.depositar_a
 		employee_advance.advance_amount = party_amount
@@ -289,14 +314,15 @@ class SolicituddeViaticos(Document):
 			employee_advance.save(ignore_permissions=True)
 			employee_advance.submit()
 			if company != self.company:
-				make_journal_entry_for_payment_solicitud_de_viaticos(employee_advance.doctype, employee_advance.name, self.doctype, self.name, submit)
+				make_journal_entry_for_payment_solicitud_de_viaticos(employee_advance.doctype, employee_advance.name, self.doctype, self.name, submit, posting_date=employee_advance.posting_date)
 			if company == self.company:
 				get_payment_entry_for_employee(
-      		employee_advance.doctype, 
-        	employee_advance.name, 
-         	bank_account=bank_account, 
-          party_amount=party_amount, 
-          reference_date=self.reference_date, 
+      		employee_advance.doctype,
+        	employee_advance.name,
+         	bank_account=bank_account,
+          party_amount=party_amount,
+          posting_date=employee_advance.posting_date,
+          reference_date=self.reference_date,
           reference_no=self.reference_no, 
           reference_doctype=self.doctype,
           reference_docname=self.name,
@@ -421,6 +447,39 @@ def get_presupuesto_disponible(company, fecha, cost_center):
 	)
 	
 	return presupuesto_de_centro_costos
+
+def get_solicitudes_sin_liquidar(employee, exclude=None):
+	"""Solicitudes in progress or paid that have no liquidacion sent for review yet"""
+	SolicitudViaticos = frappe.qb.DocType('Solicitud de Viaticos')
+	LiquidacionViaticos = frappe.qb.DocType('Liquidacion de Viaticos')
+
+	liquidadas = (frappe.qb.from_(LiquidacionViaticos)
+					.select(LiquidacionViaticos.solicitud_de_viaticos)
+					.where(LiquidacionViaticos.docstatus < 2)
+					.where(LiquidacionViaticos.workflow_status.notin(['Draft', 'Rejected']))
+					.where(LiquidacionViaticos.solicitud_de_viaticos.isnotnull()))
+
+	query = (frappe.qb.from_(SolicitudViaticos)
+					.select(SolicitudViaticos.name)
+					.where(SolicitudViaticos.depositar_a == employee)
+					# earlier solicitudes predate liquidaciones being tracked in the system
+					.where(SolicitudViaticos.fecha_solicitud >= '2025-01-01')
+					.where(SolicitudViaticos.docstatus < 2)
+					.where(SolicitudViaticos.workflow_status.isin(['Solicitado', 'Revisado', 'Approved', 'Pagado', 'Recibido en Contabilidad', 'Contabilizado']))
+					.where(SolicitudViaticos.name.notin(liquidadas))
+					.orderby(SolicitudViaticos.fecha_solicitud))
+	if exclude:
+		query = query.where(SolicitudViaticos.name != exclude)
+
+	return query.run(pluck=True)
+
+@frappe.whitelist()
+def get_fecha_contabilizacion_solicitud(fecha, company, depositar_a=None):
+	"""Same company pays with a Payment Entry; another company with Journal Entries in both"""
+	employee_company = frappe.get_cached_value("Employee", depositar_a, "company") if depositar_a else None
+	if employee_company and employee_company != company:
+		return get_fecha_contabilizacion(fecha, [company, employee_company], "Journal Entry")
+	return get_fecha_contabilizacion(fecha, [company], "Payment Entry")
 
 @frappe.whitelist()
 def make_liquidacion_viaticos(source_name, target_doc=None):

@@ -7,7 +7,13 @@
  "field_order": [
   "predeterminados_de_pagos_y_viaticos",
   "predeterminados_centro_costos",
-  "contabilidad"
+  "contabilidad",
+  "viaticos_section",
+  "limite_solicitudes_sin_liquidar",
+  "column_break_viaticos",
+  "componente_deduccion_viaticos",
+  "componente_reembolso_viaticos",
+  "componente_deduccion_viaticos_intercompania"
  ],
  "fields": [
   {
@@ -27,12 +33,53 @@
    "fieldtype": "Table",
    "label": "Contabilidad",
    "options": "Cuentas por Cobrar y Pagar de Pagos y Viaticos"
+  },
+  {
+   "fieldname": "viaticos_section",
+   "fieldtype": "Section Break",
+   "label": "Viáticos"
+  },
+  {
+   "default": "3",
+   "description": "Máximo de solicitudes de viáticos sin liquidar que puede tener un empleado. Al alcanzarlo no puede enviar nuevas solicitudes. 0 = sin límite.",
+   "fieldname": "limite_solicitudes_sin_liquidar",
+   "fieldtype": "Int",
+   "label": "Límite de Solicitudes sin Liquidar",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_viaticos",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "DEDUCCION VIATICOS",
+   "description": "Componente de deducción para el saldo que el empleado debe devolver al liquidar.",
+   "fieldname": "componente_deduccion_viaticos",
+   "fieldtype": "Link",
+   "label": "Componente Deducción por Viáticos",
+   "options": "Salary Component"
+  },
+  {
+   "default": "REEMBOLSO VIATICOS",
+   "description": "Componente de ingreso para el saldo que la empresa debe reembolsar al empleado al liquidar.",
+   "fieldname": "componente_reembolso_viaticos",
+   "fieldtype": "Link",
+   "label": "Componente Reembolso de Viáticos",
+   "options": "Salary Component"
+  },
+  {
+   "default": "DEDUCCION VIATICOS INTERCOMPAÑIA",
+   "description": "Componente de deducción cuando el empleado ya está en la planilla de otra compañía que la del anticipo. Su cuenta en cada compañía se cancela contra la cuenta por pagar intercompañía al contabilizar.",
+   "fieldname": "componente_deduccion_viaticos_intercompania",
+   "fieldtype": "Link",
+   "label": "Componente Deducción por Viáticos Intercompañía",
+   "options": "Salary Component"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-19 22:48:55.477654",
+ "modified": "2026-11-13 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Tekcom Pagos",
  "name": "Configuraciones de Pagos y Viaticos",

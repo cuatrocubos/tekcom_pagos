@@ -31,6 +31,12 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			// 	frm.events.make_payment_entry(frm)
 			// })
 		}
+		// accounting picks the posting date until the advance is created
+		const fecha_contabilizacion_editable = frm.doc.docstatus == 0
+			&& ['Pagado', 'Recibido en Contabilidad'].includes(frm.doc.workflow_status)
+			&& !frm.doc.__onload?.tiene_anticipo
+			&& (frappe.user.has_role('Accounts User') || frappe.user.has_role('Accounts Manager'))
+		frm.set_df_property("posting_date", "read_only", !fecha_contabilizacion_editable)
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
 	},
@@ -120,6 +126,24 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 	},
 
 	cost_center(frm) {},
+
+	reference_date(frm) {
+		if (!frm.doc.reference_date || !frm.doc.company) return;
+
+		frappe.call({
+			method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_fecha_contabilizacion_solicitud",
+			args: {
+				fecha: frm.doc.reference_date,
+				company: frm.doc.company,
+				depositar_a: frm.doc.depositar_a
+			},
+			callback: function(r) {
+				if (r.message) {
+					frm.set_value("posting_date", r.message)
+				}
+			}
+		})
+	},
 
 	currecy(frm) {
 		if (!frm.doc.currency || !frm.doc.company) return;
@@ -833,27 +857,7 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 		// frm.refresh_fields()
 	},
 
-	get_mode_of_payment_predeterminado(frm) {
-		frappe.call({
-			method: "tekcom_pagos.tekcom_pagos.utils.get_mode_of_payment_predeterminado",
-			args: {
-				"company": frm.doc.company,
-				"doc": "Configuracion de Viaticos"
-			},
-			callback: function(res) {
-				if (res && !res.exc) {
-					if (res.message) {	
-						return res.message.mode_of_payment_predeterminado
-					} else {
-						return ""
-					}
-				}
-			}
-		})			
-	},
-
 	async before_workflow_action(frm) {
-		let mode_of_payment_predeterminado = frm.events.get_mode_of_payment_predeterminado(frm)
 		return await new Promise((resolve, reject) => {
 			if (frm.doc.workflow_status == 'Approved' && frm.selected_workflow_action == 'Pagar') {
 					let fields = [
@@ -868,8 +872,6 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 								company: frm.doc.company
 							},
 						}),
-						// selected_value: mode_of_payment_predeterminado,
-						// selected_value: frm.events.get_mode_of_payment_predeterminado(frm),
 					},
 					{
 						label: 'Cheque/Reference Date',
@@ -889,7 +891,6 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 					
 				frappe.prompt(fields, (values) => {
 					// action to take
-					// this.set_value('mode_of_payment', mode_of_payment_predeterminado)
 					frappe.call({
 						method: "tekcom_pagos.tekcom_pagos.utils.add_payment_details",
 						args: {

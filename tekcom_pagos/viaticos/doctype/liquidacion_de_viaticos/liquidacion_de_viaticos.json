@@ -19,6 +19,7 @@
   "fecha_retorno_solicitud",
   "column_break_fevnj",
   "fecha_liquidacion",
+  "posting_date",
   "fecha_salida",
   "fecha_retorno",
   "lugar_viaje",
@@ -54,6 +55,14 @@
   "column_break_qivu",
   "reference_no",
   "reference_date",
+  "conciliacion_anticipo_section",
+  "employee_advance",
+  "monto_anticipo",
+  "monto_liquidado",
+  "column_break_conciliacion",
+  "monto_devolucion",
+  "monto_reembolso",
+  "additional_salary",
   "more_information_section",
   "remarks",
   "status",
@@ -107,6 +116,13 @@
    "in_list_view": 1,
    "label": "Fecha Liquidaci\u00f3n",
    "reqd": 1
+  },
+  {
+   "description": "Fecha del asiento contable. Si el mes de la liquidaci\u00f3n est\u00e1 cerrado se mueve al primer d\u00eda del siguiente periodo abierto.",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Fecha de Contabilizaci\u00f3n",
+   "no_copy": 1
   },
   {
    "fieldname": "amended_from",
@@ -366,8 +382,7 @@
   {
    "fieldname": "presupuesto_viaticos",
    "fieldtype": "Table",
-   "options": "Presupuesto de Liquidacion de Viaticos",
-   "read_only": 1
+   "options": "Presupuesto de Liquidacion de Viaticos"
   },
   {
    "fieldname": "fecha_hora_solicitud",
@@ -460,7 +475,7 @@
    "fieldtype": "Link",
    "label": "Mode of Payment",
    "options": "Mode of Payment",
-   "read_only_depends_on": "eval:doc.total_reembolso<0"
+   "read_only_depends_on": "eval:doc.total_reembolso<0 && !(doc.__onload && doc.__onload.empleado_retirado)"
   },
   {
    "fieldname": "column_break_qivu",
@@ -470,19 +485,82 @@
    "fieldname": "reference_no",
    "fieldtype": "Data",
    "label": "Reference No.",
-   "read_only_depends_on": "eval:doc.total_reembolso<0"
+   "read_only_depends_on": "eval:doc.total_reembolso<0 && !(doc.__onload && doc.__onload.empleado_retirado)"
   },
   {
    "fieldname": "reference_date",
    "fieldtype": "Date",
    "label": "Reference Date",
-   "read_only_depends_on": "eval:doc.total_reembolso<0"
+   "read_only_depends_on": "eval:doc.total_reembolso<0 && !(doc.__onload && doc.__onload.empleado_retirado)"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.docstatus==1",
+   "fieldname": "conciliacion_anticipo_section",
+   "fieldtype": "Section Break",
+   "label": "Conciliaci\u00f3n del Anticipo"
+  },
+  {
+   "fieldname": "employee_advance",
+   "fieldtype": "Link",
+   "label": "Anticipo de Empleado",
+   "no_copy": 1,
+   "options": "Employee Advance",
+   "read_only": 1
+  },
+  {
+   "description": "Monto pagado al empleado en el anticipo.",
+   "fieldname": "monto_anticipo",
+   "fieldtype": "Currency",
+   "label": "Monto del Anticipo",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "description": "Gastos aplicados contra el anticipo.",
+   "fieldname": "monto_liquidado",
+   "fieldtype": "Currency",
+   "label": "Monto Liquidado",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_conciliacion",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Saldo devuelto por el empleado (dep\u00f3sito o deducci\u00f3n de planilla).",
+   "fieldname": "monto_devolucion",
+   "fieldtype": "Currency",
+   "label": "Devoluci\u00f3n del Empleado",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "description": "Gastos que exceden el anticipo, pagados al empleado en planilla (o por banco si ya no está en planilla).",
+   "fieldname": "monto_reembolso",
+   "fieldtype": "Currency",
+   "label": "Reembolso al Empleado",
+   "no_copy": 1,
+   "options": "currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "additional_salary",
+   "fieldtype": "Link",
+   "label": "Salario Adicional",
+   "no_copy": 1,
+   "options": "Additional Salary",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-18 15:40:08.411892",
+ "modified": "2026-11-10 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Viaticos",
  "name": "Liquidacion de Viaticos",

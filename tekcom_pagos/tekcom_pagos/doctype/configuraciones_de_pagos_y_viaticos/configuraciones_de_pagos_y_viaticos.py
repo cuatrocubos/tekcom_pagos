@@ -2,7 +2,9 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
+from frappe.utils import get_link_to_form
 
 
 class ConfiguracionesdePagosyViaticos(Document):
@@ -160,3 +162,19 @@ def get_configuraciones_cuentas(company):
 		"parte_customer": parte_customer,
 		"parte_supplier": parte_supplier
 	}
+def get_componentes_viaticos():
+	"""Salary components that settle a liquidacion's balance in payroll"""
+	deduccion, reembolso, deduccion_intercompania = frappe.db.get_value(
+		"Configuraciones de Pagos y Viaticos",
+		None,
+		["componente_deduccion_viaticos", "componente_reembolso_viaticos", "componente_deduccion_viaticos_intercompania"],
+	)
+	if not (deduccion and reembolso):
+		frappe.throw(
+			_("Configure los componentes de deducción y reembolso de viáticos en {0}").format(
+				get_link_to_form("Configuraciones de Pagos y Viaticos", "Configuraciones de Pagos y Viaticos")
+			)
+		)
+
+	# only needed when the employee moved to another company; checked where it is used
+	return frappe._dict(deduccion=deduccion, reembolso=reembolso, deduccion_intercompania=deduccion_intercompania)
