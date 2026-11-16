@@ -67,6 +67,7 @@
   "column_break_fwkqf",
   "reference_no",
   "reference_date",
+  "posting_date",
   "more_information_section",
   "remarks",
   "status",
@@ -246,6 +247,14 @@
    "fieldtype": "Date",
    "label": "Cheque/Reference Date",
    "read_only_depends_on": "eval:(doc.company && doc.workflow_status != \"Approved\")"
+  },
+  {
+   "depends_on": "eval:doc.reference_date",
+   "description": "Fecha del pago en contabilidad. La fecha de referencia queda como fecha del cheque/transferencia para conciliar con el banco. Si el mes est\u00e1 cerrado se mueve al primer d\u00eda del siguiente periodo abierto.",
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "label": "Fecha de Contabilizaci\u00f3n",
+   "no_copy": 1
   },
   {
    "default": "Draft",
@@ -621,7 +630,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-11-18 19:12:41.635541",
+ "modified": "2026-11-15 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Solicitudes de Pagos",
  "name": "Solicitud de Pago",

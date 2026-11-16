@@ -276,9 +276,35 @@ frappe.ui.form.on('Solicitud de Pago', {
 			);
 		}
 
+		// accounting picks the posting date until the payment is created
+		const fecha_contabilizacion_editable = frm.doc.docstatus == 0
+			&& ['Pagado', 'Entregado a Contabilidad'].includes(frm.doc.workflow_status)
+			&& !frm.doc.__onload?.tiene_pago
+			&& (frappe.user.has_role('Accounts User') || frappe.user.has_role('Accounts Manager'))
+		frm.set_df_property("posting_date", "read_only", !fecha_contabilizacion_editable)
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
 		// frm.events.show_general_ledger(frm);
+	},
+
+	reference_date(frm) {
+		if (!frm.doc.reference_date || !frm.doc.company) return;
+
+		frappe.call({
+			method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_fecha_contabilizacion_solicitud_pago",
+			args: {
+				fecha: frm.doc.reference_date,
+				company: frm.doc.company,
+				party_type: frm.doc.party_type,
+				party: frm.doc.party,
+				gastos_varios: (frm.doc.references || [])[0]?.reference_doctype == 'Gastos Varios' ? 1 : 0
+			},
+			callback: function(r) {
+				if (r.message) {
+					frm.set_value("posting_date", r.message)
+				}
+			}
+		})
 	},
 
 	company: function(frm) {

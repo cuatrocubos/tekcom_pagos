@@ -42,6 +42,7 @@ from tekcom_pagos.tekcom_pagos.utils import (
 	get_bank_account_details,
 	make_journal_entry_for_payment_solicitud_de_pago
 )
+from tekcom_pagos.viaticos.doctype.liquidacion_de_viaticos.liquidacion_de_viaticos import get_fecha_contabilizacion
 
 class SolicituddePago(Document):
 	# def set_indicator(self):
@@ -54,6 +55,9 @@ class SolicituddePago(Document):
 	#   else:
 	#     self.indicator_color = "green"
 	#     self.indicator_title = _("Paid")
+	def onload(self):
+		self.set_onload("tiene_pago", bool(self.get_pago()))
+
 	def before_save(self):
 		if self.workflow_status == 'Rejected':
 			self.revisor = ''
@@ -67,12 +71,14 @@ class SolicituddePago(Document):
 			self.mode_of_payment = ''
 			self.reference_no = ''
 			self.reference_date = ''
+			self.posting_date = ''
 			# update_presupuesto_monto_aprobado(self)
 	
 	def validate(self):
 		validate_active_employee(self.solicitante)
 		self.set_monto_solicitado_base()
 		self.update_workflow_details()
+		self.set_posting_date()
 		if (self.workflow_status == 'Entregado a Contabilidad'):
 			self.create_payment_entry(submit=True)
 		if self.workflow_status not in ["Draft", "Rejected"]:
@@ -92,6 +98,38 @@ class SolicituddePago(Document):
 				frappe.throw(_("Aprobador is mandatory"))
 			if not self.coordinador_pagos:
 				frappe.throw(_("Coordinador Pagos is mandatory"))
+
+	def set_posting_date(self):
+		"""Posting date of the payment: the reference date, moved past closed periods. The reference date stays the
+		cheque/transfer date of the payment for the bank reconciliation. Fixed once the payment exists."""
+		if not self.reference_date or self.get_pago():
+			return
+
+		old_doc = self.get_doc_before_save()
+		fecha_cambiada = (
+			old_doc
+			and getdate(old_doc.reference_date) != getdate(self.reference_date)
+			and old_doc.posting_date == self.posting_date
+		)
+		if not self.posting_date or fecha_cambiada:
+			self.posting_date = self.reference_date
+
+		self.posting_date = get_fecha_contabilizacion_solicitud_pago(
+			self.posting_date, self.company, self.party_type, self.party, self.is_gastos_varios()
+		)
+
+	def get_pago(self):
+		"""Payment Entry, Employee Advance or Caja Chica Journal Entry already made for this solicitud"""
+		if self.is_new():
+			return None
+		return (
+			frappe.db.exists("Payment Entry", {"solicitud_de_pago": self.name, "docstatus": ["<", 2]})
+			or frappe.db.exists("Employee Advance", {"solicitud_de_pago": self.name, "docstatus": 1})
+			or frappe.db.exists("Journal Entry", {"bill_no": self.name, "docstatus": ["<", 2]})
+		)
+
+	def is_gastos_varios(self):
+		return bool(self.references) and self.references[0].reference_doctype == 'Gastos Varios'
 
 	def set_monto_solicitado_base(self):
 		company_currency = None
@@ -166,7 +204,7 @@ class SolicituddePago(Document):
 			party_amount = self.monto_solicitado
 			
 			employee_advance = frappe.new_doc("Employee Advance")
-			employee_advance.posting_date = self.reference_date
+			employee_advance.posting_date = self.posting_date or self.reference_date
 			employee_advance.company = party_company
 			employee_advance.employee = self.party
 			employee_advance.advance_amount = party_amount
@@ -185,9 +223,9 @@ class SolicituddePago(Document):
 				employee_advance.save(ignore_permissions=True)
 				employee_advance.submit()
 				if self.company == party_company:
-					get_payment_entry_for_employee(employee_advance.doctype, employee_advance.name, party_amount, reference_date=self.reference_date, reference_no=self.reference_no, solicitud_de_pago=self.name, submit=True)
+					get_payment_entry_for_employee(employee_advance.doctype, employee_advance.name, party_amount, reference_date=self.reference_date, reference_no=self.reference_no, solicitud_de_pago=self.name, submit=True, posting_date=employee_advance.posting_date)
 				else:
-					make_journal_entry_for_payment_solicitud_de_pago(employee_advance.doctype, employee_advance.name, self.doctype, self.name, submit)
+					make_journal_entry_for_payment_solicitud_de_pago(employee_advance.doctype, employee_advance.name, self.doctype, self.name, submit, posting_date=employee_advance.posting_date)
 			else:
 				employee_advance.save(ignore_permissions=True)
 			payment_docs.append(get_link_to_form(employee_advance.doctype, employee_advance.name))
@@ -207,7 +245,7 @@ class SolicituddePago(Document):
 			journal_entry = frappe.new_doc("Journal Entry")
 			journal_entry.voucher_type = "Bank Entry"
 			journal_entry.company = self.company
-			journal_entry.posting_date = self.reference_date
+			journal_entry.posting_date = self.posting_date or self.reference_date
 			journal_entry.cheque_date = self.reference_date
 			journal_entry.cheque_no = self.reference_no
 			journal_entry.user_remark = "Solicitud de Pago {0} por Caja Chica {1} a favor de {2}".format(self.name, reference.reference_name, solicitante.employee_name)
@@ -315,6 +353,7 @@ class SolicituddePago(Document):
 					{
 						"solicitud_de_pago": self.name,
 						"mode_of_payment": self.mode_of_payment,
+						"posting_date": self.posting_date or self.reference_date,
 						"reference_no": self.reference_no,
 						"reference_date": self.reference_date,
 						"remarks": "Entrada de Pago via Solicitud de Pago {}".format(
@@ -364,7 +403,7 @@ class SolicituddePago(Document):
 				payment_entry.payment_type = payment_type
 				payment_entry.company = self.company
 				payment_entry.cost_center = self.cost_center
-				payment_entry.posting_date = self.reference_date
+				payment_entry.posting_date = self.posting_date or self.reference_date
 				payment_entry.reference_date = self.reference_date
 				payment_entry.reference_no = self.reference_no
 				payment_entry.mode_of_payment = self.mode_of_payment
@@ -391,6 +430,8 @@ class SolicituddePago(Document):
 				payment_entry.set_missing_ref_details()
 				
 				if party_account and bank:
+					# erpnext 15.124 divides by the exchange rates in set_amounts: they must be set first
+					payment_entry.set_exchange_rate()
 					payment_entry.set_amounts()
 
 				if submit:
@@ -488,11 +529,20 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
 	)
 	
 @frappe.whitelist()
+def get_fecha_contabilizacion_solicitud_pago(fecha, company, party_type=None, party=None, gastos_varios=False):
+	"""An employee of another company is paid with Journal Entries in both companies; Caja Chica with a Journal Entry;
+	anything else with a Payment Entry"""
+	employee_company = frappe.get_cached_value("Employee", party, "company") if party_type == "Employee" and party else None
+	if employee_company and employee_company != company:
+		return get_fecha_contabilizacion(fecha, [company, employee_company], "Journal Entry")
+	return get_fecha_contabilizacion(fecha, [company], "Journal Entry" if cint(gastos_varios) else "Payment Entry")
+
+@frappe.whitelist()
 def make_payment_entry(docname):
 	doc = frappe.get_doc("Solicitud de Pago", docname)
 	return doc.create_payment_entry(submit=True)
 
-def get_payment_entry_for_employee(dt, dn, party_amount=None, bank_account=None, bank_amount=None, reference_date=None, reference_no=None, solicitud_de_pago=None, submit=False):
+def get_payment_entry_for_employee(dt, dn, party_amount=None, bank_account=None, bank_amount=None, reference_date=None, reference_no=None, solicitud_de_pago=None, submit=False, posting_date=None):
 	"""Function to make Payment Entry for Employee Advance, Gratuity, Expense Claim"""
 	doc = frappe.get_doc(dt, dn)
 
@@ -513,7 +563,7 @@ def get_payment_entry_for_employee(dt, dn, party_amount=None, bank_account=None,
 	pe.payment_type = payment_type
 	pe.company = doc.company
 	pe.cost_center = doc.get("cost_center")
-	pe.posting_date = reference_date
+	pe.posting_date = posting_date or reference_date
 	pe.mode_of_payment = doc.get("mode_of_payment")
 	pe.party_type = "Employee"
 	pe.party = doc.get("employee")

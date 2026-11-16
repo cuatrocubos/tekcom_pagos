@@ -404,9 +404,11 @@ def get_payment_entry_for_employee(
 	return pe
 
 @frappe.whitelist()
-def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, reference_docname, submit=False):
+def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, reference_docname, submit=False, posting_date=None):
 	doc = frappe.get_doc(dt, dn)
 	reference_doc = frappe.get_cached_doc(reference_doctype, reference_docname)
+	# the solicitud is mid-save when this runs, so its posting date may not be in the db yet
+	posting_date = posting_date or reference_doc.get("posting_date") or reference_doc.reference_date
  
 	configuracion_pagos = get_configuraciones_de_pagos(doc.company)
 	configuracion_cuentas_doc = get_configuraciones_cuentas(doc.company)
@@ -434,7 +436,7 @@ def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, 
 	employee_cost_center = get_payroll_cost_center(doc.employee)
 
 	je = frappe.new_doc("Journal Entry")
-	je.posting_date = reference_doc.reference_date
+	je.posting_date = posting_date
 	je.voucher_type = "Journal Entry"
 	je.company = doc.company
 	je.remark = "Solicitud de Pago {0} a favor de {1} contra Avance de Empleado {2}".format(reference_doc.name, reference_doc.party_name, dn)
@@ -477,7 +479,7 @@ def make_journal_entry_for_payment_solicitud_de_pago(dt, dn, reference_doctype, 
 	# Paso 2: Create Journal Entry for Paying Company (reference_doc.company)
 	
 	je2 = frappe.new_doc("Journal Entry")
-	je2.posting_date = reference_doc.reference_date
+	je2.posting_date = posting_date
 	je2.voucher_type = "Bank Entry"
 	je2.company = reference_doc.company
 	je2.user_remark = "Cuenta por Cobrar por Solicitud de Pago {0} a favor de {1} con Avance de Empleado {2}".format(reference_doc.name, reference_doc.party_name, dn)
