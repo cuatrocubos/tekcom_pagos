@@ -173,7 +173,7 @@ Supplier Quotation,Cotización de Proveedor,
 Target Warehouse,Almacén de Destino,
 Tax Rates,Tasas de impuestos,
 Terms,Términos,
-To No,A No,,
+To No,A No
 Total advance ({0}) against Order {1} cannot be greater than the Grand Total ({2}),Anticipo total ({0}) contra la Orden {1} no puede ser mayor que el Total ({2}),
 Total Employee,Total de Empleados,
 Travel Advance Required,Se Requiere Anticipo de Viaje,
