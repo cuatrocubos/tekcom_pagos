@@ -13,7 +13,7 @@ from erpnext.accounts.doctype.bank_account.bank_account import (
  	get_party_bank_account
 )
 from erpnext.accounts.party import get_party_account
-from erpnext.accounts.utils import get_account_currency, get_balance_on, get_outstanding_invoices
+from erpnext.accounts.utils import get_account_currency, get_outstanding_invoices
 from erpnext.setup.utils import get_exchange_rate
 from tekcom_pagos.tekcom_pagos.utils import get_party_balance
 
@@ -34,7 +34,7 @@ def get_party_details(company, party_type, party, date, cost_center=None):
   party_account = get_party_account(party_type, party, company)
   
   account_currency = get_account_currency(party_account)
-  account_balance = get_balance_on(party_account, date, cost_center=cost_center)
+  account_balance = get_party_balance(party_type, party, party_account, date)
   _party_name = "title" if party_type == "Shareholder" else party_type.lower() + "_name"
   party_name = frappe.db.get_value(party_type, party, _party_name)
   party_balance = get_party_balance(party_type, party)

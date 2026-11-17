@@ -54,20 +54,25 @@ def get_employee_cost_center(employee):
 
 	return payroll_cost_center
 
-def get_party_balance(party_type, party):
-	"""get_balance_on(party_type=, party=) without its party read permission check: employees
-	have no read on Employee, yet are picked as party in Solicitud de Pago"""
+def get_party_balance(party_type, party, account=None, date=None):
+	"""get_balance_on(account, date, party_type=, party=) without its party read permission check:
+	employees have no read on Employee, yet are picked as party in Solicitud de Pago. Don't call
+	get_balance_on from a request carrying party_type/party: it takes them from form_dict"""
 	GLEntry = qb.DocType("GL Entry")
 	precision = get_currency_precision()
-	balance = (
+	query = (
 		qb.from_(GLEntry)
 		.select(
 			Sum(Round(GLEntry.debit_in_account_currency, precision))
 			- Sum(Round(GLEntry.credit_in_account_currency, precision))
 		)
 		.where((GLEntry.party_type == party_type) & (GLEntry.party == party) & (GLEntry.is_cancelled == 0))
-	).run()[0][0]
-	return flt(balance)
+	)
+	if account:
+		query = query.where(GLEntry.account == account)
+	if date:
+		query = query.where(GLEntry.posting_date <= date)
+	return flt(query.run()[0][0])
 
 @frappe.whitelist()
 def add_payment_details(doctype, doc, mode_of_payment, reference_date, reference_no):
