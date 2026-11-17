@@ -482,6 +482,13 @@ def get_fecha_contabilizacion_solicitud(fecha, company, depositar_a=None):
 	return get_fecha_contabilizacion(fecha, [company], "Payment Entry")
 
 @frappe.whitelist()
+def get_datos_bancarios_depositar_a(employee):
+	"""Depositar a ignores user permissions, so any employee can be picked: gate on the viáticos
+	permission instead of Employee read (get_party_details' party balance throws without it)"""
+	frappe.has_permission("Solicitud de Viaticos", "write", throw=True)
+	return frappe.db.get_value("Employee", employee, ["custom_bank as bank", "bank_ac_no as bank_account"], as_dict=1)
+
+@frappe.whitelist()
 def make_liquidacion_viaticos(source_name, target_doc=None):
 	liquidacion_viaticos_exists = frappe.db.exists("Liquidacion de Viaticos", { "solicitud_de_viaticos": source_name, "docstatus": ["!=", 2] })
 	if liquidacion_viaticos_exists:

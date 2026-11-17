@@ -40,6 +40,7 @@ from tekcom_pagos.tekcom_pagos.doctype.configuraciones_de_pagos_y_viaticos.confi
 from tekcom_pagos.tekcom_pagos.utils import (
   get_mode_of_payment_bank_cash_account,
 	get_bank_account_details,
+	get_party_balance,
 	make_journal_entry_for_payment_solicitud_de_pago
 )
 from tekcom_pagos.viaticos.doctype.liquidacion_de_viaticos.liquidacion_de_viaticos import get_fecha_contabilizacion
@@ -463,16 +464,18 @@ def get_constancia_pago_cuenta(party_type, party, date):
 def get_party_details(company, party_type, party, date, cost_center=None):
 	bank_account = ""
 	bank = ""
+	# gated on the solicitud, not the party: employees have no read on Employee
+	frappe.has_permission("Solicitud de Pago", "write", throw=True)
 	if not frappe.db.exists(party_type, party):
 		frappe.throw(_("Invalid {0}: {1}").format(party_type, party))
-		
+
 	party_account = get_party_account_from_accounts(party_type, party, company)
-	
+
 	account_currency = get_account_currency(party_account)
 	account_balance = get_balance_on(party_account, date, cost_center=cost_center)
 	_party_name = "title" if party_type == "Shareholder" else party_type.lower() + "_name"
 	party_name = frappe.db.get_value(party_type, party, _party_name)
-	party_balance = get_balance_on(party_type=party_type, party=party, cost_center=cost_center)
+	party_balance = get_party_balance(party_type, party)
 	if party_type in ["Customer", "Supplier"]:
 		bank_account = get_party_bank_account(party_type, party)
 		party_tax_id = frappe.db.get_value(party_type, party, "tax_id")

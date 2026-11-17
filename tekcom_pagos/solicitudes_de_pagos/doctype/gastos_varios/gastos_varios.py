@@ -15,6 +15,7 @@ from erpnext.accounts.doctype.bank_account.bank_account import (
 from erpnext.accounts.party import get_party_account
 from erpnext.accounts.utils import get_account_currency, get_balance_on, get_outstanding_invoices
 from erpnext.setup.utils import get_exchange_rate
+from tekcom_pagos.tekcom_pagos.utils import get_party_balance
 
 import json
 from functools import reduce
@@ -25,6 +26,8 @@ class GastosVarios(Document):
 @frappe.whitelist()
 def get_party_details(company, party_type, party, date, cost_center=None):
   bank_account = ""
+  # gated on the gasto, not the party: employees have no read on Employee
+  frappe.has_permission("Gastos Varios", "write", throw=True)
   if not frappe.db.exists(party_type, party):
     frappe.throw(_("Invalid {0}: {1}").format(party_type, party))
     
@@ -34,7 +37,7 @@ def get_party_details(company, party_type, party, date, cost_center=None):
   account_balance = get_balance_on(party_account, date, cost_center=cost_center)
   _party_name = "title" if party_type == "Shareholder" else party_type.lower() + "_name"
   party_name = frappe.db.get_value(party_type, party, _party_name)
-  party_balance = get_balance_on(party_type=party_type, party=party, cost_center=cost_center)
+  party_balance = get_party_balance(party_type, party)
     
   return {
 		"party_account": party_account,

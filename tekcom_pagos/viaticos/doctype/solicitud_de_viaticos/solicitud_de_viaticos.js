@@ -258,13 +258,9 @@ frappe.ui.form.on('Solicitud de Viaticos', {
 			let company_currency = frappe.get_doc(":Company", frm.doc.company).default_currency;
 
 			return frappe.call({
-				method: "tekcom_pagos.solicitudes_de_pagos.doctype.solicitud_de_pago.solicitud_de_pago.get_party_details",
+				method: "tekcom_pagos.viaticos.doctype.solicitud_de_viaticos.solicitud_de_viaticos.get_datos_bancarios_depositar_a",
 				args: {
-					company: frm.doc.company,
-					party_type: 'Employee',
-					party: frm.doc.depositar_a,
-					date: frm.doc.fecha_solicitud,
-					cost_center: frm.doc.cost_center
+					employee: frm.doc.depositar_a
 				},
 				callback: function(r, rt) {
 					if (r.message) {

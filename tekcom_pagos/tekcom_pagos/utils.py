@@ -5,7 +5,7 @@ import frappe
 from frappe import qb, scrub, _
 from frappe.desk.reportview import get_filters_cond, get_match_cond
 from frappe.query_builder import Criterion, CustomFunction
-from frappe.query_builder.functions import Concat, Locate, Sum
+from frappe.query_builder.functions import Concat, Locate, Round, Sum
 from frappe.utils import nowdate, today, unique, flt, get_link_to_form
 from pypika import Order
 
@@ -39,7 +39,7 @@ from erpnext.accounts.doctype.payment_entry.payment_entry import (
 )
 
 from erpnext.accounts.party import get_party_account
-from erpnext.accounts.utils import get_account_currency
+from erpnext.accounts.utils import get_account_currency, get_currency_precision
 
 from tekcom_pagos.tekcom_pagos.doctype.configuraciones_de_pagos_y_viaticos.configuraciones_de_pagos_y_viaticos import (
 	get_configuraciones_de_pagos,
@@ -53,6 +53,21 @@ def get_employee_cost_center(employee):
 		payroll_cost_center = frappe.db.get_value("Department", department, "payroll_cost_center")
 
 	return payroll_cost_center
+
+def get_party_balance(party_type, party):
+	"""get_balance_on(party_type=, party=) without its party read permission check: employees
+	have no read on Employee, yet are picked as party in Solicitud de Pago"""
+	GLEntry = qb.DocType("GL Entry")
+	precision = get_currency_precision()
+	balance = (
+		qb.from_(GLEntry)
+		.select(
+			Sum(Round(GLEntry.debit_in_account_currency, precision))
+			- Sum(Round(GLEntry.credit_in_account_currency, precision))
+		)
+		.where((GLEntry.party_type == party_type) & (GLEntry.party == party) & (GLEntry.is_cancelled == 0))
+	).run()[0][0]
+	return flt(balance)
 
 @frappe.whitelist()
 def add_payment_details(doctype, doc, mode_of_payment, reference_date, reference_no):
