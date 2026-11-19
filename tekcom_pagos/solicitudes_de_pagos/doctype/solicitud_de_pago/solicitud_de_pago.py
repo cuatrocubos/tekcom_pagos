@@ -345,7 +345,6 @@ class SolicituddePago(Document):
 						party_type = "Supplier",
 						payment_type = "Pay",
 						reference_date=self.reference_date,
-						custom_referencia_de_solicitud_pago=reference.name
 					)
 				finally:
 					frappe.flags.ignore_payment_entry_create_permission = False
