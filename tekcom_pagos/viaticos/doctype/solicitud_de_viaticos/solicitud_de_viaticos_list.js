@@ -7,8 +7,7 @@ frappe.listview_settings["Solicitud de Viaticos"] = {
     'project',
     'total_anticipo_solicitado',
     'status',
-    'workflow_status',
-    'liquidacion_workflow_state'
+    'workflow_status'
   ],
   
   has_indicator_for_draft: true,
